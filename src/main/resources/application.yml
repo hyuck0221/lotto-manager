@@ -1,0 +1,51 @@
+server:
+  port: 8080
+  error:
+    include-message: always
+
+spring:
+  security:
+    oauth2:
+      client:
+        registration:
+          discord:
+            client-id: ${client_id}
+            client-secret: ${client_secret}
+            authorization-grant-type: authorization_code
+            redirect-uri: "{baseUrl}/login/oauth2/code/discord"
+            client-name: Discord
+            provider: discord
+            scope:
+              - identify
+        provider:
+          discord:
+            authorization-uri: https://discord.com/oauth2/authorize
+            token-uri: https://discord.com/api/oauth2/token
+            user-info-uri: https://discord.com/api/users/@me
+            user-name-attribute: id
+  datasource:
+    url: jdbc:mariadb://${db_url}/lotto_manager?autoReconnect=true&rewriteBatchedStatements=true
+    username: ${db_username}
+    password: ${db_password}
+    driver-class-name: org.mariadb.jdbc.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      generate-ddl: false
+      hibernate:
+        show_sql: true
+        default_batch_fetch_size: 50
+        format_sql: true
+  ai:
+    openai:
+      api-key: ${openai_key}
+      base-url: https://api.openai.com/v1
+      chat:
+        options:
+          model: "gpt-4o"
+
+  session:
+    jdbc:
+      initialize-schema: always
+    timeout: 30d
