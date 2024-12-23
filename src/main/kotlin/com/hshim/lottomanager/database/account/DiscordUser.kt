@@ -29,6 +29,7 @@ class DiscordUser(
     @Enumerated(EnumType.STRING)
     var premiumType: DiscordPremiumType,
 ) : User(
+    id = discordId,
     displayName = globalName,
     userType = UserType.DISCORD,
     profileUrl = avatar?.let { "https://cdn.discordapp.com/avatars/$discordId/$it" },

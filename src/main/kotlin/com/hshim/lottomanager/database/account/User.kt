@@ -1,8 +1,8 @@
 package com.hshim.lottomanager.database.account
 
 import com.hshim.lottomanager.database.base.BaseTimeEntity
+import com.hshim.lottomanager.enums.account.SendType
 import com.hshim.lottomanager.enums.account.UserType
-import io.autocrypt.sakarinblue.universe.util.CommonUtil.uuid
 import jakarta.persistence.*
 
 
@@ -12,8 +12,8 @@ import jakarta.persistence.*
 @DiscriminatorColumn(name = "user_type")
 class User(
     @Id
-    @Column(nullable = false, columnDefinition = "char(32)")
-    var id: String = uuid(),
+    @Column(nullable = false, columnDefinition = "varchar(100)")
+    var id: String,
 
     @Column(
         nullable = false,
@@ -36,4 +36,8 @@ class User(
 
     @Column(nullable = true)
     var email: String?,
+
+    @Column(nullable = true)
+    @Enumerated(EnumType.STRING)
+    var sendType: SendType? = SendType.EMAIL,
 ) : BaseTimeEntity()

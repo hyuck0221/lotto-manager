@@ -12,7 +12,7 @@ import org.springframework.security.web.SecurityFilterChain
 @Configuration
 @EnableWebSecurity
 class SecurityConfig(
-    @Value("\${spring.security.enabled:true}")
+    @Value("\${spring.security.enabled:false}")
     private val securityEnabled: Boolean,
 ) {
     @Bean

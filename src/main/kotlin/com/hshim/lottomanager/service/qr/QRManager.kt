@@ -7,13 +7,13 @@ import com.google.zxing.client.j2se.BufferedImageLuminanceSource
 import com.google.zxing.common.HybridBinarizer
 import com.google.zxing.multi.GenericMultipleBarcodeReader
 import org.springframework.stereotype.Component
+import org.springframework.web.multipart.MultipartFile
 import java.awt.image.BufferedImage
-import java.io.File
 import javax.imageio.ImageIO
 
 @Component
 class QRManager {
-    fun decode(file: File): List<String> {
+    fun decode(file: MultipartFile): List<String> {
         val processedImage = processImage(file)
         val luminanceSource = BufferedImageLuminanceSource(processedImage)
         val binaryBitmap = BinaryBitmap(HybridBinarizer(luminanceSource))
@@ -25,8 +25,8 @@ class QRManager {
         }
     }
 
-    private fun processImage(file: File): BufferedImage {
-        val originalImage = ImageIO.read(file)
+    private fun processImage(file: MultipartFile): BufferedImage {
+        val originalImage = ImageIO.read(file.inputStream)
         val width = originalImage.width
         val height = originalImage.height
 

@@ -28,6 +28,7 @@ class GoogleUser(
     @Column(nullable = false)
     var emailVerified: Boolean,
 ) : User(
+    id = sub,
     displayName = name,
     userType = UserType.GOOGLE,
     profileUrl = profileUrl,
