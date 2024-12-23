@@ -20,6 +20,7 @@ class DiscordOauthAttribute(
     val mfaEnabled: Boolean,
     val locale: String,
     val premiumType: Int,
+    val email: String?,
 ) {
     val premiumTypeEnum = DiscordPremiumType.getByValue(premiumType)
 
@@ -40,9 +41,11 @@ class DiscordOauthAttribute(
         mfaEnabled = attributeMap["mfa_enabled"] as Boolean,
         locale = attributeMap["locale"] as String,
         premiumType = attributeMap["premium_type"] as Int,
+        email = attributeMap["email"] as String?,
     )
 
     fun toEntity() = DiscordUser(
+        email = email,
         discordId = this.id,
         username = this.username,
         globalName = this.globalName ?: this.username,

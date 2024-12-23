@@ -1,6 +1,5 @@
 package com.hshim.lottomanager.setting.security
 
-import com.hshim.lottomanager.setting.security.CustomAuthenticationSuccessHandler
 import jakarta.servlet.http.HttpServletResponse
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
@@ -37,7 +36,6 @@ class SecurityConfig(
             .oauth2Login { oauth2Login ->
                 oauth2Login
                     .loginPage("/login")
-                    .defaultSuccessUrl("/login/oauth2/code/discord", true)
                     .successHandler(CustomAuthenticationSuccessHandler())
             }
             .httpBasic { httpBasic ->

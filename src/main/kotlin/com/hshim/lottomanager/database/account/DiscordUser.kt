@@ -8,6 +8,8 @@ import jakarta.persistence.*
 @Table(name = "discord_user")
 @DiscriminatorValue(value = "DISCORD")
 class DiscordUser(
+    email: String?,
+
     @Column(nullable = false, columnDefinition = "varchar(100)")
     val discordId: String,
 
@@ -29,5 +31,6 @@ class DiscordUser(
 ) : User(
     displayName = globalName,
     userType = UserType.DISCORD,
-    profileUrl = avatar?.let { "https://cdn.discordapp.com/avatars/$discordId/$it" }
+    profileUrl = avatar?.let { "https://cdn.discordapp.com/avatars/$discordId/$it" },
+    email = email,
 )

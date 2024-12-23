@@ -33,4 +33,7 @@ class User(
 
     @Column(nullable = true)
     var profileUrl: String?,
+
+    @Column(nullable = true)
+    var email: String?,
 ) : BaseTimeEntity()
