@@ -4,4 +4,5 @@ import com.hshim.lottomanager.database.lotto.LottoNumber
 import org.springframework.data.jpa.repository.JpaRepository
 
 interface LottoNumberRepository : JpaRepository<LottoNumber, String> {
+    fun findAllByUserIdOrderByLottoTimesDescCreateDateDesc(userId: String): List<LottoNumber>
 }

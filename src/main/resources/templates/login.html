@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login</title>
     <style>
-        /* Reset 기본 스타일 */
         * {
             margin: 0;
             padding: 0;
@@ -44,35 +43,65 @@
         }
 
         .btn {
-            display: inline-block;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             padding: 12px 20px;
             font-size: 16px;
             border: none;
             border-radius: 5px;
             cursor: pointer;
             text-decoration: none;
-            transition: background-color 0.3s ease;
+            transition: background-color 0.3s ease, box-shadow 0.3s ease;
+            margin: 5px 0;
+            width: 100%;
+            gap: 10px;
         }
 
-        .btn-primary {
+        .btn img {
+            width: 20px;
+            height: 20px;
+        }
+
+        .btn-primary-discord {
             color: white;
             background-color: #7289da;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
 
-        .btn-primary:hover {
+        .btn-primary-discord:hover {
             background-color: #5b6eae;
+            box-shadow: 0 6px 10px rgba(0, 0, 0, 0.15);
+        }
+
+        .btn-primary-google {
+            color: #333;
+            background-color: #ffffff;
+            border: 1px solid #ccc;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn-primary-google:hover {
+            background-color: #f5f5f5;
+            border-color: #aaa;
+            box-shadow: 0 6px 10px rgba(0, 0, 0, 0.15);
         }
     </style>
 </head>
 <body>
 <div class="login-container">
     <h1>로그인 필요</h1>
-    <p>사이트 이용을 위해 Discord 계정으로 로그인하세요.</p>
-    <a href="/oauth2/authorization/discord" class="btn btn-primary">Discord 로그인</a>
-    <a href="/oauth2/authorization/google" class="btn btn-primary me-2 active" role="button">Google 로그인</a>
+    <p>사이트 이용을 위해 로그인하세요.</p>
+    <a href="/oauth2/authorization/discord" class="btn btn-primary-discord">
+        <img src="/icon/login-button/discord.png" alt="Discord 로고">
+        Discord 로그인
+    </a>
+    <a href="/oauth2/authorization/google" class="btn btn-primary-google">
+        <img src="/icon/login-button/google.png" alt="Google 로고">
+        Google 로그인
+    </a>
 </div>
 <script>
-    // OAuth2 세션 확인 및 리다이렉트
     document.addEventListener('DOMContentLoaded', async () => {
         try {
             const response = await fetch('/account/auth/check-session');

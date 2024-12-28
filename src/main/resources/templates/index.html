@@ -1,15 +1,230 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>MAIN PAGE</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>로또 관리</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            line-height: 1.6;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+        .button {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        .table th, .table td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: center;
+        }
+        .table th {
+            background-color: #f4f4f4;
+        }
+        .dialog {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: #fff;
+            padding: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            display: none;
+        }
+        .dialog.active {
+            display: block;
+        }
+    </style>
 </head>
 <body>
 <div class="dropdown" id="dropdown">
-  <form th:action="@{/logout}" method="post" style="margin: 0;">
-    <input id="csrf-token" type="hidden" name="_csrf" th:value="${_csrf.token}"/>
-    <button type="submit">로그아웃</button>
-  </form>
+    <form th:action="@{/logout}" method="post" style="margin: 0;">
+        <input id="csrf-token" type="hidden" name="_csrf" th:value="${_csrf.token}"/>
+        <button type="submit">로그아웃</button>
+    </form>
 </div>
+<div class="header">
+    <button class="button" onclick="openQRUpload()">QR 업로드</button>
+    <button class="button" onclick="openNumberInput()">번호 입력</button>
+</div>
+
+<h2>입력한 로또 내역</h2>
+<table class="table" id="lottoTable">
+    <thead>
+    <tr>
+        <th>순서</th>
+        <th>번호</th>
+        <th>등수</th>
+    </tr>
+    </thead>
+    <tbody>
+    <!-- 데이터를 여기에 추가 -->
+    </tbody>
+</table>
+
+<div id="dialog" class="dialog">
+    <h3>로또 상세 정보</h3>
+    <div id="dialogContent"></div>
+    <button class="button" onclick="closeDialog()">닫기</button>
+</div>
+
+<div id="qrUploadDialog" class="dialog">
+    <h3>QR 업로드</h3>
+    <input type="file" id="qrFiles" multiple>
+    <button class="button" onclick="uploadQR()">업로드</button>
+    <button class="button" onclick="closeDialog()">취소</button>
+</div>
+
+<div id="numberInputDialog" class="dialog">
+    <h3>번호 입력</h3>
+    <label>회차:</label>
+    <input type="number" id="lottoTimes" min="1"><br>
+    <label>번호:</label>
+    <input type="text" id="lottoNumbers" placeholder="예: 1, 2, 3, 4, 5, 6">
+    <button class="button" onclick="addNumber()">+</button>
+    <div id="numberList"></div>
+    <button class="button" onclick="registerNumbers()">등록</button>
+    <button class="button" onclick="closeDialog()">취소</button>
+</div>
+
+<script>
+    const csrfToken = document.getElementById('csrf-token').value;
+    const lottoTable = document.getElementById("lottoTable").querySelector("tbody");
+    const dialog = document.getElementById("dialog");
+    const dialogContent = document.getElementById("dialogContent");
+    const numberInputDialog = document.getElementById("numberInputDialog");
+    const qrUploadDialog = document.getElementById("qrUploadDialog");
+    let lottoNumbers = [];
+
+    function openQRUpload() {
+        qrUploadDialog.classList.add("active");
+    }
+
+    function openNumberInput() {
+        numberInputDialog.classList.add("active");
+    }
+
+    function closeDialog() {
+        dialog.classList.remove("active");
+        numberInputDialog.classList.remove("active");
+        qrUploadDialog.classList.remove("active");
+    }
+
+    function uploadQR() {
+        const files = document.getElementById("qrFiles").files;
+        const formData = new FormData();
+        for (let file of files) {
+            formData.append("photos", file);
+        }
+
+        fetch("/api/lotto/qr/decode", {
+            method: "POST",
+            body: formData,
+            headers: {
+                'X-CSRF-TOKEN': csrfToken,
+            },
+        })
+            .then((res) => res.json())
+            .then((data) => {
+                if (data.length === 0) {
+                    alert("로또 QR을 인식할 수 없습니다.");
+                } else {
+                    addTableRows(data);
+                    closeDialog();
+                }
+            });
+    }
+
+    function addNumber() {
+        const numbersInput = document.getElementById("lottoNumbers").value;
+        if (numbersInput) {
+            lottoNumbers.push(numbersInput.split(",").map(Number));
+            const numberList = document.getElementById("numberList");
+            numberList.innerHTML = lottoNumbers.map((num, idx) => `<p>${idx + 1}. ${num.join(", ")}</p>`).join("");
+        }
+    }
+
+    function registerNumbers() {
+        const times = document.getElementById("lottoTimes").value;
+        if (!times || lottoNumbers.length === 0) {
+            alert("회차와 번호를 입력해주세요.");
+            return;
+        }
+
+        const payload = lottoNumbers.map((numbers) => ({ times: Number(times), numbers }));
+        fetch("/api/lotto/numbers", {
+            method: "POST",
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': csrfToken,
+            },
+            body: JSON.stringify(payload),
+        }).then(() => {
+            alert("등록이 완료되었습니다.");
+            closeDialog();
+            fetchLottoData();
+        });
+    }
+
+    function fetchLottoData() {
+        fetch("/api/lotto/numbers")
+            .then((res) => res.json())
+            .then((data) => {
+                addTableRows(data);
+            });
+    }
+
+    function addTableRows(data) {
+        lottoTable.innerHTML = "";
+        data.forEach((entry, idx) => {
+            const row = document.createElement("tr");
+            row.innerHTML = `
+        <td>${idx + 1}</td>
+        <td>${entry.numbers.join(", ")}</td>
+        <td><button class="button" onclick="viewDetails(${idx})">보기</button></td>
+      `;
+            lottoTable.appendChild(row);
+        });
+    }
+
+    function viewDetails(index) {
+        fetch("/api/lotto/numbers")
+            .then((res) => res.json())
+            .then((data) => {
+                const details = data[index].lotto;
+                dialogContent.innerHTML = `
+          <p>회차: ${details.times}</p>
+          <p>당첨 번호: ${details.numbers.join(", ")}</p>
+          <p>보너스 번호: ${details.bonusNumber}</p>
+          <p>총 상금: ${details.totalPrize.toLocaleString()}원</p>
+          <p>1등 상금: ${details.firstWinnerPrize.toLocaleString()}원</p>
+          <p>당첨자 수: ${details.winCnt}명</p>
+        `;
+                dialog.classList.add("active");
+            });
+    }
+
+    fetchLottoData();
+</script>
+
 </body>
 </html>

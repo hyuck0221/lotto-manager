@@ -12,7 +12,7 @@ import org.springframework.security.web.SecurityFilterChain
 @Configuration
 @EnableWebSecurity
 class SecurityConfig(
-    @Value("\${spring.security.enabled:false}")
+    @Value("\${spring.security.enabled:true}")
     private val securityEnabled: Boolean,
 ) {
     @Bean
@@ -30,6 +30,7 @@ class SecurityConfig(
                         "/error",
                         "/login.html",
                         "/login",
+                        "/icon/**"
                     ).permitAll()
                     .anyRequest().authenticated()
             }

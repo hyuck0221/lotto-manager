@@ -22,6 +22,9 @@ class LottoController(
         @RequestBody requests: List<LottoNumberRequest>
     ) = lottoNumberCommandService.init(requests)
 
+    @GetMapping("/numbers")
+    fun getMyNumbers() = lottoNumberQueryService.getNumbers()
+
      @PostMapping("/qr/decode")
     fun getRequests(
          @RequestPart photos: List<MultipartFile>

@@ -1,10 +1,12 @@
 package com.hshim.lottomanager.service.lotto
 
+import com.hshim.lottomanager.database.lotto.repository.LottoNumberRepository
 import com.hshim.lottomanager.exception.GlobalException
 import com.hshim.lottomanager.model.lotto.LottoNumberRequest
+import com.hshim.lottomanager.model.lotto.LottoNumberResponse
+import com.hshim.lottomanager.service.account.user.UserQueryService
 import com.hshim.lottomanager.service.qr.QRManager
 import com.hshim.lottomanager.util.QueueUtil.polls
-import com.hshim.lottomanager.util.QueueUtil.throwPolls
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.multipart.MultipartFile
@@ -14,6 +16,8 @@ import java.util.*
 @Transactional(readOnly = true)
 class LottoNumberQueryService(
     private val qrManager: QRManager,
+    private val userQueryService: UserQueryService,
+    private val lottoNumberRepository: LottoNumberRepository,
 ) {
     private val separator = "v="
     private val parameterSeparators = listOf('q', 'm')
@@ -40,5 +44,11 @@ class LottoNumberQueryService(
             }
             numbersList.map { LottoNumberRequest(times, it) }
         }
+    }
+
+    fun getNumbers(): List<LottoNumberResponse> {
+        val user = userQueryService.getUser()
+        return lottoNumberRepository.findAllByUserIdOrderByLottoTimesDescCreateDateDesc(user.id)
+            .map { LottoNumberResponse(it) }
     }
 }

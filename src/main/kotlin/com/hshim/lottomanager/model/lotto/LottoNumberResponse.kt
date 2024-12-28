@@ -5,8 +5,8 @@ import com.hshim.lottomanager.database.lotto.Lotto
 import com.hshim.lottomanager.database.lotto.LottoNumber
 
 class LottoNumberResponse(
-    val times: Int,
     val numbers: List<Int>,
+    val lotto: LottoResponse,
 ) {
     fun toEntity(
         lotto: Lotto,
@@ -15,5 +15,10 @@ class LottoNumberResponse(
         lotto = lotto,
         user = user,
         numbers = numbers,
+    )
+
+    constructor(lottoNumber: LottoNumber): this (
+        numbers = lottoNumber.numbers,
+        lotto = LottoResponse(lottoNumber.lotto),
     )
 }
