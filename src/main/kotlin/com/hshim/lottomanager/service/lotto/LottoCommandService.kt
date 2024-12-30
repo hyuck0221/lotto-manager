@@ -22,8 +22,10 @@ class LottoCommandService(
         return lottoRepository.save(lotto)
     }
 
-    fun open(lotto: Lotto) {
+    fun open(lotto: Lotto): Boolean {
         LottoTemplate(lotto.times, url).getInfo()
             ?.apply { this.updateTo(lotto) }
+            ?: return false
+        return true
     }
 }

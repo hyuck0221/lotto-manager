@@ -7,7 +7,7 @@ class LottoResponse(
     val times: Int,
     val openDate: LocalDate?,
     val isOpen: Boolean,
-    val numbers: List<Int>,
+    val numbers: List<Int>?,
     val bonusNumber: Int?,
     val totalPrize: Long?,
     val firstWinnerPrize: Long?,

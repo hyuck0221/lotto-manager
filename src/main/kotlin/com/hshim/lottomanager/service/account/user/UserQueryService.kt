@@ -14,7 +14,7 @@ class UserQueryService(
     private val userRepository: UserRepository,
 ) {
     fun getUser(id: String): User {
-        val user = userRepository.findByIdOrNull("115146569511046352279")
+        val user = userRepository.findByIdOrNull(id)
         when {
             user == null -> throw GlobalException.NOT_FOUND_USER.exception
             user.disable -> throw GlobalException.IS_DISABLED_USER.exception

@@ -21,7 +21,7 @@ class Lotto(
 
     @Column(nullable = true, columnDefinition = "varchar(255)")
     @Convert(converter = IntConverter::class)
-    var numbers: List<Int> = emptyList(),
+    var numbers: List<Int>? = null,
 
     @Column(nullable = true)
     var bonusNumber: Int? = null,

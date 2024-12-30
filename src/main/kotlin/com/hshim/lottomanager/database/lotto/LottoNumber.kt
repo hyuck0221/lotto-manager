@@ -22,7 +22,7 @@ class LottoNumber(
     @JoinColumn(name = "user_id", nullable = false)
     var user: User,
 
-    @Column(nullable = true, columnDefinition = "varchar(255)")
+    @Column(nullable = false, columnDefinition = "varchar(255)")
     @Convert(converter = IntConverter::class)
     val numbers: List<Int> = emptyList(),
 
@@ -34,7 +34,7 @@ class LottoNumber(
     }
 
     fun setRank(): Int {
-        val cnt = numbers.count { lotto.numbers.contains(it) }
+        val cnt = numbers.count { lotto.numbers?.contains(it) == true }
         this.rank = when {
             cnt == 6 -> 1
             cnt == 5 && numbers.contains(lotto.bonusNumber) -> 2

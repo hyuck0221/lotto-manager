@@ -40,6 +40,7 @@ dependencies {
     implementation("org.springframework.session:spring-session-jdbc")
     implementation("com.google.zxing:core:3.5.1")
     implementation("com.google.zxing:javase:3.5.1")
+    implementation("org.springframework.boot:spring-boot-starter-mail")
 
     // Universe
     implementation("io.autocrypt.sakarinblue:universe:2.1.0")
