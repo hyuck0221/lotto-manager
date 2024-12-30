@@ -30,7 +30,8 @@ class SecurityConfig(
                         "/error",
                         "/login.html",
                         "/login",
-                        "/icon/**"
+                        "/icon/**",
+                        "/api/lotto/statistics/**",
                     ).permitAll()
                     .anyRequest().authenticated()
             }
