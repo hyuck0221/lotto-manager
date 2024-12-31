@@ -1,57 +1,215 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>로또 관리</title>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>로또 등록 사이트 예시</title>
     <style>
+        /* 공통 스타일 */
         body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            font-family: sans-serif;
+            box-sizing: border-box;
         }
-        .header {
+
+        .container {
+            max-width: 600px;
+            width: 100%;
+            margin: 0 auto;
+            padding: 16px;
             display: flex;
-            justify-content: space-between;
-            margin-bottom: 20px;
+            flex-direction: column;
+            align-items: center;
         }
-        .button {
-            padding: 10px 20px;
-            background-color: #007bff;
-            color: #fff;
+
+        .btn-large {
+            flex: 1;
+            margin: 8px;
+            padding: 16px;
+            font-size: 16px;
+            cursor: pointer;
             border: none;
-            border-radius: 5px;
+            border-radius: 4px;
+            background-color: #4caf50;
+            color: white;
+            font-weight: bold;
+            min-width: 120px;
+        }
+
+        .button-row {
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+            width: 100%;
+            max-width: 500px;
+        }
+
+        /* 모달 오버레이 */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 999;
+            padding: 16px;
+        }
+
+        /* 모달 컨텐츠 박스 */
+        .modal-content {
+            background-color: #fff;
+            position: relative;
+            border-radius: 8px;
+            max-width: 500px;
+            width: 100%;
+            max-height: 80vh;
+            overflow-y: auto;
+            padding: 16px;
+            box-sizing: border-box;
+        }
+
+        /* 우측 상단 닫기 버튼 */
+        .modal-close {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: none;
+            border: none;
+            font-size: 16px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        /* 사진 업로드 큰 영역 */
+        .drag-area {
+            width: 92%;
+            min-height: 150px;
+            border: 2px dashed #ccc;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+            margin: 16px 0;
+            text-align: center;
+            transition: background-color 0.3s;
+        }
+
+        .drag-area.active {
+            background-color: #f5f5f5;
+        }
+
+        /* 사진 업로드 버튼 */
+        .upload-btn {
+            padding: 8px 16px;
+            cursor: pointer;
+            border: none;
+            background-color: #2196f3;
+            color: #fff;
+            border-radius: 4px;
+        }
+
+        /* 다이얼로그 하단 등록/취소 버튼 */
+        .dialog-button-row {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 16px;
+        }
+
+        .dialog-button {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            margin-left: 8px;
             cursor: pointer;
         }
-        .button:disabled {
+
+        .btn-cancel {
             background-color: #ccc;
-            cursor: not-allowed;
         }
-        .table {
+
+        .btn-submit {
+            background-color: #4caf50;
+            color: #fff;
+        }
+
+        /* 테이블 스타일 */
+        table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 20px;
+            margin-top: 8px;
+            margin-bottom: 16px;
         }
-        .table th, .table td {
-            border: 1px solid #ddd;
-            padding: 10px;
+
+        th, td {
+            border: 1px solid #ccc;
+            padding: 8px;
             text-align: center;
         }
-        .table th {
-            background-color: #f4f4f4;
+
+        /* 번호 등록 화면 */
+        .lotto-input-row {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            margin-bottom: 8px;
         }
-        .dialog {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background-color: #fff;
-            padding: 20px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            display: none;
+
+        .lotto-number-input {
+            width: 40px;
+            margin-right: 4px;
+            text-align: center;
         }
-        .dialog.active {
-            display: block;
+
+        .lotto-times-input {
+            width: 60px;
+            margin-right: 8px;
+            text-align: center;
+        }
+
+        .btn-plus, .btn-minus {
+            cursor: pointer;
+            padding: 4px 8px;
+            border: none;
+            color: #fff;
+            border-radius: 4px;
+            margin-left: 4px;
+        }
+
+        .btn-plus {
+            background-color: #2196f3;
+        }
+
+        .btn-minus {
+            background-color: #f44336;
+        }
+
+        /* 등록된 로또 목록 컨테이너 */
+        .registered-lotto-container {
+            width: 100%;
+            max-width: 600px;
+            margin-top: 24px;
+        }
+
+        /* 반응형 */
+        @media (max-width: 600px) {
+            .btn-large {
+                font-size: 14px;
+                padding: 12px;
+            }
+
+            .dialog-button {
+                font-size: 14px;
+            }
+
+            .lotto-number-input, .lotto-times-input {
+                width: 30px;
+            }
         }
     </style>
 </head>
@@ -62,169 +220,483 @@
         <button type="submit">로그아웃</button>
     </form>
 </div>
-<div class="header">
-    <button class="button" onclick="openQRUpload()">QR 업로드</button>
-    <button class="button" onclick="openNumberInput()">번호 입력</button>
+<div class="container">
+    <div class="button-row">
+        <button class="btn-large" id="btn-upload">사진 업로드</button>
+        <button class="btn-large" id="btn-register-numbers">번호 등록</button>
+    </div>
+
+    <div class="registered-lotto-container" id="registeredLottoContainer"></div>
 </div>
 
-<h2>입력한 로또 내역</h2>
-<table class="table" id="lottoTable">
-    <thead>
-    <tr>
-        <th>순서</th>
-        <th>번호</th>
-        <th>등수</th>
-    </tr>
-    </thead>
-    <tbody>
-    <!-- 데이터를 여기에 추가 -->
-    </tbody>
-</table>
-
-<div id="dialog" class="dialog">
-    <h3>로또 상세 정보</h3>
-    <div id="dialogContent"></div>
-    <button class="button" onclick="closeDialog()">닫기</button>
-</div>
-
-<div id="qrUploadDialog" class="dialog">
-    <h3>QR 업로드</h3>
-    <input type="file" id="qrFiles" multiple>
-    <button class="button" onclick="uploadQR()">업로드</button>
-    <button class="button" onclick="closeDialog()">취소</button>
-</div>
-
-<div id="numberInputDialog" class="dialog">
-    <h3>번호 입력</h3>
-    <label>회차:</label>
-    <input type="number" id="lottoTimes" min="1"><br>
-    <label>번호:</label>
-    <input type="text" id="lottoNumbers" placeholder="예: 1, 2, 3, 4, 5, 6">
-    <button class="button" onclick="addNumber()">+</button>
-    <div id="numberList"></div>
-    <button class="button" onclick="registerNumbers()">등록</button>
-    <button class="button" onclick="closeDialog()">취소</button>
+<!-- 공통 모달 -->
+<div class="modal-overlay" id="modalOverlay">
+    <div class="modal-content" id="modalContent">
+        <button class="modal-close" id="modalClose">X</button>
+        <div id="modalBody"></div>
+    </div>
 </div>
 
 <script>
     const csrfToken = document.getElementById('csrf-token').value;
-    const lottoTable = document.getElementById("lottoTable").querySelector("tbody");
-    const dialog = document.getElementById("dialog");
-    const dialogContent = document.getElementById("dialogContent");
-    const numberInputDialog = document.getElementById("numberInputDialog");
-    const qrUploadDialog = document.getElementById("qrUploadDialog");
-    let lottoNumbers = [];
+    const modalOverlay = document.getElementById('modalOverlay');
+    const modalClose = document.getElementById('modalClose');
+    const modalBody = document.getElementById('modalBody');
 
-    function openQRUpload() {
-        qrUploadDialog.classList.add("active");
+    const btnUpload = document.getElementById('btn-upload');
+    const btnRegisterNumbers = document.getElementById('btn-register-numbers');
+
+    window.addEventListener('DOMContentLoaded', loadRegisteredLottoNumbers);
+
+    // 모달 열고 닫기
+    function openModal() {
+        modalOverlay.style.display = 'flex';
     }
 
-    function openNumberInput() {
-        numberInputDialog.classList.add("active");
+    function closeModal() {
+        modalOverlay.style.display = 'none';
+        modalBody.innerHTML = '';
     }
 
-    function closeDialog() {
-        dialog.classList.remove("active");
-        numberInputDialog.classList.remove("active");
-        qrUploadDialog.classList.remove("active");
-    }
-
-    function uploadQR() {
-        const files = document.getElementById("qrFiles").files;
-        const formData = new FormData();
-        for (let file of files) {
-            formData.append("photos", file);
+    // 오버레이나 닫기 버튼을 누르면 모달 종료
+    modalOverlay.addEventListener('click', (e) => {
+        if (e.target === modalOverlay) {
+            closeModal();
         }
+    });
+    modalClose.addEventListener('click', closeModal);
 
-        fetch("/api/lotto/qr/decode", {
-            method: "POST",
-            body: formData,
-            headers: {
-                'X-CSRF-TOKEN': csrfToken,
-            },
-        })
-            .then((res) => res.json())
-            .then((data) => {
-                if (data.length === 0) {
-                    alert("로또 QR을 인식할 수 없습니다.");
-                } else {
-                    addTableRows(data);
-                    closeDialog();
-                }
-            });
+    // 사진 업로드 버튼 클릭 시
+    btnUpload.addEventListener('click', () => {
+        openModal();
+        showPhotoUploadScreen();
+    });
+
+    // 사진 업로드 화면
+    function showPhotoUploadScreen() {
+        modalBody.innerHTML = `
+      <h3>사진 업로드</h3>
+      <div class="drag-area" id="dragArea">
+        <p>사진을 드래그 하거나 아래 업로드 버튼을 눌러주세요.</p>
+      </div>
+      <label for="photoInput" class="upload-btn">업로드</label>
+      <input type="file" id="photoInput" name="photos" accept="image/*" multiple style="display:none;" />
+    `;
+
+        const photoInput = document.getElementById('photoInput');
+        photoInput.addEventListener('change', handlePhotoUpload);
+
+        // [추가] 드래그 앤 드롭 이벤트
+        const dragArea = document.getElementById('dragArea');
+
+        // 드래그가 영역 위로 왔을 때
+        dragArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dragArea.classList.add('active');
+        });
+
+        // 드래그가 영역 밖으로 나갔을 때
+        dragArea.addEventListener('dragleave', () => {
+            dragArea.classList.remove('active');
+        });
+
+        // 드롭했을 때
+        dragArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dragArea.classList.remove('active');
+
+            // droppedFiles로 가져오기
+            const droppedFiles = e.dataTransfer.files;
+            if (droppedFiles && droppedFiles.length > 0) {
+                handlePhotoUpload({target: {files: droppedFiles}});
+            }
+        });
+
+        // 하단 버튼(취소)
+        const buttonRow = document.createElement('div');
+        buttonRow.className = 'dialog-button-row';
+        buttonRow.innerHTML = `
+      <button class="dialog-button btn-cancel" id="btnCancelPhoto">취소</button>
+    `;
+        modalBody.appendChild(buttonRow);
+
+        document.getElementById('btnCancelPhoto').addEventListener('click', closeModal);
     }
 
-    function addNumber() {
-        const numbersInput = document.getElementById("lottoNumbers").value;
-        if (numbersInput) {
-            lottoNumbers.push(numbersInput.split(",").map(Number));
-            const numberList = document.getElementById("numberList");
-            numberList.innerHTML = lottoNumbers.map((num, idx) => `<p>${idx + 1}. ${num.join(", ")}</p>`).join("");
-        }
-    }
-
-    function registerNumbers() {
-        const times = document.getElementById("lottoTimes").value;
-        if (!times || lottoNumbers.length === 0) {
-            alert("회차와 번호를 입력해주세요.");
+    // 사진 업로드 핸들러
+    function handlePhotoUpload(e) {
+        const files = e.target.files;
+        if (!files || files.length === 0) {
+            alert("업로드할 사진이 없습니다.");
             return;
         }
 
-        const payload = lottoNumbers.map((numbers) => ({ times: Number(times), numbers }));
-        fetch("/api/lotto/numbers", {
-            method: "POST",
+        const formData = new FormData();
+        for (const file of files) {
+            formData.append('photos', file);
+        }
+
+        // QR 디코드 API 호출
+        fetch('/api/lotto/qr/decode', {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRF-TOKEN': csrfToken,
+            }
+        })
+            .then(res => {
+                if (!res.ok) {
+                    throw new Error('서버 응답이 정상이 아닙니다');
+                }
+                return res.json();
+            })
+            .then(data => {
+                if (!data || data.length === 0) {
+                    alert("로또 정보 QR 인식에 실패하였습니다");
+                    showPhotoUploadScreen();
+                    return;
+                }
+                showPhotoResultScreen(data);
+            })
+            .catch(err => {
+                alert("에러가 발생했습니다: " + err.message);
+                showPhotoUploadScreen();
+            });
+    }
+
+    // QR 인식 결과 화면
+    function showPhotoResultScreen(responseData) {
+        modalBody.innerHTML = `<h3>사진 업로드 결과</h3>`;
+
+        const groupedData = {};
+        responseData.forEach(item => {
+            if (!groupedData[item.times]) {
+                groupedData[item.times] = [];
+            }
+            groupedData[item.times].push(item.numbers);
+        });
+
+        // times 별로 테이블 생성
+        for (const timesKey in groupedData) {
+            const timesTitle = document.createElement('h4');
+            timesTitle.textContent = `${timesKey} 회차`;
+            modalBody.appendChild(timesTitle);
+
+            const table = document.createElement('table');
+            const thead = document.createElement('thead');
+            thead.innerHTML = `
+        <tr>
+          <th>번호 1</th>
+          <th>번호 2</th>
+          <th>번호 3</th>
+          <th>번호 4</th>
+          <th>번호 5</th>
+          <th>번호 6</th>
+        </tr>
+      `;
+            table.appendChild(thead);
+
+            const tbody = document.createElement('tbody');
+            groupedData[timesKey].forEach(nums => {
+                const row = document.createElement('tr');
+                nums.forEach(num => {
+                    const td = document.createElement('td');
+                    td.textContent = num;
+                    row.appendChild(td);
+                });
+                tbody.appendChild(row);
+            });
+            table.appendChild(tbody);
+
+            modalBody.appendChild(table);
+        }
+
+        // 등록/취소 버튼
+        const buttonRow = document.createElement('div');
+        buttonRow.className = 'dialog-button-row';
+        buttonRow.innerHTML = `
+      <button class="dialog-button btn-cancel" id="btnCancelPhotoResult">취소</button>
+      <button class="dialog-button btn-submit" id="btnRegisterPhotoResult">등록</button>
+    `;
+        modalBody.appendChild(buttonRow);
+
+        document.getElementById('btnCancelPhotoResult').addEventListener('click', closeModal);
+
+        // 등록 버튼 클릭 시
+        document.getElementById('btnRegisterPhotoResult').addEventListener('click', () => {
+            fetch('/api/lotto/numbers', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken,
+                },
+                body: JSON.stringify(responseData)
+            })
+                .then(res => {
+                    if (!res.ok) {
+                        throw new Error('서버 응답이 정상이 아닙니다');
+                    }
+                    alert("등록되었습니다");
+                    closeModal();
+                })
+                .catch(err => {
+                    alert("에러가 발생했습니다: " + err.message);
+                });
+        });
+    }
+
+    // 번호 등록 버튼 클릭 시
+    btnRegisterNumbers.addEventListener('click', () => {
+        openModal();
+        showNumberRegisterScreen();
+    });
+
+    let lottoRows = []; // 동적으로 추가된 로또 번호 입력 그룹 아이디 저장
+
+    function showNumberRegisterScreen() {
+        modalBody.innerHTML = `
+      <h3>번호 등록</h3>
+      <div>
+        <label>회차: </label>
+        <input type="number" id="timesInput" class="lotto-times-input" placeholder="예) 1050" />
+      </div>
+      <div id="lottoRowsContainer" style="margin: 16px 0;"></div>
+    `;
+
+        lottoRows = [];
+        addLottoRow();
+
+        const buttonRow = document.createElement('div');
+        buttonRow.className = 'dialog-button-row';
+        buttonRow.innerHTML = `
+      <button class="dialog-button btn-cancel" id="btnCancelManual">취소</button>
+      <button class="dialog-button btn-submit" id="btnSubmitManual" disabled>등록</button>
+    `;
+        modalBody.appendChild(buttonRow);
+
+        document.getElementById('btnCancelManual').addEventListener('click', closeModal);
+        document.getElementById('btnSubmitManual').addEventListener('click', submitManualNumbers);
+
+        // 입력값 변화 시 등록 버튼 활성/비활성 검사
+        modalBody.addEventListener('input', checkAllInputsFilled);
+    }
+
+    // 로또 번호 입력란 6개씩 추가
+    function addLottoRow() {
+        const container = document.getElementById('lottoRowsContainer');
+        const rowIndex = lottoRows.length;
+        const rowId = `lottoRow_${rowIndex}`;
+
+        const div = document.createElement('div');
+        div.className = 'lotto-input-row';
+        div.id = rowId;
+
+        let inputHtml = '';
+        for (let i = 0; i < 6; i++) {
+            inputHtml += `<input type="number" class="lotto-number-input" placeholder="${i + 1}번" />`;
+        }
+
+        // 첫 번째 줄은 + 버튼만, 이후 줄은 +, - 버튼 모두 표시
+        if (rowIndex === 0) {
+            div.innerHTML = `
+        ${inputHtml}
+        <button class="btn-plus" id="btnPlus_${rowIndex}">+</button>
+      `;
+        } else {
+            div.innerHTML = `
+        ${inputHtml}
+        <button class="btn-plus" id="btnPlus_${rowIndex}">+</button>
+        <button class="btn-minus" id="btnMinus_${rowIndex}">-</button>
+      `;
+        }
+
+        container.appendChild(div);
+        lottoRows.push(rowId);
+
+        document.getElementById(`btnPlus_${rowIndex}`).addEventListener('click', () => {
+            addLottoRow();
+        });
+        if (rowIndex > 0) {
+            document.getElementById(`btnMinus_${rowIndex}`).addEventListener('click', () => {
+                removeLottoRow(rowId);
+            });
+        }
+    }
+
+    // 로또 번호 입력 그룹 제거
+    function removeLottoRow(rowId) {
+        const div = document.getElementById(rowId);
+        if (div) {
+            div.remove();
+        }
+        lottoRows = lottoRows.filter(id => id !== rowId);
+        checkAllInputsFilled();
+    }
+
+    // 모든 입력란이 채워져야 등록 버튼 활성화
+    function checkAllInputsFilled() {
+        const timesValue = document.getElementById('timesInput').value.trim();
+        const numbersInputs = modalBody.querySelectorAll('.lotto-number-input');
+
+        if (!timesValue) {
+            document.getElementById('btnSubmitManual').disabled = true;
+            return;
+        }
+        for (let input of numbersInputs) {
+            if (!input.value.trim()) {
+                document.getElementById('btnSubmitManual').disabled = true;
+                return;
+            }
+        }
+        document.getElementById('btnSubmitManual').disabled = false;
+    }
+
+    // 번호 등록 요청
+    function submitManualNumbers() {
+        const timesValue = document.getElementById('timesInput').value.trim();
+        const requestData = [];
+
+        lottoRows.forEach(rowId => {
+            const rowDiv = document.getElementById(rowId);
+            if (rowDiv) {
+                const inputs = rowDiv.querySelectorAll('.lotto-number-input');
+                const numbers = [];
+                inputs.forEach(inp => {
+                    numbers.push(parseInt(inp.value.trim(), 10));
+                });
+                requestData.push({
+                    times: parseInt(timesValue, 10),
+                    numbers: numbers
+                });
+            }
+        });
+
+        fetch('/api/lotto/numbers', {
+            method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 'X-CSRF-TOKEN': csrfToken,
             },
-            body: JSON.stringify(payload),
-        }).then(() => {
-            alert("등록이 완료되었습니다.");
-            closeDialog();
-            fetchLottoData();
-        });
-    }
-
-    function fetchLottoData() {
-        fetch("/api/lotto/numbers")
-            .then((res) => res.json())
-            .then((data) => {
-                addTableRows(data);
+            body: JSON.stringify(requestData)
+        })
+            .then(res => {
+                if (!res.ok) {
+                    throw new Error('서버 응답이 정상이 아닙니다');
+                }
+                alert("등록되었습니다");
+                closeModal();
+            })
+            .catch(err => {
+                alert("에러가 발생했습니다: " + err.message);
             });
     }
 
-    function addTableRows(data) {
-        lottoTable.innerHTML = "";
-        data.forEach((entry, idx) => {
-            const row = document.createElement("tr");
-            row.innerHTML = `
-        <td>${idx + 1}</td>
-        <td>${entry.numbers.join(", ")}</td>
-        <td><button class="button" onclick="viewDetails(${idx})">보기</button></td>
-      `;
-            lottoTable.appendChild(row);
-        });
+    function loadRegisteredLottoNumbers() {
+        fetch('/api/lotto/numbers', {
+            method: 'GET',
+            headers: {
+                'X-CSRF-TOKEN': csrfToken
+            }
+        })
+            .then(res => {
+                if (!res.ok) {
+                    throw new Error('서버 응답이 정상이 아닙니다');
+                }
+                return res.json();
+            })
+            .then(data => {
+                // data가 비었거나 배열이 아닐 경우 처리
+                if (!Array.isArray(data) || data.length === 0) {
+                    registeredLottoContainer.innerHTML = `<p>등록된 로또 번호가 없습니다.</p>`;
+                    return;
+                }
+                renderRegisteredLottoList(data);
+            })
+            .catch(err => {
+                alert("에러가 발생했습니다: " + err.message);
+            });
     }
 
-    function viewDetails(index) {
-        fetch("/api/lotto/numbers")
-            .then((res) => res.json())
-            .then((data) => {
-                const details = data[index].lotto;
-                dialogContent.innerHTML = `
-          <p>회차: ${details.times}</p>
-          <p>당첨 번호: ${details.numbers.join(", ")}</p>
-          <p>보너스 번호: ${details.bonusNumber}</p>
-          <p>총 상금: ${details.totalPrize.toLocaleString()}원</p>
-          <p>1등 상금: ${details.firstWinnerPrize.toLocaleString()}원</p>
-          <p>당첨자 수: ${details.winCnt}명</p>
+    function renderRegisteredLottoList(list) {
+        // 테이블 생성
+        let html = `
+            <table>
+              <thead>
+                <tr>
+                  <th>회차</th>
+                  <th>입력번호</th>
+                  <th>등수</th>
+                  <th>상세</th>
+                </tr>
+              </thead>
+              <tbody>
         `;
-                dialog.classList.add("active");
+        list.forEach(item => {
+            // rank가 null이면 "예정" 표시, 상세 버튼은 없음
+            const displayRank = (item.rank === null || item.rank === undefined) ? "예정" : item.rank;
+            const detailButtonHtml = (item.rank === null || item.rank === undefined)
+                ? "" // rank가 null이면 상세 버튼 숨김
+                : `<button class="btn-detail" data-json='${JSON.stringify(item)}'>상세</button>`;
+
+            html += `
+            <tr>
+              <td>${item.lotto.times}</td>
+              <td>${item.numbers.join(', ')}</td>
+              <td>${displayRank}</td>
+              <td>${detailButtonHtml}</td>
+            </tr>
+        `;
+        });
+        html += `</tbody></table>`;
+
+        registeredLottoContainer.innerHTML = html;
+
+        // 상세보기 버튼 이벤트 등록
+        const detailButtons = registeredLottoContainer.querySelectorAll('.btn-detail');
+        detailButtons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const jsonStr = btn.getAttribute('data-json');
+                const dataObj = JSON.parse(jsonStr);
+                showDetailDialog(dataObj);
             });
+        });
     }
 
-    fetchLottoData();
-</script>
+    function showDetailDialog(item) {
+        openModal();
+        // 다이얼로그 내용 생성
+        const lotto = item.lotto;
+        modalBody.innerHTML = `
+            <h3>상세 정보</h3>
+            <p><strong>회차:</strong> ${lotto.times}</p>
+            <p><strong>입력번호:</strong> ${item.numbers.join(', ')}</p>
+            <p><strong>등수:</strong> ${item.rank}</p>
+            <p><strong>공개일:</strong> ${lotto.openDate}</p>
+            <p><strong>공개여부:</strong> ${lotto.isOpen}</p>
+            <p><strong>공개된 번호:</strong> ${lotto.numbers.join(', ')}</p>
+            <p><strong>보너스번호:</strong> ${lotto.bonusNumber}</p>
+            <p><strong>총 당첨금액:</strong> ${formatNumber(lotto.totalPrize)}</p>
+            <p><strong>1등 당첨금액:</strong> ${formatNumber(lotto.firstWinnerPrize)}</p>
+            <p><strong>1등 당첨자 수:</strong> ${lotto.winCnt}</p>
+            <p><strong>1등 시 수령금액:</strong> ${formatNumber(lotto.firstWinnerPrize / lotto.winCnt)}</p>
 
+            <div class="dialog-button-row">
+                <button class="dialog-button btn-cancel" id="btnCloseDetail">닫기</button>
+            </div>
+        `;
+
+        // 닫기 버튼
+        document.getElementById('btnCloseDetail').addEventListener('click', closeModal);
+    }
+
+    function formatNumber(num) {
+        // 숫자가 아닌 경우, 또는 빈 값일 경우 0 리턴
+        if (!num || isNaN(num)) {
+            return "0";
+        }
+        // 3자리마다 콤마 찍기
+        return num.toLocaleString("ko-KR");
+    }
+</script>
 </body>
 </html>
