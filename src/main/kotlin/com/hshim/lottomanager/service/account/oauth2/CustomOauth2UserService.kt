@@ -27,8 +27,6 @@ class CustomOAuth2UserService(
             when (userType) {
                 UserType.DISCORD -> discordUserRepository.save(DiscordOauthAttribute(oAuth2User.attributes).toEntity())
                 UserType.GOOGLE -> googleUserRepository.save(GoogleOauthAttribute(oAuth2User.attributes).toEntity())
-
-
                 else -> throw GlobalException.NOT_SUPPORT_OAUTH.exception
             }
         }

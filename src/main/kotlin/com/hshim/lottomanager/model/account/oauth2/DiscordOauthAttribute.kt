@@ -45,7 +45,7 @@ class DiscordOauthAttribute(
     )
 
     fun toEntity() = DiscordUser(
-        email = email,
+        email = this.email,
         discordId = this.id,
         username = this.username,
         globalName = this.globalName ?: this.username,

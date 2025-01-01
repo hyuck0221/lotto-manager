@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>유저 정보</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+            max-width: 400px;
+            margin: 0 auto;
+            padding: 20px; /* 내부 여백 추가 */
+            box-sizing: border-box;
+            text-align: center; /* 기본적으로 텍스트 중앙 정렬 */
+        }
+
+        .header {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            background-color: #f5f5f5;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            padding: 10px;
+            z-index: 1000;
+            max-width: 400px;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        .title {
+            font-size: 22px;
+            font-weight: bold;
+            color: #333; /* 텍스트 색상 추가 */
+        }
+
+        .profile-container {
+            margin-top: 100px;
+            text-align: center;
+        }
+
+        .profile-img {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background-color: #ccc;
+            overflow: hidden;
+            position: relative;
+            margin: 0 auto 20px auto;
+            cursor: pointer;
+            transition: all 0.3s ease-in-out; /* 부드러운 효과 추가 */
+        }
+
+        .profile-img img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .profile-img:hover {
+            background-color: rgba(0, 0, 0, 0.4); /* 어두운 오버레이 효과 */
+            transform: scale(1.05); /* 확대 효과 */
+        }
+
+        .profile-img .hover-x {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-size: 24px;
+            font-weight: bold;
+            display: none; /* 기본적으로 숨김 */
+            pointer-events: none;
+        }
+
+        .profile-img:hover .hover-x {
+            display: block; /* 호버 시 표시 */
+        }
+
+        .info-field {
+            margin-bottom: 20px; /* 간격 정리 */
+            text-align: left; /* 라벨 왼쪽 정렬 */
+        }
+
+        .info-field label {
+            display: block;
+            font-size: 14px;
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: #555;
+        }
+
+        .info-field input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd; /* 얇은 경계선 */
+            border-radius: 5px;
+            font-size: 14px;
+            color: #333;
+            text-align: left; /* 입력값 왼쪽 정렬 */
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1); /* 가벼운 그림자 */
+            background-color: #fff;
+            transition: border 0.2s ease-in-out;
+        }
+
+        .info-field input:disabled {
+            background-color: #f0f0f0;
+            color: #999;
+        }
+
+        .info-field input:focus {
+            border-color: #007BFF; /* 포커스 시 강조 */
+            outline: none;
+        }
+
+        .sync-button {
+            font-size: 12px;
+            color: #007BFF; /* 파란색 글씨 */
+            text-decoration: underline;
+            cursor: pointer;
+            margin-left: 10px;
+            transition: color 0.2s ease-in-out;
+        }
+
+        .sync-button:hover {
+            color: #0056b3;
+        }
+
+        .edit-buttons {
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .edit-buttons button {
+            padding: 10px 15px;
+            margin: 0 5px;
+            font-size: 14px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            background-color: #007BFF;
+            color: white;
+            transition: background-color 0.3s ease-in-out;
+        }
+
+        .edit-buttons button:hover {
+            background-color: #0056b3;
+        }
+
+        .dialog {
+            width: 90%;
+            max-width: 350px; /* 다이얼로그 크기 제한 */
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+            display: none;
+            z-index: 2000;
+        }
+
+        .dialog input {
+            width: 92%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+            color: #333;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+            background-color: #fff;
+            text-align: left;
+        }
+
+        .dialog input:focus {
+            border-color: #007BFF;
+            outline: none;
+        }
+
+        .dialog-buttons button {
+            padding: 10px 15px;
+            margin: 0 5px;
+            font-size: 14px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            background-color: #007BFF;
+            color: white;
+            transition: background-color 0.3s ease-in-out;
+        }
+
+        .dialog-buttons button:hover {
+            background-color: #0056b3;
+        }
+
+        .dialog-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.5); /* 어두운 반투명 배경 */
+            backdrop-filter: blur(5px); /* 배경 흐림 효과 */
+            display: none;
+            z-index: 1500;
+        }
+
+        .profile-edit-button {
+            display: none;
+            margin-top: 10px;
+            padding: 8px 12px;
+            font-size: 14px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            background-color: #007BFF;
+            color: white;
+            transition: background-color 0.3s ease-in-out;
+        }
+
+        .profile-edit-button:hover {
+            background-color: #0056b3;
+        }
+
+    </style>
+</head>
+<body>
+<form id="csrf-form" th:action="@{/logout}" method="post" style="display: none;">
+    <input type="hidden" name="_csrf" th:value="${_csrf.token}" id="csrf-token"/>
+</form>
+<div class="dialog-overlay" id="dialog-overlay"></div>
+<div class="container">
+    <div class="header">
+        <div class="title">유저 정보</div>
+    </div>
+    <div class="profile-container">
+        <div class="profile-img" id="profile-img">
+            <img id="profile-image" src="" alt="">
+            <div class="hover-x">X</div>
+        </div>
+        <button id="profile-edit-button" class="profile-edit-button">프로필 수정</button>
+        <div class="info-field">
+            <label>닉네임</label>
+            <input id="nickname" type="text" disabled>
+        </div>
+        <div class="info-field">
+            <label style="display: flex; align-items: center;">
+                로그인 타입
+                <span id="sync-button" class="sync-button">동기화</span>
+            </label>
+            <input id="user-type" type="text" disabled>
+        </div>
+        <div class="edit-buttons">
+            <button onclick="history.back()" id="back-button">뒤로가기</button>
+            <button id="cancel-button" style="display: none;">취소</button>
+            <button id="edit-button">정보 수정</button>
+        </div>
+    </div>
+    <div class="dialog" id="profile-dialog">
+        <input id="profile-url" type="text" placeholder="프로필 URL 입력">
+        <div class="dialog-buttons">
+            <button id="cancel-dialog">취소</button>
+            <button id="confirm-dialog">확인</button>
+        </div>
+    </div>
+</div>
+<script>
+    let profileUrl = null;
+    let id = null;
+    const csrfToken = document.getElementById('csrf-token').value;
+
+    async function fetchUserInfo() {
+        const response = await fetch('/account/user/my-info');
+        const data = await response.json();
+        document.getElementById('nickname').value = data.displayName;
+        document.getElementById('user-type').value = data.displayUserType;
+        profileUrl = data.profileUrl;
+        id = data.id;
+        const profileImage = document.getElementById('profile-image');
+        if (data.profileUrl) {
+            profileImage.src = data.profileUrl;
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        fetchUserInfo();
+
+        const editButton = document.getElementById('edit-button');
+        const backButton = document.getElementById('back-button');
+        const cancelButton = document.getElementById('cancel-button');
+        const nicknameInput = document.getElementById('nickname');
+        const profileDialog = document.getElementById('profile-dialog');
+        const profileUrlInput = document.getElementById('profile-url');
+        const confirmDialogButton = document.getElementById('confirm-dialog');
+        const cancelDialogButton = document.getElementById('cancel-dialog');
+        const profileEditButton = document.getElementById('profile-edit-button');
+        const dialogOverlay = document.getElementById('dialog-overlay');
+        const profileImage = document.getElementById('profile-image');
+
+        profileImage.addEventListener('click', () => {
+            if (editButton.textContent === '정보 수정') {
+                editSetting();
+            }
+            profileImage.src = 'https://cdn-icons-png.flaticon.com/512/747/747545.png';
+            profileUrl = null;
+        });
+
+        profileEditButton.addEventListener('click', () => {
+            dialogOverlay.style.display = 'block';
+            profileDialog.style.display = 'block';
+        });
+
+        cancelDialogButton.addEventListener('click', () => {
+            dialogOverlay.style.display = 'none';
+            profileDialog.style.display = 'none';
+        });
+
+        dialogOverlay.addEventListener('click', () => {
+            dialogOverlay.style.display = 'none';
+            profileDialog.style.display = 'none';
+        });
+
+        function editSetting() {
+            editButton.textContent = '수정 완료';
+            backButton.style.display = 'none';
+            cancelButton.style.display = 'inline-block';
+            nicknameInput.disabled = false;
+            profileEditButton.style.display = 'inline-block';
+        }
+
+        editButton.addEventListener('click', () => {
+            if (editButton.textContent === '정보 수정') {
+                editSetting();
+            } else {
+                const nickname = nicknameInput.value.trim();
+                if (!nickname) {
+                    alert('닉네임은 필수입니다.');
+                    return;
+                }
+
+                const updatedData = {
+                    displayName: nickname,
+                    profileUrl: profileUrl,
+                };
+
+                fetch(`/account/user/${id}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': csrfToken,
+                    },
+                    body: JSON.stringify(updatedData),
+                })
+                    .then((response) => {
+                        if (response.ok) {
+                            location.reload();
+                        } else {
+                            alert('수정에 실패했습니다.');
+                        }
+                    })
+                    .catch(() => {
+                        alert('수정 요청 중 오류가 발생했습니다.');
+                    });
+            }
+        });
+
+        cancelButton.addEventListener('click', () => {
+            location.reload();
+        });
+
+        confirmDialogButton.addEventListener('click', () => {
+            dialogOverlay.style.display = 'none';
+            profileDialog.style.display = 'none';
+            const url = profileUrlInput.value.trim();
+            if (url) {
+                fetch(url)
+                    .then((response) => {
+                        if (response.ok) {
+                            document.getElementById('profile-image').src = url;
+                            profileUrl = url;
+                            profileDialog.style.display = 'none';
+                        } else {
+                            alert('유효하지 않거나 접근할 수 없습니다.');
+                        }
+                    })
+                    .catch(() => {
+                        alert('유효하지 않거나 접근할 수 없습니다.');
+                    });
+            }
+        });
+
+        const syncButton = document.getElementById('sync-button');
+
+        syncButton.addEventListener('click', () => {
+            const confirmSync = confirm('동기화 하시겠습니까?');
+            if (confirmSync) {
+                fetch(`/account/user/${id}/synchronization`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': csrfToken
+                    },
+                })
+                    .then((response) => {
+                        if (response.ok) {
+                            location.reload();
+                        } else {
+                            alert('동기화에 실패했습니다.');
+                        }
+                    })
+                    .catch(() => {
+                        alert('동기화 요청 중 오류가 발생했습니다.');
+                    });
+            }
+        });
+    });
+</script>
+</body>
+</html>

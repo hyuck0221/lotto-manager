@@ -5,9 +5,25 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>LOTTO MANAGER - hshim</title>
     <style>
+        .header {
+            width: 100%;
+            margin-bottom: 20px;
+            position: fixed;
+            top: 0;
+            right: 0;
+            padding: 10px 20px;
+            background-color: #f5f5f5;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            z-index: 1000;
+            justify-content: flex-end;
+            box-sizing: border-box;
+        }
+
         body {
             margin: 0;
-            padding: 0;
+            padding-top: 70px;
             font-family: sans-serif;
             box-sizing: border-box;
         }
@@ -44,7 +60,6 @@
             max-width: 500px;
         }
 
-        /* 모달 오버레이 */
         .modal-overlay {
             position: fixed;
             top: 0;
@@ -59,7 +74,6 @@
             padding: 16px;
         }
 
-        /* 모달 컨텐츠 박스 */
         .modal-content {
             background-color: #fff;
             position: relative;
@@ -72,7 +86,6 @@
             box-sizing: border-box;
         }
 
-        /* 우측 상단 닫기 버튼 */
         .modal-close {
             position: absolute;
             top: 8px;
@@ -84,7 +97,6 @@
             font-weight: bold;
         }
 
-        /* 사진 업로드 큰 영역 */
         .drag-area {
             width: 92%;
             min-height: 150px;
@@ -103,7 +115,6 @@
             background-color: #f5f5f5;
         }
 
-        /* 사진 업로드 버튼 */
         .upload-btn {
             padding: 8px 16px;
             cursor: pointer;
@@ -113,7 +124,6 @@
             border-radius: 4px;
         }
 
-        /* 다이얼로그 하단 등록/취소 버튼 */
         .dialog-button-row {
             display: flex;
             justify-content: flex-end;
@@ -137,7 +147,6 @@
             color: #fff;
         }
 
-        /* 테이블 스타일 */
         table {
             width: 100%;
             border-collapse: collapse;
@@ -151,7 +160,6 @@
             text-align: center;
         }
 
-        /* 번호 등록 화면 */
         .lotto-input-row {
             display: flex;
             flex-direction: row;
@@ -177,7 +185,6 @@
             border: none;
             color: #fff;
             border-radius: 4px;
-            margin-left: 4px;
         }
 
         .btn-plus {
@@ -188,14 +195,12 @@
             background-color: #f44336;
         }
 
-        /* 등록된 로또 목록 컨테이너 */
         .registered-lotto-container {
             width: 100%;
             max-width: 600px;
             margin-top: 24px;
         }
 
-        /* 반응형 */
         @media (max-width: 600px) {
             .btn-large {
                 font-size: 14px;
@@ -210,14 +215,82 @@
                 width: 30px;
             }
         }
+
+        .dropdown {
+            position: absolute;
+            top: 50px;
+            right: 0;
+            background: white;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            border-radius: 5px;
+            padding: 10px;
+            display: none;
+            flex-direction: column;
+        }
+
+        .dropdown button {
+            background: none;
+            border: none;
+            padding: 10px;
+            cursor: pointer;
+            text-align: left;
+        }
+
+        .dropdown button:hover {
+            background-color: #f0f0f0;
+        }
+
+        .dropdown.open {
+            display: flex;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .user-details {
+            margin-left: 10px;
+        }
+
+        .profile-img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: #ccc;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .profile-img img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
     </style>
 </head>
 <body>
-<div class="dropdown" id="dropdown">
-    <form th:action="@{/logout}" method="post" style="margin: 0;">
-        <input id="csrf-token" type="hidden" name="_csrf" th:value="${_csrf.token}"/>
-        <button type="submit">로그아웃</button>
-    </form>
+<div class="header">
+    <div class="user-info" id="user-info">
+        <div class="profile-img" id="profile-img">
+            <img id="profile-image" src="" alt=""/>
+        </div>
+        <div class="user-details">
+            <div class="display-name" id="display-name"></div>
+            <div class="display-money" id="display-money"></div>
+        </div>
+        <div class="dropdown" id="dropdown">
+            <button id="my-info">내 정보</button>
+            <form th:action="@{/logout}" method="post" style="margin: 0;">
+                <input id="csrf-token" type="hidden" name="_csrf" th:value="${_csrf.token}"/>
+                <button type="submit">로그아웃</button>
+            </form>
+        </div>
+    </div>
 </div>
 <div class="container">
     <div class="button-row">
@@ -228,7 +301,6 @@
     <div class="registered-lotto-container" id="registeredLottoContainer"></div>
 </div>
 
-<!-- 공통 모달 -->
 <div class="modal-overlay" id="modalOverlay">
     <div class="modal-content" id="modalContent">
         <button class="modal-close" id="modalClose">X</button>
@@ -244,10 +316,52 @@
 
     const btnUpload = document.getElementById('btn-upload');
     const btnRegisterNumbers = document.getElementById('btn-register-numbers');
+    const userInfo = document.getElementById('user-info');
+    const dropdown = document.getElementById('dropdown');
+    const myInfo = document.getElementById('my-info');
 
-    window.addEventListener('DOMContentLoaded', loadRegisteredLottoNumbers);
+    let userId = null;
 
-    // 모달 열고 닫기
+    window.addEventListener('DOMContentLoaded', async () => {
+        await fetchUserInfo();
+        await loadRegisteredLottoNumbers();
+    });
+
+    async function fetchUserInfo() {
+        const response = await fetch('/account/user/my-info');
+        if (response.ok) {
+            const userInfo = await response.json();
+            userId = userInfo.id;
+
+            const profileImg = document.getElementById('profile-image');
+            const displayName = document.getElementById('display-name');
+
+            displayName.textContent = userInfo.displayName;
+
+            if (userInfo.profileUrl) {
+                profileImg.src = userInfo.profileUrl;
+                profileImg.style.backgroundColor = 'transparent';
+            } else {
+                profileImg.src = '';
+                profileImg.style.backgroundColor = '#ccc';
+            }
+        }
+    }
+
+    userInfo.addEventListener('click', () => {
+        dropdown.classList.toggle('open');
+    });
+
+    document.addEventListener('click', (event) => {
+        if (!userInfo.contains(event.target) && !dropdown.contains(event.target)) {
+            dropdown.classList.remove('open');
+        }
+    });
+
+    myInfo.addEventListener('click', () => {
+        location.href = '/page/account/user/my-info';
+    });
+
     function openModal() {
         modalOverlay.style.display = 'flex';
     }
@@ -257,7 +371,6 @@
         modalBody.innerHTML = '';
     }
 
-    // 오버레이나 닫기 버튼을 누르면 모달 종료
     modalOverlay.addEventListener('click', (e) => {
         if (e.target === modalOverlay) {
             closeModal();
@@ -265,13 +378,11 @@
     });
     modalClose.addEventListener('click', closeModal);
 
-    // 사진 업로드 버튼 클릭 시
     btnUpload.addEventListener('click', () => {
         openModal();
         showPhotoUploadScreen();
     });
 
-    // 사진 업로드 화면
     function showPhotoUploadScreen() {
         modalBody.innerHTML = `
       <h3>사진 업로드</h3>
@@ -285,44 +396,36 @@
         const photoInput = document.getElementById('photoInput');
         photoInput.addEventListener('change', handlePhotoUpload);
 
-        // [추가] 드래그 앤 드롭 이벤트
         const dragArea = document.getElementById('dragArea');
 
-        // 드래그가 영역 위로 왔을 때
         dragArea.addEventListener('dragover', (e) => {
             e.preventDefault();
             dragArea.classList.add('active');
         });
 
-        // 드래그가 영역 밖으로 나갔을 때
         dragArea.addEventListener('dragleave', () => {
             dragArea.classList.remove('active');
         });
 
-        // 드롭했을 때
         dragArea.addEventListener('drop', (e) => {
             e.preventDefault();
             dragArea.classList.remove('active');
 
-            // droppedFiles로 가져오기
             const droppedFiles = e.dataTransfer.files;
             if (droppedFiles && droppedFiles.length > 0) {
                 handlePhotoUpload({target: {files: droppedFiles}});
             }
         });
 
-        // 하단 버튼(취소)
         const buttonRow = document.createElement('div');
         buttonRow.className = 'dialog-button-row';
         buttonRow.innerHTML = `
-      <button class="dialog-button btn-cancel" id="btnCancelPhoto">취소</button>
     `;
         modalBody.appendChild(buttonRow);
 
         document.getElementById('btnCancelPhoto').addEventListener('click', closeModal);
     }
 
-    // 사진 업로드 핸들러
     function handlePhotoUpload(e) {
         const files = e.target.files;
         if (!files || files.length === 0) {
@@ -335,7 +438,6 @@
             formData.append('photos', file);
         }
 
-        // QR 디코드 API 호출
         fetch('/api/lotto/qr/decode', {
             method: 'POST',
             body: formData,
@@ -363,7 +465,6 @@
             });
     }
 
-    // QR 인식 결과 화면
     function showPhotoResultScreen(responseData) {
         modalBody.innerHTML = `<h3>사진 업로드 결과</h3>`;
 
@@ -375,7 +476,6 @@
             groupedData[item.times].push(item.numbers);
         });
 
-        // times 별로 테이블 생성
         for (const timesKey in groupedData) {
             const timesTitle = document.createElement('h4');
             timesTitle.textContent = `${timesKey} 회차`;
@@ -410,18 +510,15 @@
             modalBody.appendChild(table);
         }
 
-        // 등록/취소 버튼
         const buttonRow = document.createElement('div');
         buttonRow.className = 'dialog-button-row';
         buttonRow.innerHTML = `
-      <button class="dialog-button btn-cancel" id="btnCancelPhotoResult">취소</button>
       <button class="dialog-button btn-submit" id="btnRegisterPhotoResult">등록</button>
     `;
         modalBody.appendChild(buttonRow);
 
         document.getElementById('btnCancelPhotoResult').addEventListener('click', closeModal);
 
-        // 등록 버튼 클릭 시
         document.getElementById('btnRegisterPhotoResult').addEventListener('click', () => {
             fetch('/api/lotto/numbers', {
                 method: 'POST',
@@ -444,20 +541,19 @@
         });
     }
 
-    // 번호 등록 버튼 클릭 시
     btnRegisterNumbers.addEventListener('click', () => {
         openModal();
         showNumberRegisterScreen();
     });
 
-    let lottoRows = []; // 동적으로 추가된 로또 번호 입력 그룹 아이디 저장
+    let lottoRows = [];
 
     function showNumberRegisterScreen() {
         modalBody.innerHTML = `
       <h3>번호 등록</h3>
       <div>
         <label>회차: </label>
-        <input type="number" id="timesInput" class="lotto-times-input" placeholder="예) 1050" />
+        <input type="number" id="timesInput" class="lotto-times-input"/>
       </div>
       <div id="lottoRowsContainer" style="margin: 16px 0;"></div>
     `;
@@ -468,7 +564,6 @@
         const buttonRow = document.createElement('div');
         buttonRow.className = 'dialog-button-row';
         buttonRow.innerHTML = `
-      <button class="dialog-button btn-cancel" id="btnCancelManual">취소</button>
       <button class="dialog-button btn-submit" id="btnSubmitManual" disabled>등록</button>
     `;
         modalBody.appendChild(buttonRow);
@@ -476,11 +571,9 @@
         document.getElementById('btnCancelManual').addEventListener('click', closeModal);
         document.getElementById('btnSubmitManual').addEventListener('click', submitManualNumbers);
 
-        // 입력값 변화 시 등록 버튼 활성/비활성 검사
         modalBody.addEventListener('input', checkAllInputsFilled);
     }
 
-    // 로또 번호 입력란 6개씩 추가
     function addLottoRow() {
         const container = document.getElementById('lottoRowsContainer');
         const rowIndex = lottoRows.length;
@@ -495,7 +588,6 @@
             inputHtml += `<input type="number" class="lotto-number-input" placeholder="${i + 1}번" />`;
         }
 
-        // 첫 번째 줄은 + 버튼만, 이후 줄은 +, - 버튼 모두 표시
         if (rowIndex === 0) {
             div.innerHTML = `
         ${inputHtml}
@@ -522,7 +614,6 @@
         }
     }
 
-    // 로또 번호 입력 그룹 제거
     function removeLottoRow(rowId) {
         const div = document.getElementById(rowId);
         if (div) {
@@ -532,7 +623,6 @@
         checkAllInputsFilled();
     }
 
-    // 모든 입력란이 채워져야 등록 버튼 활성화
     function checkAllInputsFilled() {
         const timesValue = document.getElementById('timesInput').value.trim();
         const numbersInputs = modalBody.querySelectorAll('.lotto-number-input');
@@ -550,7 +640,6 @@
         document.getElementById('btnSubmitManual').disabled = false;
     }
 
-    // 번호 등록 요청
     function submitManualNumbers() {
         const timesValue = document.getElementById('timesInput').value.trim();
         const requestData = [];
@@ -604,7 +693,6 @@
                 return res.json();
             })
             .then(data => {
-                // data가 비었거나 배열이 아닐 경우 처리
                 if (!Array.isArray(data) || data.length === 0) {
                     registeredLottoContainer.innerHTML = `<p>등록된 로또 번호가 없습니다.</p>`;
                     return;
@@ -617,7 +705,6 @@
     }
 
     function renderRegisteredLottoList(list) {
-        // 테이블 생성
         let html = `
             <table>
               <thead>
@@ -631,10 +718,9 @@
               <tbody>
         `;
         list.forEach(item => {
-            // rank가 null이면 "예정" 표시, 상세 버튼은 없음
             const displayRank = (item.rank === null || item.rank === undefined) ? "예정" : item.rank;
             const detailButtonHtml = (item.rank === null || item.rank === undefined)
-                ? "" // rank가 null이면 상세 버튼 숨김
+                ? ""
                 : `<button class="btn-detail" data-json='${JSON.stringify(item)}'>상세</button>`;
 
             html += `
@@ -650,7 +736,6 @@
 
         registeredLottoContainer.innerHTML = html;
 
-        // 상세보기 버튼 이벤트 등록
         const detailButtons = registeredLottoContainer.querySelectorAll('.btn-detail');
         detailButtons.forEach(btn => {
             btn.addEventListener('click', () => {
@@ -663,7 +748,6 @@
 
     function showDetailDialog(item) {
         openModal();
-        // 다이얼로그 내용 생성
         const lotto = item.lotto;
         modalBody.innerHTML = `
             <h3>상세 정보</h3>
@@ -678,22 +762,15 @@
             <p><strong>1등 당첨금액:</strong> ${formatNumber(lotto.firstWinnerPrize)}</p>
             <p><strong>1등 당첨자 수:</strong> ${lotto.winCnt}</p>
             <p><strong>1등 시 수령금액:</strong> ${formatNumber(lotto.firstWinnerPrize / lotto.winCnt)}</p>
-
-            <div class="dialog-button-row">
-                <button class="dialog-button btn-cancel" id="btnCloseDetail">닫기</button>
-            </div>
         `;
 
-        // 닫기 버튼
         document.getElementById('btnCloseDetail').addEventListener('click', closeModal);
     }
 
     function formatNumber(num) {
-        // 숫자가 아닌 경우, 또는 빈 값일 경우 0 리턴
         if (!num || isNaN(num)) {
             return "0";
         }
-        // 3자리마다 콤마 찍기
         return num.toLocaleString("ko-KR");
     }
 </script>
