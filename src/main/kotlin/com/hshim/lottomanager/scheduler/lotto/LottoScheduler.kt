@@ -20,8 +20,9 @@ class LottoScheduler(
 ) {
     @Scheduled(cron = "0 0 21 ? * SAT", zone = "Asia/Seoul")
     fun openLotto() {
-        val lastLotto = lottoRepository.findTopByOrderByTimesDesc()
-            ?: Lotto(1)
+        val lastLotto = lottoRepository.findTopByIsOpenFalseOrderByTimesAsc()
+            ?: lottoRepository.findTopByOrderByTimesDesc()
+            ?: return
         val lotto = when (lastLotto.isOpen) {
             true -> Lotto(lastLotto.times + 1)
             false -> lastLotto

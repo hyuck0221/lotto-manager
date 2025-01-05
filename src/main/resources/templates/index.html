@@ -226,6 +226,7 @@
             padding: 10px;
             display: none;
             flex-direction: column;
+            min-width: 70px;
         }
 
         .dropdown button {
@@ -281,12 +282,10 @@
         </div>
         <div class="user-details">
             <div class="display-name" id="display-name"></div>
-            <div class="display-money" id="display-money"></div>
         </div>
         <div class="dropdown" id="dropdown">
             <button id="my-info">내 정보</button>
             <form th:action="@{/logout}" method="post" style="margin: 0;">
-                <input id="csrf-token" type="hidden" name="_csrf" th:value="${_csrf.token}"/>
                 <button type="submit">로그아웃</button>
             </form>
         </div>
@@ -294,7 +293,7 @@
 </div>
 <div class="container">
     <div class="button-row">
-        <button class="btn-large" id="btn-upload">사진 업로드</button>
+        <button class="btn-large" id="btn-upload" disabled="disabled">사진 업로드</button>
         <button class="btn-large" id="btn-register-numbers">번호 등록</button>
     </div>
 
@@ -309,7 +308,6 @@
 </div>
 
 <script>
-    const csrfToken = document.getElementById('csrf-token').value;
     const modalOverlay = document.getElementById('modalOverlay');
     const modalClose = document.getElementById('modalClose');
     const modalBody = document.getElementById('modalBody');
@@ -379,8 +377,10 @@
     modalClose.addEventListener('click', closeModal);
 
     btnUpload.addEventListener('click', () => {
-        openModal();
-        showPhotoUploadScreen();
+        handleButtonClick(btnUpload, () => {
+            openModal();
+            showPhotoUploadScreen();
+        });
     });
 
     function showPhotoUploadScreen() {
@@ -440,10 +440,7 @@
 
         fetch('/api/lotto/qr/decode', {
             method: 'POST',
-            body: formData,
-            headers: {
-                'X-CSRF-TOKEN': csrfToken,
-            }
+            body: formData
         })
             .then(res => {
                 if (!res.ok) {
@@ -520,30 +517,24 @@
         document.getElementById('btnCancelPhotoResult').addEventListener('click', closeModal);
 
         document.getElementById('btnRegisterPhotoResult').addEventListener('click', () => {
-            fetch('/api/lotto/numbers', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': csrfToken,
-                },
-                body: JSON.stringify(responseData)
-            })
-                .then(res => {
-                    if (!res.ok) {
-                        throw new Error('서버 응답이 정상이 아닙니다');
-                    }
-                    alert("등록되었습니다");
-                    closeModal();
-                })
-                .catch(err => {
-                    alert("에러가 발생했습니다: " + err.message);
+            const btn = document.getElementById('btnRegisterPhotoResult');
+            handleButtonClick(btn, async () => {
+                await fetch('/api/lotto/numbers', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(responseData),
                 });
+                alert("등록되었습니다");
+                closeModal();
+            });
         });
     }
 
     btnRegisterNumbers.addEventListener('click', () => {
-        openModal();
-        showNumberRegisterScreen();
+        handleButtonClick(btnRegisterNumbers, () => {
+            openModal();
+            showNumberRegisterScreen();
+        });
     });
 
     let lottoRows = [];
@@ -568,8 +559,10 @@
     `;
         modalBody.appendChild(buttonRow);
 
-        document.getElementById('btnCancelManual').addEventListener('click', closeModal);
-        document.getElementById('btnSubmitManual').addEventListener('click', submitManualNumbers);
+        document.getElementById('btnSubmitManual').addEventListener('click', () => {
+            const btn = document.getElementById('btnSubmitManual');
+            handleButtonClick(btn, () => submitManualNumbers());
+        });
 
         modalBody.addEventListener('input', checkAllInputsFilled);
     }
@@ -661,10 +654,7 @@
 
         fetch('/api/lotto/numbers', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': csrfToken,
-            },
+            headers: {'Content-Type': 'application/json'},
             body: JSON.stringify(requestData)
         })
             .then(res => {
@@ -680,12 +670,7 @@
     }
 
     function loadRegisteredLottoNumbers() {
-        fetch('/api/lotto/numbers', {
-            method: 'GET',
-            headers: {
-                'X-CSRF-TOKEN': csrfToken
-            }
-        })
+        fetch('/api/lotto/numbers', {method: 'GET'})
             .then(res => {
                 if (!res.ok) {
                     throw new Error('서버 응답이 정상이 아닙니다');
@@ -712,7 +697,7 @@
                   <th>회차</th>
                   <th>입력번호</th>
                   <th>등수</th>
-                  <th>상세</th>
+                  <th></th>
                 </tr>
               </thead>
               <tbody>
@@ -755,7 +740,7 @@
             <p><strong>입력번호:</strong> ${item.numbers.join(', ')}</p>
             <p><strong>등수:</strong> ${item.rank}</p>
             <p><strong>공개일:</strong> ${lotto.openDate}</p>
-            <p><strong>공개여부:</strong> ${lotto.isOpen}</p>
+            <p><strong>공개여부:</strong> ${lotto.isOpen ? '예' : '아니오'}</p>
             <p><strong>공개된 번호:</strong> ${lotto.numbers.join(', ')}</p>
             <p><strong>보너스번호:</strong> ${lotto.bonusNumber}</p>
             <p><strong>총 당첨금액:</strong> ${formatNumber(lotto.totalPrize)}</p>
@@ -763,8 +748,6 @@
             <p><strong>1등 당첨자 수:</strong> ${lotto.winCnt}</p>
             <p><strong>1등 시 수령금액:</strong> ${formatNumber(lotto.firstWinnerPrize / lotto.winCnt)}</p>
         `;
-
-        document.getElementById('btnCloseDetail').addEventListener('click', closeModal);
     }
 
     function formatNumber(num) {
@@ -772,6 +755,24 @@
             return "0";
         }
         return num.toLocaleString("ko-KR");
+    }
+
+    function handleButtonClick(button, callback) {
+        if (button.disabled) return;
+        button.disabled = true;
+        button.classList.add('disabled');
+
+        const result = callback();
+        if (result instanceof Promise) {
+            result
+                .finally(() => {
+                    button.disabled = false;
+                    button.classList.remove('disabled');
+                });
+        } else {
+            button.disabled = false;
+            button.classList.remove('disabled');
+        }
     }
 </script>
 </body>

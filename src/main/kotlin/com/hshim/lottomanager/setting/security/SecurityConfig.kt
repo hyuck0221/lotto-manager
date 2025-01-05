@@ -48,9 +48,7 @@ class SecurityConfig(
             .sessionManagement { sessionManagement ->
                 sessionManagement.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
             }
-            .csrf { csrf ->
-                csrf.ignoringRequestMatchers("/logout")
-            }
+            .csrf { it.disable() }
             .logout { logout ->
                 logout
                     .logoutUrl("/logout")

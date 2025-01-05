@@ -19,7 +19,6 @@ class LottoTemplate(
                 LottoTemplateResponse::class.java
             )
         } catch (e: Exception) {
-            e.printStackTrace()
             return null
         }
     }

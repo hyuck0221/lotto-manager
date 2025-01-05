@@ -229,9 +229,6 @@
     </style>
 </head>
 <body>
-<form id="csrf-form" th:action="@{/logout}" method="post" style="display: none;">
-    <input type="hidden" name="_csrf" th:value="${_csrf.token}" id="csrf-token"/>
-</form>
 <div class="dialog-overlay" id="dialog-overlay"></div>
 <div class="container">
     <div class="header">
@@ -271,7 +268,6 @@
 <script>
     let profileUrl = null;
     let id = null;
-    const csrfToken = document.getElementById('csrf-token').value;
 
     async function fetchUserInfo() {
         const response = await fetch('/account/user/my-info');
@@ -349,10 +345,7 @@
 
                 fetch(`/account/user/${id}`, {
                     method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': csrfToken,
-                    },
+                    headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify(updatedData),
                 })
                     .then((response) => {
@@ -400,10 +393,7 @@
             if (confirmSync) {
                 fetch(`/account/user/${id}/synchronization`, {
                     method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': csrfToken
-                    },
+                    headers: {'Content-Type': 'application/json'}
                 })
                     .then((response) => {
                         if (response.ok) {

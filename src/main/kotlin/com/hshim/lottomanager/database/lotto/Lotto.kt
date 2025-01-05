@@ -1,7 +1,7 @@
 package com.hshim.lottomanager.database.lotto
 
 import com.hshim.lottomanager.database.base.BaseTimeEntity
-import com.hshim.lottomanager.database.converter.IntConverter
+import com.hshim.lottomanager.database.base.converter.IntConverter
 import jakarta.persistence.*
 import java.time.LocalDate
 

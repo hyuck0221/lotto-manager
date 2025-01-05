@@ -2,7 +2,7 @@ package com.hshim.lottomanager.database.lotto
 
 import com.hshim.lottomanager.database.account.User
 import com.hshim.lottomanager.database.base.BaseTimeEntity
-import com.hshim.lottomanager.database.converter.IntConverter
+import com.hshim.lottomanager.database.base.converter.IntConverter
 import io.autocrypt.sakarinblue.universe.util.CommonUtil.uuid
 import jakarta.persistence.*
 

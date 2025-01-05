@@ -1,6 +1,8 @@
 package com.hshim.lottomanager.service.send
 
 import com.hshim.lottomanager.database.account.User
+import com.hshim.lottomanager.database.send.EmailLog
+import com.hshim.lottomanager.database.send.repository.EmailLogRepository
 import com.hshim.lottomanager.enums.account.SendType
 import com.hshim.lottomanager.model.send.SendModel
 import org.springframework.beans.factory.annotation.Value
@@ -13,6 +15,7 @@ class SendService(
     private val mailSender: JavaMailSender,
     @Value("\${spring.mail.username}")
     private val mail: String,
+    private val emailLogRepository: EmailLogRepository,
 ) {
     fun send(user: User, message: SendModel) {
         when (user.sendType) {
@@ -32,5 +35,6 @@ class SendService(
         helper.setFrom(mail)
 
         mailSender.send(mimeMessage)
+        emailLogRepository.save(EmailLog(user = user))
     }
 }

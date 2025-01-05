@@ -1,4 +1,4 @@
-package com.hshim.lottomanager.database.converter
+package com.hshim.lottomanager.database.base.converter
 
 import jakarta.persistence.AttributeConverter
 import jakarta.persistence.Converter
