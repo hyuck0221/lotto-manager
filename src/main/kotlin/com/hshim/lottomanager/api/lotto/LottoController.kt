@@ -1,5 +1,6 @@
 package com.hshim.lottomanager.api.lotto
 
+import com.hshim.lottomanager.model.lotto.LottoNumberBuildRequest
 import com.hshim.lottomanager.model.lotto.LottoNumberRequest
 import com.hshim.lottomanager.service.lotto.LottoNumberCommandService
 import com.hshim.lottomanager.service.lotto.LottoNumberQueryService
@@ -25,8 +26,13 @@ class LottoController(
     @GetMapping("/numbers")
     fun getMyNumbers() = lottoNumberQueryService.getNumbers()
 
-     @PostMapping("/qr/decode")
+    @PostMapping("/qr/decode")
     fun getRequests(
-         @RequestPart photos: List<MultipartFile>
+        @RequestPart photos: List<MultipartFile>
     ) = lottoNumberQueryService.getRequests(photos)
+
+    @PostMapping("/numbers/build")
+    fun numbersBuild(
+        @RequestBody request: LottoNumberBuildRequest,
+    ) = lottoNumberQueryService.numbersBuild(request)
 }

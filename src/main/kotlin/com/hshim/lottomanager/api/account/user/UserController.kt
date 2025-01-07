@@ -8,7 +8,7 @@ import org.springframework.security.oauth2.client.authentication.OAuth2Authentic
 import org.springframework.web.bind.annotation.*
 
 @RestController
-@RequestMapping("/account/user")
+@RequestMapping("/api/account/user")
 class UserController(
     private val userQueryService: UserQueryService,
     private val userCommandService: UserCommandService,

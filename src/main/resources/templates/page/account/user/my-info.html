@@ -270,7 +270,7 @@
     let id = null;
 
     async function fetchUserInfo() {
-        const response = await fetch('/account/user/my-info');
+        const response = await fetch('/api/account/user/my-info');
         const data = await response.json();
         document.getElementById('nickname').value = data.displayName;
         document.getElementById('user-type').value = data.displayUserType;
@@ -343,7 +343,7 @@
                     profileUrl: profileUrl,
                 };
 
-                fetch(`/account/user/${id}`, {
+                fetch(`/api/account/user/${id}`, {
                     method: 'PUT',
                     headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify(updatedData),
@@ -391,7 +391,7 @@
         syncButton.addEventListener('click', () => {
             const confirmSync = confirm('동기화 하시겠습니까?');
             if (confirmSync) {
-                fetch(`/account/user/${id}/synchronization`, {
+                fetch(`/api/account/user/${id}/synchronization`, {
                     method: 'PUT',
                     headers: {'Content-Type': 'application/json'}
                 })

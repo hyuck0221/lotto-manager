@@ -326,7 +326,7 @@
     });
 
     async function fetchUserInfo() {
-        const response = await fetch('/account/user/my-info');
+        const response = await fetch('/api/account/user/my-info');
         if (response.ok) {
             const userInfo = await response.json();
             userId = userInfo.id;
