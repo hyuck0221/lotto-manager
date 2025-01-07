@@ -1,18 +1,14 @@
 package com.hshim.lottomanager.service.lotto.algorithm.model
 
-data class GeneticDetail(
+class AprioriDetail(
     val rangeRate: Double,
-    val generations: Int,
-    val mutationRate: Double,
-    val populationSize: Int,
-    val crossoverRate: Double,
+    val minSupportCnt: Int,
+    val minConfidence: Double,
 ) : LottoAlgorithmDetail() {
-    constructor() : this(
+    constructor(): this (
         rangeRate = 100.0,
-        generations = 50,
-        mutationRate = 5.0,
-        populationSize = 10,
-        crossoverRate = 0.8,
+        minSupportCnt = 2,
+        minConfidence = 0.6,
     )
 
     fun getPageSize(totalCnt: Int): Int {
@@ -23,5 +19,3 @@ data class GeneticDetail(
         }
     }
 }
-
-typealias LottoChromosome = List<Int>

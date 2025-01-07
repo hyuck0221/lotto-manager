@@ -1,7 +1,7 @@
 package com.hshim.lottomanager.service.lotto.algorithm.model
 
 class MetaheuristicDetail(
-    val rangeRate: Double = 30.0,
+    val rangeRate: Double = 100.0,
 ) : LottoAlgorithmDetail() {
 
     fun getPageSize(totalCnt: Int): Int {

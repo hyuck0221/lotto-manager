@@ -5,5 +5,5 @@ import com.hshim.lottomanager.enums.lotto.NumberBuildAlgorithm
 class LottoNumberBuildRequest(
     val algorithm: NumberBuildAlgorithm,
     val cnt: Int,
-    val detail: Map<String, Any>?,
+    var detail: MutableMap<String, Any>?,
 )

@@ -5,7 +5,6 @@ import com.hshim.lottomanager.enums.lotto.NumberBuildAlgorithm
 import com.hshim.lottomanager.service.lotto.algorithm.model.GeneticDetail
 import com.hshim.lottomanager.service.lotto.algorithm.model.LottoAlgorithmDetail
 import com.hshim.lottomanager.service.lotto.algorithm.model.LottoChromosome
-import com.hshim.lottomanager.service.lotto.algorithm.model.MetaheuristicDetail
 import com.hshim.lottomanager.util.ClassUtil.toClass
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Component
@@ -27,7 +26,10 @@ class GeneticWrapper(
         val detail = detail as? GeneticDetail ?: GeneticDetail()
         val lottoCnt = lottoRepository.count().toInt()
         val pageable = Pageable.ofSize(detail.getPageSize(lottoCnt))
-        val pastWinNumbers = lottoRepository.findAllByIsOpenTrue(pageable).map { it.numbers ?: emptyList() }
+        val pastWinNumbers = lottoRepository.findAllByTimesBeforeAndIsOpenTrue(
+            times = detail.timesBefore,
+            pageable = pageable
+        ).map { it.numbers ?: emptyList() }
 
         var population = generatePopulation(detail)
 

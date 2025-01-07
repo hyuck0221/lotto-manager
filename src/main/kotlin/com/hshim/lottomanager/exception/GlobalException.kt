@@ -12,7 +12,6 @@ enum class GlobalException(
     NOT_FOUND_USER("유저를 찾을 수 없습니다."),
     IS_DISABLED_USER("비활성화된 유저입니다."),
     NOT_FOUND_TIMES("로또 회 정보를 찾을 수 없습니다."),
-    NOT_FOUND_WRAPPER("not found wrapper"),
     ;
 
     val exception = exception(null)

@@ -25,7 +25,10 @@ class MetaheuristicWrapper(
         val detail = detail as? MetaheuristicDetail ?: MetaheuristicDetail()
         val lottoCnt = lottoRepository.count().toInt()
         val pageable = Pageable.ofSize(detail.getPageSize(lottoCnt))
-        val pastWinNumbers = lottoRepository.findAllByIsOpenTrue(pageable).map { it.numbers ?: emptyList() }
+        val pastWinNumbers = lottoRepository.findAllByTimesBeforeAndIsOpenTrue(
+            times = detail.timesBefore,
+            pageable = pageable
+        ).map { it.numbers ?: emptyList() }
 
         val freq = IntArray(46)
         for (draw in pastWinNumbers) {

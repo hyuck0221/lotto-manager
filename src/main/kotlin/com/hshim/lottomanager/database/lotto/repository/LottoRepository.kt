@@ -8,5 +8,8 @@ interface LottoRepository : JpaRepository<Lotto, Int> {
     fun findTopByIsOpenFalseOrderByTimesAsc(): Lotto?
     fun findTopByOrderByTimesDesc(): Lotto?
     fun findAllByIsOpenTrue(): List<Lotto>
-    fun findAllByIsOpenTrue(pageable: Pageable): List<Lotto>
+    fun findAllByTimesBeforeAndIsOpenTrue(
+        times: Int,
+        pageable: Pageable
+    ): List<Lotto>
 }
