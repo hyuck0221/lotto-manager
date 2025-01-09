@@ -5,76 +5,207 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>LOTTO MANAGER - 통합버전</title>
     <style>
-        /* 공통 스타일 */
+        /* ------------------------------
+           Reset & Base
+        ------------------------------ */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: "Helvetica Neue", Arial, sans-serif;
+            background-color: #f9f9f9;
+            padding-top: 60px; /* 상단 고정 헤더 높이를 고려 */
+            color: #333;
+        }
+        button,
+        input,
+        select,
+        textarea {
+            font-family: inherit;
+        }
+        a {
+            text-decoration: none;
+            color: inherit;
+        }
+
+        /* ------------------------------
+           Header
+        ------------------------------ */
         .header {
             width: 100%;
-            margin-bottom: 20px;
             position: fixed;
             top: 0;
-            right: 0;
+            left: 0;
+            background-color: #fff;
+            border-bottom: 1px solid #ddd;
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
             padding: 10px 20px;
-            background-color: #f5f5f5;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+        }
+
+        .user-info {
             display: flex;
             align-items: center;
-            z-index: 1000;
-            justify-content: flex-end;
-            box-sizing: border-box;
+            position: relative;
+            cursor: pointer;
         }
 
-        body {
-            margin: 0;
-            padding-top: 70px;
-            font-family: sans-serif;
-            box-sizing: border-box;
+        .profile-img {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background-color: #ccc;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .profile-img img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .user-details {
+            margin-left: 8px;
+        }
+        .display-name {
+            font-size: 14px;
+            font-weight: 600;
         }
 
+        /* 사용자 프로필 드롭다운 */
+        .dropdown {
+            position: absolute;
+            top: calc(100% + 5px);
+            right: 0;
+            background: #fff;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 8px 0;
+            display: none;
+            flex-direction: column;
+            min-width: 80px;
+        }
+        .dropdown button {
+            background: none;
+            border: none;
+            padding: 8px 16px;
+            width: 100%;
+            text-align: left;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .dropdown button:hover {
+            background-color: #f5f5f5;
+        }
+        .dropdown.open {
+            display: flex;
+        }
+
+        /* ------------------------------
+           Container & Layout
+        ------------------------------ */
         .container {
-            max-width: 600px;
+            max-width: 800px;
             width: 100%;
             margin: 0 auto;
             padding: 16px;
+        }
+
+        .button-row,
+        .btn-row {
             display: flex;
-            flex-direction: column;
-            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 20px;
         }
 
-        /* 첫 번째 코드에서 사용되던 버튼 활성/비활성 클래스 */
-        .btn-disabled {
-            background-color: #ccc !important;
-            color: #fff;
-            cursor: not-allowed;
-        }
-
-        .btn-enabled {
-            background-color: #4caf50;
-            color: #fff;
-        }
-
-        /* 두 번째 코드의 버튼 스타일 */
+        /* ------------------------------
+           Buttons
+        ------------------------------ */
         .btn-large {
             flex: 1;
-            margin: 8px;
-            padding: 16px;
-            font-size: 16px;
-            cursor: pointer;
+            min-width: 120px;
             border: none;
             border-radius: 4px;
-            background-color: #4caf50;
-            color: white;
+            padding: 14px;
+            font-size: 15px;
             font-weight: bold;
-            min-width: 120px;
+            cursor: pointer;
+            background-color: #4CAF50;
+            color: #fff;
+            transition: background-color 0.2s ease;
+        }
+        .btn-large:disabled {
+            background-color: #bbb;
+            cursor: not-allowed;
+        }
+        .btn-large:hover:not(:disabled) {
+            background-color: #43a047;
+        }
+        .disabled {
+            pointer-events: none;
+            opacity: 0.7;
         }
 
-        .button-row, .btn-row {
+        .dialog-button-row {
             display: flex;
-            flex-direction: row;
-            justify-content: space-between;
-            width: 100%;
-            max-width: 500px;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+            gap: 8px;
+            margin-top: 16px;
+        }
+        .dialog-button {
+            padding: 10px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .btn-cancel {
+            background-color: #bbb;
+            color: #fff;
+        }
+        .btn-cancel:hover {
+            background-color: #a6a6a6;
+        }
+        .btn-submit {
+            background-color: #4CAF50;
+            color: #fff;
+        }
+        .btn-submit:hover {
+            background-color: #43a047;
+        }
+        .btn-detail,
+        .btn-delete {
+            font-size: 12px;
+            padding: 6px 8px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .btn-detail {
+            background-color: #2196f3;
+            color: #fff;
+        }
+        .btn-detail:hover {
+            background-color: #1e88e5;
+        }
+        .btn-delete {
+            background-color: #f44336;
+            color: #fff;
+        }
+        .btn-delete:hover {
+            background-color: #e53935;
         }
 
-        /* 모달 관련 공통 스타일 (두 코드 통합) */
+        /* ------------------------------
+           Modals (Overlay + Dialog)
+        ------------------------------ */
         .modal-overlay {
             position: fixed;
             top: 0;
@@ -88,19 +219,16 @@
             z-index: 999;
             padding: 16px;
         }
-
         .modal-content {
             background-color: #fff;
             position: relative;
             border-radius: 8px;
-            max-width: 500px;
             width: 100%;
+            max-width: 600px;
             max-height: 80vh;
             overflow-y: auto;
             padding: 16px;
-            box-sizing: border-box;
         }
-
         .modal-close {
             position: absolute;
             top: 8px;
@@ -112,11 +240,14 @@
             font-weight: bold;
         }
 
-        /* 사진 업로드 드래그 영역 */
+        /* ------------------------------
+           Photo Upload Drag Area
+        ------------------------------ */
         .drag-area {
-            width: 92%;
-            min-height: 150px;
-            border: 2px dashed #ccc;
+            width: 100%;
+            min-height: 120px;
+            border: 2px dashed #aaa;
+            border-radius: 4px;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -126,232 +257,143 @@
             text-align: center;
             transition: background-color 0.3s;
         }
-
         .drag-area.active {
-            background-color: #f5f5f5;
+            background-color: #f0f0f0;
         }
-
         .upload-btn {
+            display: inline-block;
             padding: 8px 16px;
             cursor: pointer;
             border: none;
             background-color: #2196f3;
             color: #fff;
             border-radius: 4px;
+            margin-top: 8px;
         }
 
-        .dialog-button-row {
+        /* ------------------------------
+           Lotto Number Register
+        ------------------------------ */
+        .lotto-input-row {
             display: flex;
-            justify-content: flex-end;
-            margin-top: 16px;
-            align-items: center;
+            flex-wrap: wrap;
+            gap: 4px;
+            margin-bottom: 8px;
         }
-
-        .dialog-button {
-            padding: 8px 16px;
+        .lotto-number-input {
+            width: 48px;
+            padding: 6px;
+            text-align: center;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        .lotto-times-input {
+            width: 80px;
+            padding: 6px;
+            text-align: center;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        .btn-plus,
+        .btn-minus {
             border: none;
             border-radius: 4px;
-            margin-left: 8px;
-            cursor: pointer;
-        }
-
-        .btn-cancel {
-            background-color: #ccc;
-        }
-
-        .btn-submit {
-            background-color: #4caf50;
             color: #fff;
+            cursor: pointer;
+            padding: 6px 10px;
+            font-size: 14px;
+        }
+        .btn-plus {
+            background-color: #2196f3;
+        }
+        .btn-minus {
+            background-color: #f44336;
+        }
+        .btn-plus:hover {
+            background-color: #1e88e5;
+        }
+        .btn-minus:hover {
+            background-color: #e53935;
         }
 
+        /* ------------------------------
+           Registered Lotto Table
+        ------------------------------ */
         table {
             width: 100%;
             border-collapse: collapse;
             margin-top: 8px;
             margin-bottom: 16px;
+            background-color: #fff;
         }
-
         th, td {
-            border: 1px solid #ccc;
+            border: 1px solid #ddd;
             padding: 8px;
             text-align: center;
+            font-size: 14px;
         }
-
-        /* 로또 번호 입력 영역 */
-        .lotto-input-row {
-            display: flex;
-            flex-direction: row;
-            align-items: center;
-            margin-bottom: 8px;
-        }
-
-        .lotto-number-input {
-            width: 40px;
-            margin-right: 4px;
-            text-align: center;
-        }
-
-        .lotto-times-input {
-            width: 60px;
-            margin-right: 8px;
-            text-align: center;
-        }
-
-        .btn-plus, .btn-minus {
-            cursor: pointer;
-            padding: 4px 8px;
-            border: none;
-            color: #fff;
-            border-radius: 4px;
-        }
-
-        .btn-plus {
-            background-color: #2196f3;
-        }
-
-        .btn-minus {
-            background-color: #f44336;
+        th {
+            background-color: #f7f7f7;
         }
 
         .registered-lotto-container {
             width: 100%;
-            max-width: 600px;
-            margin-top: 24px;
+            margin-top: 16px;
         }
 
-        @media (max-width: 600px) {
-            .btn-large {
-                font-size: 14px;
-                padding: 12px;
-            }
-
-            .dialog-button {
-                font-size: 14px;
-            }
-
-            .lotto-number-input {
-                width: 30px;
-            }
-        }
-
-        /* 사용자 프로필 드롭다운 */
-        .dropdown {
-            position: absolute;
-            top: 50px;
-            right: 0;
-            background: white;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-            border-radius: 5px;
-            padding: 10px;
-            display: none;
-            flex-direction: column;
-            min-width: 70px;
-        }
-
-        .dropdown button {
-            background: none;
-            border: none;
-            padding: 10px;
-            cursor: pointer;
-            text-align: left;
-        }
-
-        .dropdown button:hover {
-            background-color: #f0f0f0;
-        }
-
-        .dropdown.open {
-            display: flex;
-        }
-
-        .user-info {
-            display: flex;
-            align-items: center;
-            cursor: pointer;
-            position: relative;
-        }
-
-        .user-details {
-            margin-left: 10px;
-        }
-
-        .profile-img {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background-color: #ccc;
-            overflow: hidden;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .profile-img img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        .algorithm-select {
-            display: inline-block;
-        }
-
+        /* ------------------------------
+           Generate Dialog
+        ------------------------------ */
         .gen-form {
             display: flex;
             flex-wrap: wrap;
-            gap: 16px; /* 각 항목 간격 */
+            gap: 16px;
             margin-bottom: 8px;
         }
-
         .gen-field {
             display: flex;
             flex-direction: column;
-            /* 라벨-인풋 세로 배치, 가로로 하고 싶다면 row 로 변경 가능 */
             min-width: 200px;
-            /* 혹은 width: 100%; 등을 통해 반응형으로 조절 가능 */
         }
-
         .gen-label {
-            font-weight: bold;
+            font-size: 14px;
+            font-weight: 600;
             margin-bottom: 4px;
         }
-
         .gen-input {
             padding: 8px;
             font-size: 14px;
             border: 1px solid #ccc;
             border-radius: 4px;
         }
-
         .gen-input:focus {
             outline: none;
-            border-color: #4caf50; /* 포커스 시 강조 */
+            border-color: #4caf50;
         }
-
         .small-text {
             font-size: 12px;
             color: #666;
             margin-top: 4px;
+            line-height: 1.2;
         }
-
         .gen-details {
             margin: 16px 0;
             display: flex;
             flex-wrap: wrap;
             gap: 16px;
         }
-
         .gen-details .input-group {
             display: flex;
             flex-direction: column;
-            min-width: 160px;
+            min-width: 150px;
         }
-
         .gen-details .input-group label {
-            font-weight: bold;
+            font-size: 14px;
+            font-weight: 600;
             margin-bottom: 4px;
         }
-
         .gen-details .input-group input {
             padding: 8px;
             font-size: 14px;
@@ -359,21 +401,42 @@
             border-radius: 4px;
         }
 
+        /* ------------------------------
+           Loading Spinner
+        ------------------------------ */
         .spinner {
             display: inline-block;
             width: 16px;
             height: 16px;
             margin-right: 6px;
-
             border: 2px solid #ccc;
             border-top-color: #4caf50;
             border-radius: 50%;
             animation: spin 1s linear infinite;
         }
-
         @keyframes spin {
             to {
                 transform: rotate(360deg);
+            }
+        }
+
+        /* ------------------------------
+           Responsive Helpers
+        ------------------------------ */
+        @media (max-width: 768px) {
+            .header {
+                padding: 8px 16px;
+            }
+            .btn-large {
+                padding: 10px;
+                font-size: 14px;
+            }
+            .gen-field,
+            .gen-details .input-group {
+                min-width: 120px;
+            }
+            .lotto-number-input {
+                width: 40px;
             }
         }
     </style>
@@ -418,6 +481,12 @@
 </div>
 
 <script>
+    /*
+       아래 스크립트는 기존 코드와 동일하되,
+       CSS 클래스명이나 ID 등은 변경 없이 그대로 사용하시면 됩니다.
+       (스타일만 단순/반응형으로 변경)
+    */
+
     const modalOverlay = document.getElementById('modalOverlay');
     const modalClose = document.getElementById('modalClose');
     const modalBody = document.getElementById('modalBody');
@@ -492,7 +561,7 @@
         modalBody.innerHTML = `
             <h3>사진 업로드</h3>
             <div class="drag-area" id="dragArea">
-                <p>사진을 드래그 하거나 아래 업로드 버튼을 눌러주세요.</p>
+                <p>사진을 드래그 하거나<br/>아래 업로드 버튼을 눌러주세요.</p>
             </div>
             <label for="photoInput" class="upload-btn">업로드</label>
             <input type="file" id="photoInput" name="photos" accept="image/*" multiple style="display:none;" />
@@ -637,7 +706,6 @@
         <h3>번호 등록</h3>
         <div>
             <label>회차: </label>
-            <!-- 회차 input은 아직 value="" 로 두고, fetch 성공 시 여기에 넣어줄 예정 -->
             <input type="number" id="timesInput" class="lotto-times-input" value="" />
         </div>
         <div id="lottoRowsContainer" style="margin: 16px 0;"></div>
@@ -654,46 +722,33 @@
         const buttonRow = document.createElement('div');
         buttonRow.className = 'dialog-button-row';
         buttonRow.innerHTML = `
-        <button class="dialog-button btn-submit" id="btnSubmitManual" disabled>등록</button>
-    `;
+            <button class="dialog-button btn-submit" id="btnSubmitManual" disabled>등록</button>
+        `;
         modalBody.appendChild(buttonRow);
 
-        // 등록 버튼 핸들러
         document.getElementById('btnSubmitManual').addEventListener('click', () => {
             const btn = document.getElementById('btnSubmitManual');
             handleButtonClick(btn, () => submitManualNumbers());
         });
 
-        // 입력값 변화 시 마다 등록 버튼 활성/비활성 체크
         modalBody.addEventListener('input', checkAllInputsFilled);
 
-        // ★ 여기서 /api/lotto/times/latest 호출 → 회차 기본값 세팅
         try {
             const res = await fetch('/api/lotto/times/latest');
-            if (!res.ok) {
-                throw new Error('서버 응답이 정상이 아닙니다.');
-            }
+            if (!res.ok) throw new Error('서버 응답이 정상이 아닙니다.');
 
             const data = await res.json();
-            // data = { "times": 1000 } 형태라면 아래와 같이 +1
             const nextTimes = data.times + 1;
-
-            // timesInput에 기본값 적용
             const timesInputEl = document.getElementById('timesInput');
             timesInputEl.value = nextTimes;
-
-            // 혹시 이미 번호 행들을 만든 상태라면, 입력값 변경 이벤트를 다시 한번 체크
             checkAllInputsFilled();
 
         } catch (err) {
             console.error('회차 조회 오류:', err.message);
-            // 실패 시 timesInput에 기본값(예: 1)이라도 세팅
             document.getElementById('timesInput').value = 1;
             checkAllInputsFilled();
         }
     }
-
-
 
     function addLottoRow(preFilledNumbers = []) {
         const container = document.getElementById('lottoRowsContainer');
@@ -706,42 +761,39 @@
 
         let inputHtml = '';
         for (let i = 0; i < 6; i++) {
-            // 만약 preFilledNumbers가 있으면 해당 인덱스 번호를 기본값으로
             const numberValue = preFilledNumbers[i] !== undefined ? preFilledNumbers[i] : '';
             inputHtml += `<input
-                        type="number"
-                        class="lotto-number-input"
-                        placeholder="${i + 1}번"
-                        value="${numberValue}"
-                      />`;
+                type="number"
+                class="lotto-number-input"
+                placeholder="${i + 1}번"
+                value="${numberValue}"
+            />`;
         }
 
         if (rowIndex === 0) {
             div.innerHTML = `
-            ${inputHtml}
-            <button class="btn-plus" id="btnPlus_${rowIndex}">+</button>
-        `;
+                ${inputHtml}
+                <button class="btn-plus" id="btnPlus_${rowIndex}">+</button>
+            `;
         } else {
             div.innerHTML = `
-            ${inputHtml}
-            <button class="btn-plus" id="btnPlus_${rowIndex}">+</button>
-            <button class="btn-minus" id="btnMinus_${rowIndex}">-</button>
-        `;
+                ${inputHtml}
+                <button class="btn-plus" id="btnPlus_${rowIndex}">+</button>
+                <button class="btn-minus" id="btnMinus_${rowIndex}">-</button>
+            `;
         }
 
         container.appendChild(div);
         lottoRows.push(rowId);
 
         document.getElementById(`btnPlus_${rowIndex}`).addEventListener('click', () => {
-            addLottoRow(); // 새 row는 비어있는 상태
+            addLottoRow();
         });
         if (rowIndex > 0) {
             document.getElementById(`btnMinus_${rowIndex}`).addEventListener('click', () => {
                 removeLottoRow(rowId);
             });
         }
-
-        // 혹시 생성된 직후에 버튼 활성화 조건을 다시 체크
         checkAllInputsFilled();
     }
 
@@ -756,13 +808,10 @@
 
     function checkAllInputsFilled() {
         const timesInput = document.getElementById('timesInput');
-        if (!timesInput) return; // 회차 input 없으면 종료
+        if (!timesInput) return;
 
         const btnSubmitManual = document.getElementById('btnSubmitManual');
-        if (!btnSubmitManual) {
-            // 아직 버튼이 DOM에 없으니 그냥 종료
-            return;
-        }
+        if (!btnSubmitManual) return;
 
         const timesValue = timesInput.value.trim();
         const numbersInputs = modalBody.querySelectorAll('.lotto-number-input');
@@ -779,7 +828,6 @@
         }
         btnSubmitManual.disabled = false;
     }
-
 
     function submitManualNumbers() {
         const timesValue = document.getElementById('timesInput').value.trim();
@@ -809,7 +857,6 @@
                 if (!res.ok) throw new Error('서버 응답이 정상이 아닙니다');
                 alert("등록되었습니다");
                 closeModal();
-                // 등록 후 목록 다시 로딩
                 loadRegisteredLottoNumbers();
             })
             .catch(err => {
@@ -818,7 +865,6 @@
     }
 
     const registeredLottoContainer = document.getElementById('registeredLottoContainer');
-
     function loadRegisteredLottoNumbers() {
         fetch('/api/lotto/numbers', {method: 'GET'})
             .then(res => {
@@ -839,48 +885,42 @@
 
     function renderRegisteredLottoList(list) {
         let html = `
-        <table>
-            <thead>
-                <tr>
-                    <th>회차</th>
-                    <th>입력번호</th>
-                    <th>등수</th>
-                    <th></th>
-                    <th>삭제</th>
-                </tr>
-            </thead>
-            <tbody>
-    `;
+            <table>
+                <thead>
+                    <tr>
+                        <th>회차</th>
+                        <th>입력번호</th>
+                        <th>등수</th>
+                        <th></th>
+                        <th>삭제</th>
+                    </tr>
+                </thead>
+                <tbody>
+        `;
 
         list.forEach(item => {
-            // 등수 표시
             const displayRank = (item.rank === null || item.rank === undefined)
                 ? "예정"
                 : item.rank;
-
-            // 상세 버튼(등수가 없으면 상세 버튼 미노출)
             const detailButtonHtml = (item.rank === null || item.rank === undefined)
                 ? ""
                 : `<button class="btn-detail" data-json='${JSON.stringify(item)}'>상세</button>`;
-
-            // 새로 추가할 "삭제" 버튼
             const deleteButtonHtml = `<button class="btn-delete" data-id="${item.id}">삭제</button>`;
 
             html += `
-            <tr>
-                <td>${item.lotto.times}</td>
-                <td>${item.numbers.join(', ')}</td>
-                <td>${displayRank}</td>
-                <td>${detailButtonHtml}</td>
-                <td>${deleteButtonHtml}</td>
-            </tr>
-        `;
+                <tr>
+                    <td>${item.lotto.times}</td>
+                    <td>${item.numbers.join(', ')}</td>
+                    <td>${displayRank}</td>
+                    <td>${detailButtonHtml}</td>
+                    <td>${deleteButtonHtml}</td>
+                </tr>
+            `;
         });
 
         html += `</tbody></table>`;
         registeredLottoContainer.innerHTML = html;
 
-        // 상세 버튼 클릭 이벤트
         const detailButtons = registeredLottoContainer.querySelectorAll('.btn-detail');
         detailButtons.forEach(btn => {
             btn.addEventListener('click', () => {
@@ -890,23 +930,18 @@
             });
         });
 
-        // 삭제 버튼 클릭 이벤트
         const deleteButtons = registeredLottoContainer.querySelectorAll('.btn-delete');
         deleteButtons.forEach(btn => {
             btn.addEventListener('click', async () => {
                 const id = btn.getAttribute('data-id');
-
-                // 사용자 확인
                 if (!confirm("정말 삭제하시겠습니까?")) return;
 
                 try {
                     const response = await fetch(`/api/lotto/number/${id}`, {
                         method: 'DELETE'
                     });
-
                     if (response.ok) {
                         alert('삭제되었습니다.');
-                        // 삭제 후 테이블 새로 로딩
                         loadRegisteredLottoNumbers();
                     } else {
                         alert('삭제 실패했습니다.');
@@ -917,7 +952,6 @@
             });
         });
     }
-
 
     function showDetailDialog(item) {
         openModal();
@@ -981,56 +1015,45 @@
 
     function showGenerateDialog(algorithms) {
         modalBody.innerHTML = `
-        <h3>번호 생성</h3>
-        <!-- gen-form: 번호 생성 다이얼로그 전체 폼 레이아웃 -->
-        <div class="gen-form">
-            <!-- 생성 개수 -->
-            <div class="gen-field">
-                <label for="countInput" class="gen-label">생성 개수 (최대 20)</label>
-                <input type="number" id="countInput" min="1" max="20" value="1" class="gen-input"/>
+            <h3>번호 생성</h3>
+            <div class="gen-form">
+                <div class="gen-field">
+                    <label for="countInput" class="gen-label">생성 개수 (최대 20)</label>
+                    <input type="number" id="countInput" min="1" max="20" value="1" class="gen-input"/>
+                </div>
+                <div class="gen-field">
+                    <label for="algorithmDropdown" class="gen-label">알고리즘 선택</label>
+                    <select id="algorithmDropdown" class="algorithm-select gen-input">
+                        ${algorithms.map(algo => `
+                            <option
+                                value="${algo.key}"
+                                data-desc="${algo.description}"
+                            >${algo.value}</option>
+                        `).join('')}
+                    </select>
+                    <div class="small-text" id="algorithmDescription"></div>
+                </div>
             </div>
-            <!-- 알고리즘 선택 -->
-            <div class="gen-field">
-                <label for="algorithmDropdown" class="gen-label">알고리즘 선택</label>
-                <select id="algorithmDropdown" class="algorithm-select gen-input">
-                    ${algorithms.map(algo => `
-                        <option
-                            value="${algo.key}"
-                            data-desc="${algo.description}"
-                        >${algo.value}</option>
-                    `).join('')}
-                </select>
-                <div class="small-text" id="algorithmDescription"></div>
+            <div id="algorithmDetails" class="gen-details"></div>
+            <div class="dialog-button-row" style="margin-top: 16px;">
+                <button class="dialog-button btn-cancel" onclick="closeModal()">취소</button>
+                <button class="dialog-button btn-submit" id="btn-generate" disabled>생성</button>
             </div>
-        </div>
-
-        <!-- 알고리즘 세부 옵션 -->
-        <div id="algorithmDetails" class="gen-details"></div>
-
-        <!-- 버튼 영역 -->
-        <div class="dialog-button-row" style="margin-top: 16px;">
-            <button class="dialog-button btn-cancel" onclick="closeModal()">취소</button>
-            <button class="dialog-button btn-submit" id="btn-generate" disabled>생성</button>
-        </div>
-    `;
+        `;
 
         const algorithmDropdown = document.getElementById('algorithmDropdown');
         const algorithmDescription = document.getElementById('algorithmDescription');
         const btnGenerate = document.getElementById('btn-generate');
 
-        // 기본 설명 표시
         const defaultOption = algorithmDropdown.options[algorithmDropdown.selectedIndex];
         algorithmDescription.textContent = defaultOption.getAttribute('data-desc') || '';
 
-        // 알고리즘 선택 시 설명 업데이트
         algorithmDropdown.addEventListener('change', (e) => {
             const selectedOption = e.target.options[e.target.selectedIndex];
             algorithmDescription.textContent = selectedOption.getAttribute('data-desc');
             updateAlgorithmDetails(selectedOption.value);
             checkGenerateButton();
         });
-
-        // 생성 개수와 알고리즘 선택 유효성 체크
         document.getElementById('countInput').addEventListener('input', checkGenerateButton);
 
         function checkGenerateButton() {
@@ -1038,36 +1061,24 @@
             btnGenerate.disabled = !count || count < 1 || count > 20 || !algorithmDropdown.value;
         }
 
-        // "생성" 버튼 클릭
         btnGenerate.addEventListener('click', async () => {
-            // 1) 버튼 로딩 상태 표시
             setLoadingState(btnGenerate, true, '생성');
-
             try {
                 const algorithm = algorithmDropdown.value;
                 const count = document.getElementById('countInput').value;
                 const detail = collectDetails(algorithm);
-
-                // 실제 생성 로직 (API 호출 등)
                 const result = await fetchGeneratedNumbers(algorithm, count, detail);
-
-                // 생성 결과 화면으로 이동
                 showGeneratedResult(result);
-
             } catch (error) {
                 alert(`에러가 발생했습니다: ${error.message}`);
-
             } finally {
-                // 2) 처리 완료 후 원상복귀
                 setLoadingState(btnGenerate, false, '생성');
             }
         });
 
-        // 초기 디테일 UI 표시
         updateAlgorithmDetails(algorithmDropdown.value);
         checkGenerateButton();
     }
-
 
     function updateAlgorithmDetails(algorithmKey) {
         const detailsContainer = document.getElementById('algorithmDetails');
@@ -1075,61 +1086,61 @@
 
         if (algorithmKey === 'METAHEURISTIC') {
             detailsContainer.innerHTML = `
-            <div class="input-group">
-                <label>탐색비율 (0~100%)</label>
-                <input type="number" min="0" max="100" value="100" id="rangeRateInput" />
-            </div>
-            <div class="input-group">
-                <label>탐색 마지막 회차</label>
-                <input type="number" min="0" id="timesBeforeInput"/>
-            </div>
-        `;
+                <div class="input-group">
+                    <label>탐색비율 (0~100%)</label>
+                    <input type="number" min="0" max="100" value="100" id="rangeRateInput" />
+                </div>
+                <div class="input-group">
+                    <label>탐색 마지막 회차</label>
+                    <input type="number" min="0" id="timesBeforeInput"/>
+                </div>
+            `;
         } else if (algorithmKey === 'GENETIC') {
             detailsContainer.innerHTML = `
-            <div class="input-group">
-                <label>탐색비율 (0~100%)</label>
-                <input type="number" min="0" max="100" value="100" id="rangeRateInput"/>
-            </div>
-            <div class="input-group">
-                <label>세대 수 (10~50)</label>
-                <input type="number" min="10" max="50" value="30" id="generationsInput"/>
-            </div>
-            <div class="input-group">
-                <label>돌연변이 비율 (0.0~1.0)</label>
-                <input type="number" step="0.01" min="0" max="1.0" value="0.05" id="mutationRateInput"/>
-            </div>
-            <div class="input-group">
-                <label>염색체 개수 (5~20)</label>
-                <input type="number" min="5" max="20" value="10" id="populationSizeInput"/>
-            </div>
-            <div class="input-group">
-                <label>교차율 (0.0~1.0)</label>
-                <input type="number" step="0.01" min="0" max="1.0" value="0.5" id="crossoverRateInput"/>
-            </div>
-            <div class="input-group">
-                <label>탐색 마지막 회차</label>
-                <input type="number" min="0" id="timesBeforeInput"/>
-            </div>
-        `;
+                <div class="input-group">
+                    <label>탐색비율 (0~100%)</label>
+                    <input type="number" min="0" max="100" value="100" id="rangeRateInput"/>
+                </div>
+                <div class="input-group">
+                    <label>세대 수 (10~50)</label>
+                    <input type="number" min="10" max="50" value="30" id="generationsInput"/>
+                </div>
+                <div class="input-group">
+                    <label>돌연변이 비율 (0.0~1.0)</label>
+                    <input type="number" step="0.01" min="0" max="1.0" value="0.05" id="mutationRateInput"/>
+                </div>
+                <div class="input-group">
+                    <label>염색체 개수 (5~20)</label>
+                    <input type="number" min="5" max="20" value="10" id="populationSizeInput"/>
+                </div>
+                <div class="input-group">
+                    <label>교차율 (0.0~1.0)</label>
+                    <input type="number" step="0.01" min="0" max="1.0" value="0.5" id="crossoverRateInput"/>
+                </div>
+                <div class="input-group">
+                    <label>탐색 마지막 회차</label>
+                    <input type="number" min="0" id="timesBeforeInput"/>
+                </div>
+            `;
         } else if (algorithmKey === 'APRIORI') {
             detailsContainer.innerHTML = `
-            <div class="input-group">
-                <label>탐색비율 (0~100%)</label>
-                <input type="number" min="0" max="100" value="100" id="rangeRateInput"/>
-            </div>
-            <div class="input-group">
-                <label>최소 지지도 (1~10)</label>
-                <input type="number" min="1" max="10" value="3" id="minSupportCntInput"/>
-            </div>
-            <div class="input-group">
-                <label>최소 신뢰도 (0.0~1.0)</label>
-                <input type="number" step="0.01" min="0" max="1.0" value="0.6" id="minConfidenceInput"/>
-            </div>
-            <div class="input-group">
-                <label>탐색 마지막 회차</label>
-                <input type="number" min="0" id="timesBeforeInput"/>
-            </div>
-        `;
+                <div class="input-group">
+                    <label>탐색비율 (0~100%)</label>
+                    <input type="number" min="0" max="100" value="100" id="rangeRateInput"/>
+                </div>
+                <div class="input-group">
+                    <label>최소 지지도 (1~10)</label>
+                    <input type="number" min="1" max="10" value="3" id="minSupportCntInput"/>
+                </div>
+                <div class="input-group">
+                    <label>최소 신뢰도 (0.0~1.0)</label>
+                    <input type="number" step="0.01" min="0" max="1.0" value="0.6" id="minConfidenceInput"/>
+                </div>
+                <div class="input-group">
+                    <label>탐색 마지막 회차</label>
+                    <input type="number" min="0" id="timesBeforeInput"/>
+                </div>
+            `;
         }
     }
 
@@ -1164,56 +1175,46 @@
 
     function showGeneratedResult(result) {
         modalBody.innerHTML = '<h3>생성된 번호</h3>';
-
         const generatedNumbersList = result.map(item => item.numbers);
 
         const table = document.createElement('table');
         table.innerHTML = `
-        <thead>
-            <tr>
-                <th>번호</th>
-            </tr>
-        </thead>
-        <tbody>
-            ${generatedNumbersList.map(nums => `<tr><td>${nums.join(', ')}</td></tr>`).join('')}
-        </tbody>
-    `;
+            <thead>
+                <tr>
+                    <th>번호</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${generatedNumbersList.map(nums => `<tr><td>${nums.join(', ')}</td></tr>`).join('')}
+            </tbody>
+        `;
         modalBody.appendChild(table);
 
         const buttonRow = document.createElement('div');
         buttonRow.className = 'dialog-button-row';
         buttonRow.innerHTML = `
-        <button class="dialog-button btn-cancel" id="btnCloseGenerate">닫기</button>
-        <button class="dialog-button btn-submit" id="btnRegisterGenerated">등록</button>
-    `;
+            <button class="dialog-button btn-cancel" id="btnCloseGenerate">닫기</button>
+            <button class="dialog-button btn-submit" id="btnRegisterGenerated">등록</button>
+        `;
         modalBody.appendChild(buttonRow);
 
-        // 닫기 버튼 이벤트
         document.getElementById('btnCloseGenerate').addEventListener('click', () => {
             closeModal();
         });
 
-        // "등록" 버튼 → "번호 등록" 다이얼로그로 전환
-        const btnRegisterGenerated = document.getElementById('btnRegisterGenerated');
-        btnRegisterGenerated.addEventListener('click', () => {
+        document.getElementById('btnRegisterGenerated').addEventListener('click', () => {
             closeModal();
             openModal();
             showNumberRegisterScreen(generatedNumbersList);
         });
     }
+
     function setLoadingState(button, isLoading, originalText) {
         if (isLoading) {
-            // 버튼 비활성화
             button.disabled = true;
-            // 버튼 텍스트를 "처리중..." 이나 "생성중..." 으로 변경
-            button.innerHTML = `
-            <div class="spinner"></div>
-            <span>생성중...</span>
-        `;
+            button.innerHTML = `<div class="spinner"></div><span>생성중...</span>`;
         } else {
-            // 버튼 활성화
             button.disabled = false;
-            // 원래 텍스트로 복원
             button.textContent = originalText;
         }
     }
