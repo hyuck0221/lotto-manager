@@ -27,4 +27,8 @@ class LottoNumberCommandService(
             lottoNumberRepository.saveAll(requests.map { it.toEntity(lotto, user) })
         }
     }
+
+    fun delete(id: String) {
+        lottoNumberRepository.deleteById(id)
+    }
 }
