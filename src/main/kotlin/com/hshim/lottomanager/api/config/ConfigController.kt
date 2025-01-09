@@ -12,6 +12,6 @@ class ConfigController(
 ) {
     @GetMapping("/number/build/algorithms")
     fun getNumberBuildAlgorithms(): List<NumberBuildAlgorithmResponse> {
-        return NumberBuildAlgorithm.entries.map { NumberBuildAlgorithmResponse(it) }
+        return NumberBuildAlgorithm.entries.filter { !it.disable }.map { NumberBuildAlgorithmResponse(it) }
     }
 }

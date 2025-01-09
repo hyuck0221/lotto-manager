@@ -1076,7 +1076,7 @@
         if (algorithmKey === 'METAHEURISTIC') {
             detailsContainer.innerHTML = `
             <div class="input-group">
-                <label>탐색비율 (%)</label>
+                <label>탐색비율 (0~100%)</label>
                 <input type="number" min="0" max="100" value="100" id="rangeRateInput" />
             </div>
             <div class="input-group">
@@ -1087,23 +1087,23 @@
         } else if (algorithmKey === 'GENETIC') {
             detailsContainer.innerHTML = `
             <div class="input-group">
-                <label>탐색비율 (%)</label>
+                <label>탐색비율 (0~100%)</label>
                 <input type="number" min="0" max="100" value="100" id="rangeRateInput"/>
             </div>
             <div class="input-group">
-                <label>세대 수</label>
+                <label>세대 수 (10~50)</label>
                 <input type="number" min="10" max="50" value="30" id="generationsInput"/>
             </div>
             <div class="input-group">
-                <label>돌연변이 비율</label>
+                <label>돌연변이 비율 (0.0~1.0)</label>
                 <input type="number" step="0.01" min="0" max="1.0" value="0.05" id="mutationRateInput"/>
             </div>
             <div class="input-group">
-                <label>염색체 개수</label>
+                <label>염색체 개수 (5~20)</label>
                 <input type="number" min="5" max="20" value="10" id="populationSizeInput"/>
             </div>
             <div class="input-group">
-                <label>교차율</label>
+                <label>교차율 (0.0~1.0)</label>
                 <input type="number" step="0.01" min="0" max="1.0" value="0.5" id="crossoverRateInput"/>
             </div>
             <div class="input-group">
@@ -1114,15 +1114,15 @@
         } else if (algorithmKey === 'APRIORI') {
             detailsContainer.innerHTML = `
             <div class="input-group">
-                <label>탐색비율 (%)</label>
+                <label>탐색비율 (0~100%)</label>
                 <input type="number" min="0" max="100" value="100" id="rangeRateInput"/>
             </div>
             <div class="input-group">
-                <label>최소 지지도</label>
+                <label>최소 지지도 (1~10)</label>
                 <input type="number" min="1" max="10" value="3" id="minSupportCntInput"/>
             </div>
             <div class="input-group">
-                <label>최소 신뢰도</label>
+                <label>최소 신뢰도 (0.0~1.0)</label>
                 <input type="number" step="0.01" min="0" max="1.0" value="0.6" id="minConfidenceInput"/>
             </div>
             <div class="input-group">
@@ -1165,8 +1165,6 @@
     function showGeneratedResult(result) {
         modalBody.innerHTML = '<h3>생성된 번호</h3>';
 
-        // 생성된 번호를 2차원 배열 형태로 정리 (이미 그런 형태일 가능성도 있음)
-        // result = [{numbers: [1,2,3,4,5,6]}, {numbers: [7,8,9,10,11,12]}] ...
         const generatedNumbersList = result.map(item => item.numbers);
 
         const table = document.createElement('table');
