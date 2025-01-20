@@ -22,8 +22,8 @@ class GoogleUser(
     @Column(nullable = false)
     var givenName: String,
 
-    @Column(nullable = false)
-    var familyName: String,
+    @Column(nullable = true)
+    var familyName: String?,
 
     @Column(nullable = false)
     var emailVerified: Boolean,

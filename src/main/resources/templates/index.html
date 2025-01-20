@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>LOTTO MANAGER - 통합버전</title>
+    <title>LOTTO MANAGER - hshim</title>
     <style>
         /* ------------------------------
            Reset & Base
@@ -88,7 +88,7 @@
             padding: 8px 0;
             display: none;
             flex-direction: column;
-            min-width: 80px;
+            min-width: 90px;
         }
         .dropdown button {
             background: none;
@@ -180,7 +180,7 @@
         .btn-submit:hover {
             background-color: #43a047;
         }
-        .btn-detail,
+        .btn-round-detail,
         .btn-delete {
             font-size: 12px;
             padding: 6px 8px;
@@ -188,11 +188,11 @@
             border-radius: 4px;
             cursor: pointer;
         }
-        .btn-detail {
+        .btn-round-detail {
             background-color: #2196f3;
             color: #fff;
         }
-        .btn-detail:hover {
+        .btn-round-detail:hover {
             background-color: #1e88e5;
         }
         .btn-delete {
@@ -443,7 +443,6 @@
 </head>
 <body>
 <div class="header">
-    <!-- 사용자 프로필 표시 -->
     <div class="user-info" id="user-info">
         <div class="profile-img" id="profile-img">
             <img id="profile-image" src="" alt=""/>
@@ -884,52 +883,106 @@
     }
 
     function renderRegisteredLottoList(list) {
-        let html = `
-            <table>
+        // 회차별로 데이터 분류
+        const groupedByTimes = {};
+        list.forEach(item => {
+            const timesKey = item.lotto.times;
+            if (!groupedByTimes[timesKey]) {
+                groupedByTimes[timesKey] = [];
+            }
+            groupedByTimes[timesKey].push(item);
+        });
+
+        // 회차 내림차순 정렬
+        const sortedTimes = Object.keys(groupedByTimes)
+            .sort((a, b) => parseInt(b, 10) - parseInt(a, 10));
+
+        let html = '';
+
+        // 각 회차별로 테이블과 헤더 구성
+        sortedTimes.forEach(times => {
+            const items = groupedByTimes[times];
+            // 이번 회차의 lotto 정보는 배열 중 첫 번째 아이템에서 사용
+            // (같은 회차라면 lotto 정보는 모두 동일하다고 가정)
+            const referenceItem = items[0];
+            const lottoInfo = referenceItem.lotto || {};
+
+            // 당첨번호(번호 + 보너스번호) 문자열
+            const winningNumbersStr = Array.isArray(lottoInfo.numbers)
+                ? lottoInfo.numbers.join(', ')
+                : '';
+            const bonusStr = lottoInfo.bonusNumber != null
+                ? ` + ${lottoInfo.bonusNumber}`
+                : '';
+
+            // 회차 타이틀(당첨번호, 상세 버튼) 영역
+            html += `
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 24px;">
+                <h4 style="margin: 0;">
+                    ${times} 회차
+                    <span style="margin-left: 12px; font-weight: normal; font-size: 14px;">
+                       ${winningNumbersStr}${bonusStr}
+                    </span>
+                </h4>
+                <button class="btn-round-detail"
+                    data-lotto='${JSON.stringify(lottoInfo)}'
+                    data-rank='${referenceItem.rank}'
+                >상세</button>
+            </div>
+
+            <table style="margin-top: 8px; width: 100%;">
                 <thead>
                     <tr>
-                        <th>회차</th>
-                        <th>입력번호</th>
-                        <th>등수</th>
-                        <th></th>
-                        <th>삭제</th>
+                        <!-- '상세' 컬럼 제거. 입력번호, 등수, 삭제만 표시 -->
+                        <th style="width: 200px;">입력번호</th>
+                        <th style="width: 100px;">등수</th>
+                        <th style="width: 80px;">삭제</th>
                     </tr>
                 </thead>
                 <tbody>
         `;
 
-        list.forEach(item => {
-            const displayRank = (item.rank === null || item.rank === undefined)
-                ? "예정"
-                : item.rank;
-            const detailButtonHtml = (item.rank === null || item.rank === undefined)
-                ? ""
-                : `<button class="btn-detail" data-json='${JSON.stringify(item)}'>상세</button>`;
-            const deleteButtonHtml = `<button class="btn-delete" data-id="${item.id}">삭제</button>`;
+            items.forEach(item => {
+                // 등수 표시
+                let displayRank = item.rank;
+                if (item.rank === null || item.rank === undefined) {
+                    displayRank = "공개예정";
+                } else if (item.rank === 0) {
+                    displayRank = "낙첨";
+                }
 
-            html += `
+                // 삭제 버튼
+                const deleteButtonHtml = `<button class="btn-delete" data-id="${item.id}">삭제</button>`;
+
+                // 입력번호 표시(이미 formatNumbers 등 함수가 있다면 교체 가능)
+                const inputNumbersHtml = formatNumbers(
+                    item.numbers || [],
+                    lottoInfo.numbers || []
+                );
+
+                html += `
                 <tr>
-                    <td>${item.lotto.times}</td>
-                    <td>${item.numbers.join(', ')}</td>
+                    <td style="font-family: monospace;">${inputNumbersHtml}</td>
                     <td>${displayRank}</td>
-                    <td>${detailButtonHtml}</td>
                     <td>${deleteButtonHtml}</td>
                 </tr>
             `;
+            });
+
+            html += `
+                </tbody>
+            </table>
+        `;
         });
 
-        html += `</tbody></table>`;
+        if (!list || list.length === 0) {
+            html = '<p>등록된 로또 번호가 없습니다.</p>';
+        }
+
+        // 렌더링 결과 삽입
         registeredLottoContainer.innerHTML = html;
 
-        const detailButtons = registeredLottoContainer.querySelectorAll('.btn-detail');
-        detailButtons.forEach(btn => {
-            btn.addEventListener('click', () => {
-                const jsonStr = btn.getAttribute('data-json');
-                const dataObj = JSON.parse(jsonStr);
-                showDetailDialog(dataObj);
-            });
-        });
-
+        // 삭제 처리 이벤트
         const deleteButtons = registeredLottoContainer.querySelectorAll('.btn-delete');
         deleteButtons.forEach(btn => {
             btn.addEventListener('click', async () => {
@@ -937,9 +990,7 @@
                 if (!confirm("정말 삭제하시겠습니까?")) return;
 
                 try {
-                    const response = await fetch(`/api/lotto/number/${id}`, {
-                        method: 'DELETE'
-                    });
+                    const response = await fetch(`/api/lotto/number/${id}`, { method: 'DELETE' });
                     if (response.ok) {
                         alert('삭제되었습니다.');
                         loadRegisteredLottoNumbers();
@@ -951,25 +1002,115 @@
                 }
             });
         });
+
+        // **상세 버튼** 이벤트
+        const detailButtons = registeredLottoContainer.querySelectorAll('.btn-round-detail');
+        detailButtons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const lottoStr = btn.getAttribute('data-lotto');
+                const rankStr = btn.getAttribute('data-rank');
+                if (!lottoStr) return;
+
+                // lotto 정보와 rank를 대화상자에 전달
+                const lottoObj = JSON.parse(lottoStr);
+                const rankVal = rankStr !== 'null' && rankStr !== 'undefined'
+                    ? parseInt(rankStr, 10)
+                    : null;
+                showRoundDetailDialog(lottoObj, rankVal);
+            });
+        });
     }
 
-    function showDetailDialog(item) {
+    function showRoundDetailDialog(lotto, rank) {
         openModal();
-        const lotto = item.lotto;
+
+        // 모달 내부를 표 형태로 보여주고, '입력번호' 행은 제거
         modalBody.innerHTML = `
-            <h3>상세 정보</h3>
-            <p><strong>회차:</strong> ${lotto.times}</p>
-            <p><strong>입력번호:</strong> ${item.numbers.join(', ')}</p>
-            <p><strong>등수:</strong> ${item.rank}</p>
-            <p><strong>공개일:</strong> ${lotto.openDate}</p>
-            <p><strong>공개여부:</strong> ${lotto.isOpen ? '예' : '아니오'}</p>
-            <p><strong>공개된 번호:</strong> ${lotto.numbers.join(', ')}</p>
-            <p><strong>보너스번호:</strong> ${lotto.bonusNumber}</p>
-            <p><strong>총 당첨금액:</strong> ${formatNumber(lotto.totalPrize)}</p>
-            <p><strong>1등 당첨금액:</strong> ${formatNumber(lotto.firstWinnerPrize)}</p>
-            <p><strong>1등 당첨자 수:</strong> ${lotto.winCnt}</p>
-            <p><strong>1등 시 수령금액:</strong> ${formatNumber(lotto.firstWinnerPrize / lotto.winCnt)}</p>
-        `;
+        <h3>상세 정보</h3>
+        <table style="width: 100%; border-collapse: collapse;">
+            <tbody>
+                <!-- 회차 -->
+                <tr>
+                    <th style="text-align: left; width: 150px; padding: 6px; border: 1px solid #ddd;">회차</th>
+                    <td style="padding: 6px; border: 1px solid #ddd;">${lotto.times}</td>
+                </tr>
+
+                <!-- 등수: null이면 '공개예정' 또는 rank===0이면 '낙첨' -->
+                <tr>
+                    <th style="text-align: left; padding: 6px; border: 1px solid #ddd;">등수</th>
+                    <td style="padding: 6px; border: 1px solid #ddd;">
+                        ${
+            rank === null || rank === undefined
+                ? '공개예정'
+                : rank === 0
+                    ? '낙첨'
+                    : rank
+        }
+                    </td>
+                </tr>
+
+                <!-- 공개일 -->
+                <tr>
+                    <th style="text-align: left; padding: 6px; border: 1px solid #ddd;">공개일</th>
+                    <td style="padding: 6px; border: 1px solid #ddd;">${lotto.openDate || '-'}</td>
+                </tr>
+
+                <!-- 공개여부 -->
+                <tr>
+                    <th style="text-align: left; padding: 6px; border: 1px solid #ddd;">공개여부</th>
+                    <td style="padding: 6px; border: 1px solid #ddd;">${lotto.isOpen ? '예' : '아니오'}</td>
+                </tr>
+
+                <!-- 공개된 번호(당첨번호) -->
+                <tr>
+                    <th style="text-align: left; padding: 6px; border: 1px solid #ddd;">공개된 번호</th>
+                    <td style="padding: 6px; border: 1px solid #ddd;">
+                        ${
+            Array.isArray(lotto.numbers)
+                ? lotto.numbers.join(', ')
+                : ''
+        }
+                    </td>
+                </tr>
+
+                <!-- 보너스번호 -->
+                <tr>
+                    <th style="text-align: left; padding: 6px; border: 1px solid #ddd;">보너스번호</th>
+                    <td style="padding: 6px; border: 1px solid #ddd;">${lotto.bonusNumber || ''}</td>
+                </tr>
+
+                <!-- 총 당첨금액 -->
+                <tr>
+                    <th style="text-align: left; padding: 6px; border: 1px solid #ddd;">총 당첨금액</th>
+                    <td style="padding: 6px; border: 1px solid #ddd;">${formatNumber(lotto.totalPrize)}</td>
+                </tr>
+
+                <!-- 1등 당첨금액 -->
+                <tr>
+                    <th style="text-align: left; padding: 6px; border: 1px solid #ddd;">1등 당첨금액</th>
+                    <td style="padding: 6px; border: 1px solid #ddd;">${formatNumber(lotto.firstWinnerPrize)}</td>
+                </tr>
+
+                <!-- 1등 당첨자 수 -->
+                <tr>
+                    <th style="text-align: left; padding: 6px; border: 1px solid #ddd;">1등 당첨자 수</th>
+                    <td style="padding: 6px; border: 1px solid #ddd;">${lotto.winCnt || 0}</td>
+                </tr>
+
+                <!-- 1등 시 수령금액 -->
+                <tr>
+                    <th style="text-align: left; padding: 6px; border: 1px solid #ddd;">1등 시 수령금액</th>
+                    <td style="padding: 6px; border: 1px solid #ddd;">
+                        ${
+            lotto.winCnt > 0
+                ? formatNumber(lotto.firstWinnerPrize / lotto.winCnt)
+                : 0
+        }
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    `;
     }
 
     function formatNumber(num) {
@@ -977,6 +1118,21 @@
             return "0";
         }
         return num.toLocaleString("ko-KR");
+    }
+
+    function formatNumbers(inputNumbers, winningNumbers) {
+        if (!winningNumbers || !Array.isArray(winningNumbers)) {
+            winningNumbers = [];
+        }
+        const winningSet = new Set(winningNumbers.map(num => parseInt(num, 10)));
+
+        return inputNumbers.map(num => {
+            const val = parseInt(num, 10);
+            const display = val.toString().padStart(2, ' ');
+            return winningSet.has(val)
+                ? `<span style="color: #00ab00; font-weight: bold">${display}</span>`
+                : `<span>${display}</span>`;
+        }).join(' ');
     }
 
     /* ------------------------------
