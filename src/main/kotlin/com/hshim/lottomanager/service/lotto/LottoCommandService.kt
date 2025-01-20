@@ -2,6 +2,7 @@ package com.hshim.lottomanager.service.lotto
 
 import com.hshim.lottomanager.database.lotto.Lotto
 import com.hshim.lottomanager.database.lotto.repository.LottoRepository
+import com.hshim.lottomanager.exception.GlobalException
 import com.hshim.lottomanager.service.lotto.template.LottoTemplate
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.data.repository.findByIdOrNull
@@ -16,6 +17,9 @@ class LottoCommandService(
     private val lottoRepository: LottoRepository,
 ) {
     fun init(times: Int): Lotto {
+        val lastTimes = lottoRepository.findTopByIsOpenTrueOrderByTimesDesc()?.times
+        if (lastTimes != null && times > lastTimes + 1)
+            throw GlobalException.CAN_NOT_INIT_TIMES.exception
         val lotto = lottoRepository.findByIdOrNull(times)
             ?: LottoTemplate(times, url).getInfo()?.toEntity()
             ?: Lotto(times)
