@@ -25,16 +25,22 @@
             left: 0;
             background-color: #fff;
             border-bottom: 1px solid #ddd;
-            padding-top: 5px;
-            padding-bottom: 5px;
-            z-index: 1000;
             display: flex;
-            justify-content: center;
+            justify-content: space-between;
             align-items: center;
+            padding: 10px 20px;
+            z-index: 1000;
         }
-
         header h1 {
-            font-size: 22px;
+            font-size: 18px;
+            position: fixed;
+            left: 50%;
+            transform: translate(-50%, 0);
+        }
+        header .home-button {
+            text-decoration: none;
+            color: #007bff;
+            font-size: 16px;
         }
 
         .profile-container {
@@ -232,6 +238,7 @@
 </head>
 <body>
 <header>
+    <a href="/" class="home-button">홈</a>
     <h1>내 정보</h1>
 </header>
 <div class="dialog-overlay" id="dialog-overlay"></div>
@@ -243,7 +250,7 @@
         </div>
         <button id="profile-edit-button" class="profile-edit-button">프로필 수정</button>
         <div class="info-field">
-            <label>닉네임</label>
+            <label style="display: flex; align-items: center;">닉네임</label>
             <input id="nickname" type="text" disabled>
         </div>
         <div class="info-field">
@@ -254,7 +261,6 @@
             <input id="user-type" type="text" disabled>
         </div>
         <div class="edit-buttons">
-            <button onclick="history.back()" id="back-button">뒤로가기</button>
             <button id="cancel-button" style="display: none;">취소</button>
             <button id="edit-button">정보 수정</button>
         </div>
@@ -288,7 +294,6 @@
         fetchUserInfo();
 
         const editButton = document.getElementById('edit-button');
-        const backButton = document.getElementById('back-button');
         const cancelButton = document.getElementById('cancel-button');
         const nicknameInput = document.getElementById('nickname');
         const profileDialog = document.getElementById('profile-dialog');
@@ -324,7 +329,6 @@
 
         function editSetting() {
             editButton.textContent = '수정 완료';
-            backButton.style.display = 'none';
             cancelButton.style.display = 'inline-block';
             nicknameInput.disabled = false;
             profileEditButton.style.display = 'inline-block';
