@@ -20,6 +20,5 @@ enum class NumberBuildAlgorithm(
     APRIORI(
         title = "Apriori 알고리즘",
         description = "역대 이력들 중 함께 자주 등장하는 조합을 모아 연관 규칙을 찾아내어 번호를 생성합니다.",
-        disable = true,
     )
 }

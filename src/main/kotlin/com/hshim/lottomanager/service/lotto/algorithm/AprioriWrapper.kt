@@ -30,8 +30,8 @@ class AprioriWrapper(
             pageable = pageable
         ).map { it.numbers ?: emptyList() }
 
+        val frequentItemsets = apriori(pastWinNumbers, detail.minSupportCnt)
         return (0..<cnt).map {
-            val frequentItemsets = apriori(pastWinNumbers, detail.minSupportCnt)
             val rules = generateAssociationRules(frequentItemsets, pastWinNumbers, detail.minConfidence)
             pick6NumbersFromRules(rules)
         }
@@ -88,64 +88,65 @@ class AprioriWrapper(
      */
     fun apriori(
         transactions: List<List<Int>>,
-        minSupportCnt: Int
+        minSupportCnt: Int,
+        maxItemsetSize: Int = 3
     ): Map<Set<Int>, Int> {
-        val itemsets = mutableMapOf<Set<Int>, Int>()
+        val transactionSets = transactions.map { it.toSet() }
 
-        // 1) 1-아이템셋(단일 숫자) 후보와 빈도수 계산
+        // 2) 1-아이템셋 수집
         val itemFreq = mutableMapOf<Int, Int>()
-        for (txn in transactions) {
+        for (txn in transactionSets) {
             for (item in txn) {
                 itemFreq[item] = (itemFreq[item] ?: 0) + 1
             }
         }
 
-        // 최소 지지도를 만족하는 1-아이템셋만 추린다
-        var currentLevelSets = itemFreq
+        // 최소지지도를 만족하는 1-아이템셋만 추림
+        var currentLevelSets: Map<Set<Int>, Int> = itemFreq
             .filter { it.value >= minSupportCnt }
             .map { setOf(it.key) to it.value }
-            .toMap().toMutableMap()
+            .toMap()
 
+        // 최종적으로 return할 (빈발 아이템셋, 등장횟수)
+        val itemsets = mutableMapOf<Set<Int>, Int>()
         itemsets.putAll(currentLevelSets)
 
-        // 2) k-아이템셋(점차 확장) 생성 반복
-        var k = 2
-        while (currentLevelSets.isNotEmpty()) {
-            // 2-1) 후보 생성: (k-1)-아이템셋들로부터 k-아이템셋 후보를 만든다
+        // 3) BFS 확장: k=2..maxItemsetSize 까지만
+        for (k in 2..maxItemsetSize) {
+            if (currentLevelSets.isEmpty()) break // 더 이상 확장 불가 시 중단
+
+            // 3-1) 후보 생성
             val candidates = generateCandidates(currentLevelSets.keys.toList(), k)
 
-            // 2-2) 후보 빈도수 측정
+            // 3-2) 후보별 등장횟수 계산
             val candidateCounts = mutableMapOf<Set<Int>, Int>()
-            for (txn in transactions) {
-                val txnSet = txn.toSet()
+            for (txn in transactionSets) {
+                // txn이 candidate를 모두 포함하면 카운트 증가
                 for (candidate in candidates) {
-                    // 트랜잭션이 candidate를 모두 포함하면 카운트
-                    if (candidate.all { it in txnSet }) {
+                    if (candidate.all { it in txn }) {
                         candidateCounts[candidate] = (candidateCounts[candidate] ?: 0) + 1
                     }
                 }
             }
 
-            // 2-3) 최소 지지도를 만족하는 후보만 필터링
+            // 3-3) 최소지지도를 만족하는 후보만 남김
             currentLevelSets = candidateCounts
                 .filter { it.value >= minSupportCnt }
-                .toMutableMap()
+                .toMap()
 
-            // 2-4) 전역 아이템셋에 추가
+            // 3-4) 전역 itemsets에 추가
             itemsets.putAll(currentLevelSets)
-
-            k++
         }
 
         return itemsets
     }
 
     /**
-     * (k-1)-아이템셋들을 pairwise로 합쳐 k-아이템셋 후보를 생성
+     * (k-1)-아이템셋 목록으로부터 k-아이템셋 후보를 생성
+     * - 단순히 2개씩 합치되, 합집합 크기가 k이면 후보로 채택
      */
     fun generateCandidates(prevLevel: List<Set<Int>>, k: Int): Set<Set<Int>> {
         val candidates = mutableSetOf<Set<Int>>()
-
         for (i in prevLevel.indices) {
             for (j in i + 1 until prevLevel.size) {
                 val unionSet = prevLevel[i] union prevLevel[j]
@@ -157,8 +158,13 @@ class AprioriWrapper(
         return candidates
     }
 
+
     /**
-     * 빈발 아이템셋으로부터 연관 규칙 생성 (신뢰도 기준 필터링)
+     * 빈발 아이템셋에서 'LHS = 단일 아이템' 규칙만 생성
+     *
+     * @param frequentItemsets (아이템셋, 해당 아이템셋 등장횟수)
+     * @param transactions 전체 트랜잭션 (support 계산용)
+     * @param minConfidence 최소 신뢰도(Confidence) [0.0 ~ 1.0]
      */
     fun generateAssociationRules(
         frequentItemsets: Map<Set<Int>, Int>,
@@ -168,68 +174,41 @@ class AprioriWrapper(
         val rules = mutableListOf<Triple<Set<Int>, Set<Int>, Double>>()
         val totalTxCount = transactions.size.toDouble()
 
-        // 아이템셋 -> 지지도 맵
-        val supportMap = frequentItemsets.mapValues { (_, count) ->
-            count / totalTxCount
+        // 아이템셋 -> support(지지도) 미리 계산
+        //   freq / 전체 트랜잭션 수
+        val supportMap = frequentItemsets.mapValues { (_, freq) ->
+            freq / totalTxCount
         }
 
-        for ((itemset, _) in frequentItemsets) {
-            if (itemset.size < 2) continue  // 1개 아이템셋은 규칙 불가
+        // 1) 각 빈발 아이템셋(itemset)마다
+        for ((itemset, freqItemset) in frequentItemsets) {
+            if (itemset.size < 2) continue  // 아이템 하나짜리는 규칙을 만들 수 없으므로 패스
 
-            // 모든 non-empty proper subset을 LHS로
-            val subsets = getNonEmptySubsets(itemset)
-            for (lhs in subsets) {
-                if (lhs.size == itemset.size) continue
+            // 아이템셋의 support
+            val supportItemset = freqItemset / totalTxCount
+
+            // 2) LHS를 단일 아이템으로 고정
+            //    itemset = {x1, x2, ..., xk}라면,
+            //    각 xi를 LHS로 하고 (나머지) itemset - xi를 RHS로 하는 규칙 생성
+            for (single in itemset) {
+                val lhs = setOf(single)
                 val rhs = itemset - lhs
 
-                // confidence = support(itemset) / support(lhs)
-                val supportItemset = supportMap[itemset] ?: 0.0
-                val supportLHS = getSupport(lhs, transactions)
-                val confidence = if (supportLHS > 0.0) {
-                    supportItemset / supportLHS
-                } else 0.0
+                // LHS의 빈도(등장 횟수) -> 지지도
+                val lhsFreq = frequentItemsets[lhs] ?: 0
+                val supportLHS = lhsFreq / totalTxCount
 
-                if (confidence >= minConfidence) {
-                    rules.add(Triple(lhs, rhs, confidence))
+                if (supportLHS > 0.0) {
+                    val confidence = supportItemset / supportLHS
+                    if (confidence >= minConfidence) {
+                        // (LHS, RHS, 신뢰도) 형태로 저장
+                        rules.add(Triple(lhs, rhs, confidence))
+                    }
                 }
             }
         }
 
-        // 신뢰도 높은 순으로 정렬해 반환
+        // 신뢰도 높은 순으로 정렬해서 반환
         return rules.sortedByDescending { it.third }
-    }
-
-    /**
-     * 부분집합(Proper Subset) 구하기
-     */
-    fun getNonEmptySubsets(set: Set<Int>): List<Set<Int>> {
-        val result = mutableListOf<Set<Int>>()
-        val list = set.toList()
-
-        fun backtrack(index: Int, current: MutableList<Int>) {
-            if (index == list.size) {
-                if (current.isNotEmpty()) {
-                    result.add(current.toSet())
-                }
-                return
-            }
-            // 원소 선택
-            current.add(list[index])
-            backtrack(index + 1, current)
-            // 원소 미선택
-            current.removeAt(current.size - 1)
-            backtrack(index + 1, current)
-        }
-
-        backtrack(0, mutableListOf())
-        return result
-    }
-
-    /**
-     * itemset의 지원도(지지도) 계산
-     */
-    fun getSupport(itemset: Set<Int>, transactions: List<List<Int>>): Double {
-        val count = transactions.count { txn -> itemset.all { it in txn } }
-        return count.toDouble() / transactions.size
     }
 }

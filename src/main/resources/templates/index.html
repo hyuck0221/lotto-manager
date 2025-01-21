@@ -409,7 +409,8 @@
     </style>
 </head>
 <body>
-<div class="header">
+<div class="header" style="display: flex; justify-content: space-between; align-items: center;">
+    <div id="headerLeft" style="font-weight: bold;"></div>
     <div class="user-info" id="user-info">
         <div class="profile-img" id="profile-img">
             <img id="profile-image" src="" alt=""/>
@@ -424,6 +425,10 @@
             </form>
         </div>
     </div>
+</div>
+
+<div style="text-align: center; margin-top: 10px; font-size: 14px; color: #555;">
+    매주 토요일 오후 9시 이메일로 결과를 정리하여 보내드립니다
 </div>
 
 <div class="container">
@@ -492,6 +497,7 @@
 
     window.addEventListener('DOMContentLoaded', async () => {
         await fetchUserInfo();
+        await fetchCurrentTimes();
         await loadRegisteredLottoNumbers();
     });
 
@@ -731,7 +737,6 @@
             inputHtml += `<input
                 type="number"
                 class="lotto-number-input"
-                placeholder="${i + 1}번"
                 value="${numberValue}"
             />`;
         }
@@ -1206,7 +1211,7 @@
                 </div>
                 <div class="input-group">
                     <label>탐색 마지막 회차</label>
-                    <input type="number" min="0" id="timesBeforeInput"/>
+                    <input type="number" min="0" id="timesBeforeInput" placeholder="마지막 회차"/>
                 </div>
             `;
         } else if (algorithmKey === 'GENETIC') {
@@ -1233,7 +1238,7 @@
                 </div>
                 <div class="input-group">
                     <label>탐색 마지막 회차</label>
-                    <input type="number" min="0" id="timesBeforeInput"/>
+                    <input type="number" min="0" id="timesBeforeInput" placeholder="마지막 회차"/>
                 </div>
             `;
         } else if (algorithmKey === 'APRIORI') {
@@ -1252,7 +1257,7 @@
                 </div>
                 <div class="input-group">
                     <label>탐색 마지막 회차</label>
-                    <input type="number" min="0" id="timesBeforeInput"/>
+                    <input type="number" min="0" id="timesBeforeInput" placeholder="마지막 회차"/>
                 </div>
             `;
         }
@@ -1285,6 +1290,21 @@
             body: JSON.stringify({algorithm, cnt: parseInt(count, 10), detail})
         });
         return response.ok ? await response.json() : [];
+    }
+
+    async function fetchCurrentTimes() {
+        try {
+            const response = await fetch('/api/lotto/times/latest');
+            if (!response.ok) {
+                throw new Error('회차 정보를 가져오지 못했습니다.');
+            }
+            const data = await response.json();
+
+            const headerLeft = document.getElementById('headerLeft');
+            headerLeft.textContent = `${data.times + 1} 회차 공개예정`;
+        } catch (err) {
+            console.error('회차 조회 에러:', err.message);
+        }
     }
 
     function showGeneratedResult(result) {
