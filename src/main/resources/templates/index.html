@@ -406,6 +406,24 @@
                 width: 40px;
             }
         }
+
+        .footer-info {
+            margin-top: 32px;
+            padding: 20px;
+            background-color: #f9f9f9;
+            border-top: 1px solid #ddd;
+        }
+        .footer-info p {
+            margin: 4px 0;
+        }
+        .footer-title {
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+        .footer-link {
+            color: #0066cc;
+            text-decoration: none;
+        }
     </style>
 </head>
 <body>
@@ -420,6 +438,7 @@
         </div>
         <div class="dropdown" id="dropdown">
             <button id="my-info">내 정보</button>
+            <button id="question">문의</button>
             <form th:action="@{/logout}" method="post" style="margin: 0;">
                 <button type="submit">로그아웃</button>
             </form>
@@ -451,6 +470,11 @@
     </div>
 </div>
 
+<div class="footer-info">
+    <div class="footer-title">문의 및 정보</div>
+    <p>이메일 문의: <a href="mailto:hshim.universe@gmail.com" class="footer-link">hshim.universe@gmail.com</a></p>
+    <p>인스타그램: <a href="https://instagram.com/hshim__" target="_blank" class="footer-link">@hshim__</a></p>
+</div>
 <script>
     /*
        아래 스크립트는 기존 코드와 동일하되,
@@ -481,6 +505,7 @@
     const userInfo = document.getElementById('user-info');
     const dropdown = document.getElementById('dropdown');
     const myInfo = document.getElementById('my-info');
+    const question = document.getElementById('question');
     let userId = null;
 
     userInfo.addEventListener('click', () => {
@@ -494,11 +519,14 @@
     myInfo.addEventListener('click', () => {
         location.href = '/page/account/user/my-info';
     });
+    question.addEventListener('click', () => {
+        location.href = '/page/question/list';
+    });
 
     window.addEventListener('DOMContentLoaded', async () => {
-        await fetchUserInfo();
-        await fetchCurrentTimes();
-        await loadRegisteredLottoNumbers();
+        fetchUserInfo();
+        fetchCurrentTimes();
+        loadRegisteredLottoNumbers();
     });
 
     async function fetchUserInfo() {

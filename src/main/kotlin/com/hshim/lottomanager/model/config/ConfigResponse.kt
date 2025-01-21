@@ -1,6 +1,6 @@
 package com.hshim.lottomanager.model.config
 
-abstract class ConfigResponse(
+open class ConfigResponse(
     val key: String,
     val value: String,
 )

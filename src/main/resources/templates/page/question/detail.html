@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>문의 상세 - Lotto Manager</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: "Helvetica Neue", Arial, sans-serif;
+            background-color: #f9f9f9;
+            color: #333;
+            padding: 20px;
+        }
+
+        header {
+            width: 100%;
+            position: fixed;
+            top: 0;
+            left: 0;
+            background-color: #fff;
+            border-bottom: 1px solid #ddd;
+            padding: 10px 20px;
+            z-index: 1000;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        header h1 {
+            font-size: 18px;
+            text-align: center;
+            flex: 1;
+        }
+
+        header .left-button {
+            text-decoration: none;
+            color: #007bff;
+            font-size: 16px;
+            margin-right: 20px;
+        }
+
+        header .action-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        header .action-buttons button {
+            padding: 8px 12px;
+            border: none;
+            border-radius: 4px;
+            font-size: 14px;
+            cursor: pointer;
+            color: #fff;
+        }
+
+        .btn-edit {
+            background-color: #2196F3;
+        }
+
+        .btn-edit:hover {
+            background-color: #1976D2;
+        }
+
+        .btn-delete {
+            background-color: #F44336;
+        }
+
+        .btn-delete:hover {
+            background-color: #D32F2F;
+        }
+
+        main {
+            margin-top: 80px;
+        }
+
+        .question-header {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .reply-alert {
+            font-size: 14px;
+            color: #555;
+            margin-bottom: 20px;
+        }
+
+        .content,
+        .reply {
+            padding: 16px;
+            font-size: 16px;
+            line-height: 1.5;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background-color: #fff;
+            margin-bottom: 20px;
+        }
+
+        .reply {
+            font-weight: bold;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+<header>
+    <a href="/page/question/list" class="left-button">목록</a>
+    <h1>문의 상세</h1>
+    <div class="action-buttons">
+        <button class="btn-edit" onclick="editQuestion()">수정</button>
+        <button class="btn-delete" onclick="deleteQuestion()">삭제</button>
+    </div>
+</header>
+<main>
+    <div id="question-detail">
+        <div class="question-header" id="question-header"></div>
+        <div class="reply-alert" id="reply-alert"></div>
+        <h4 style="margin-bottom: 10px">내용</h4>
+        <div class="content" id="content"></div>
+        <h4 style="margin-bottom: 10px">답변</h4>
+        <div class="reply" id="reply"></div>
+    </div>
+</main>
+<script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const questionId = urlParams.get('id');
+
+    async function fetchQuestionDetail() {
+        try {
+            const response = await fetch(`/api/question/${questionId}`);
+            if (response.ok) {
+                const data = await response.json();
+                displayQuestionDetail(data);
+            } else {
+                alert('문의 정보를 불러오는데 실패했습니다.');
+                location.href = '/page/question/list';
+            }
+        } catch (error) {
+            console.error('Error fetching question details:', error);
+            alert('오류가 발생했습니다.');
+            location.href = '/page/question/list';
+        }
+    }
+
+    function displayQuestionDetail(data) {
+        const questionHeader = document.getElementById('question-header');
+        const replyAlert = document.getElementById('reply-alert');
+        const content = document.getElementById('content');
+        const reply = document.getElementById('reply');
+
+        // 문의 유형 | 제목
+        questionHeader.textContent = `${data.displayType} | ${data.title}`;
+
+        // 답변 시 알림 여부
+        replyAlert.textContent = data.isReplyAlert ? '답변 시 알림 O' : '답변 시 알림 X';
+
+        // 문의 내용
+        content.textContent = data.content || '내용이 없습니다.';
+
+        // 문의 답변
+        reply.textContent = data.reply || '답변이 없습니다.';
+    }
+
+    function editQuestion() {
+        location.href = '/page/question/edit?id=' + questionId;
+    }
+
+    async function deleteQuestion() {
+        if (!confirm('정말 삭제하시겠습니까?')) return;
+
+        try {
+            const response = await fetch(`/api/question/${questionId}`, {method: 'DELETE'});
+            if (response.ok) {
+                alert('문의가 삭제되었습니다.');
+                location.href = '/page/question/list';
+            } else {
+                alert('삭제에 실패했습니다.');
+            }
+        } catch (error) {
+            console.error('Error deleting question:', error);
+            alert('오류가 발생했습니다.');
+        }
+    }
+
+    // 페이지 로드 시 데이터 가져오기
+    window.addEventListener('DOMContentLoaded', fetchQuestionDetail);
+</script>
+</body>
+</html>

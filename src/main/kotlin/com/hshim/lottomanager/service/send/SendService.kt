@@ -24,17 +24,20 @@ class SendService(
         }
     }
 
-    private fun sendEmail(user: User, message: SendModel) {
-        if (user.email == null) return
+    fun sendEmail(user: User, message: SendModel) {
+        sendEmail(user.email!!, message)
+        emailLogRepository.save(EmailLog(user = user))
+    }
+
+    fun sendEmail(email: String, message: SendModel) {
         val mimeMessage = mailSender.createMimeMessage()
         val helper = MimeMessageHelper(mimeMessage, true, "UTF-8")
 
-        helper.setTo(user.email!!)
+        helper.setTo(email)
         helper.setSubject(message.title)
         helper.setText(message.html, true)
         helper.setFrom(mail)
 
         mailSender.send(mimeMessage)
-        emailLogRepository.save(EmailLog(user = user))
     }
 }

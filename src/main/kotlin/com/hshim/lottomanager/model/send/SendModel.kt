@@ -57,7 +57,7 @@ const val MESSAGE_HEADER_TEXT = """
 const val MESSAGE_FOOTER_TEXT = """
         <div class="footer-info">
         <div class="footer-title">문의 및 정보</div>
-        <p>개발자 이메일 문의: <a href="mailto:ggrteas@gmail.com" class="footer-link">ggrteas@gmail.com</a></p>
+        <p>이메일 문의: <a href="mailto:hshim.universe@gmail.com" class="footer-link">hshim.universe@gmail.com</a></p>
         <p>인스타그램: <a href="https://instagram.com/hshim__" target="_blank" class="footer-link">@hshim__</a></p>
       </div>
         </body>
@@ -66,7 +66,7 @@ const val MESSAGE_FOOTER_TEXT = """
 
 abstract class SendModel(
     val title: String,
-    val message: String,
+    message: String,
 ) {
     val html = MESSAGE_HEADER_TEXT + message + MESSAGE_FOOTER_TEXT
 }
