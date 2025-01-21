@@ -5,9 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>LOTTO MANAGER - hshim</title>
     <style>
-        /* ------------------------------
-           Reset & Base
-        ------------------------------ */
         * {
             margin: 0;
             padding: 0;
@@ -16,7 +13,7 @@
         body {
             font-family: "Helvetica Neue", Arial, sans-serif;
             background-color: #f9f9f9;
-            padding-top: 60px; /* 상단 고정 헤더 높이를 고려 */
+            padding-top: 60px;
             color: #333;
         }
         button,
@@ -30,9 +27,6 @@
             color: inherit;
         }
 
-        /* ------------------------------
-           Header
-        ------------------------------ */
         .header {
             width: 100%;
             position: fixed;
@@ -106,9 +100,6 @@
             display: flex;
         }
 
-        /* ------------------------------
-           Container & Layout
-        ------------------------------ */
         .container {
             max-width: 800px;
             width: 100%;
@@ -124,9 +115,6 @@
             margin-bottom: 20px;
         }
 
-        /* ------------------------------
-           Buttons
-        ------------------------------ */
         .btn-large {
             flex: 1;
             min-width: 120px;
@@ -203,9 +191,6 @@
             background-color: #e53935;
         }
 
-        /* ------------------------------
-           Modals (Overlay + Dialog)
-        ------------------------------ */
         .modal-overlay {
             position: fixed;
             top: 0;
@@ -240,9 +225,6 @@
             font-weight: bold;
         }
 
-        /* ------------------------------
-           Photo Upload Drag Area
-        ------------------------------ */
         .drag-area {
             width: 100%;
             min-height: 120px;
@@ -271,9 +253,6 @@
             margin-top: 8px;
         }
 
-        /* ------------------------------
-           Lotto Number Register
-        ------------------------------ */
         .lotto-input-row {
             display: flex;
             flex-wrap: wrap;
@@ -318,9 +297,6 @@
             background-color: #e53935;
         }
 
-        /* ------------------------------
-           Registered Lotto Table
-        ------------------------------ */
         table {
             width: 100%;
             border-collapse: collapse;
@@ -343,9 +319,6 @@
             margin-top: 16px;
         }
 
-        /* ------------------------------
-           Generate Dialog
-        ------------------------------ */
         .gen-form {
             display: flex;
             flex-wrap: wrap;
@@ -401,9 +374,6 @@
             border-radius: 4px;
         }
 
-        /* ------------------------------
-           Loading Spinner
-        ------------------------------ */
         .spinner {
             display: inline-block;
             width: 16px;
@@ -420,9 +390,6 @@
             }
         }
 
-        /* ------------------------------
-           Responsive Helpers
-        ------------------------------ */
         @media (max-width: 768px) {
             .header {
                 padding: 8px 16px;
@@ -542,7 +509,7 @@
                 profileImg.src = user.profileUrl;
                 profileImg.style.backgroundColor = 'transparent';
             } else {
-                profileImg.src = '';
+                profileImg.src = 'https://cdn-icons-png.flaticon.com/512/747/747545.png';
                 profileImg.style.backgroundColor = '#ccc';
             }
         }
@@ -853,10 +820,15 @@
             body: JSON.stringify(requestData)
         })
             .then(res => {
-                if (!res.ok) throw new Error('서버 응답이 정상이 아닙니다');
-                alert("등록되었습니다");
-                closeModal();
-                loadRegisteredLottoNumbers();
+                if (res.status === 400) {
+                    res.json().then(data => {
+                        alert(data.message);
+                    });
+                } else {
+                    alert("등록되었습니다");
+                    closeModal();
+                    loadRegisteredLottoNumbers();
+                }
             })
             .catch(err => {
                 alert("에러가 발생했습니다: " + err.message);
@@ -883,7 +855,6 @@
     }
 
     function renderRegisteredLottoList(list) {
-        // 회차별로 데이터 분류
         const groupedByTimes = {};
         list.forEach(item => {
             const timesKey = item.lotto.times;
@@ -893,21 +864,16 @@
             groupedByTimes[timesKey].push(item);
         });
 
-        // 회차 내림차순 정렬
         const sortedTimes = Object.keys(groupedByTimes)
             .sort((a, b) => parseInt(b, 10) - parseInt(a, 10));
 
         let html = '';
 
-        // 각 회차별로 테이블과 헤더 구성
         sortedTimes.forEach(times => {
             const items = groupedByTimes[times];
-            // 이번 회차의 lotto 정보는 배열 중 첫 번째 아이템에서 사용
-            // (같은 회차라면 lotto 정보는 모두 동일하다고 가정)
             const referenceItem = items[0];
             const lottoInfo = referenceItem.lotto || {};
 
-            // 당첨번호(번호 + 보너스번호) 문자열
             const winningNumbersStr = Array.isArray(lottoInfo.numbers)
                 ? lottoInfo.numbers.join(', ')
                 : '';
@@ -915,19 +881,18 @@
                 ? ` + ${lottoInfo.bonusNumber}`
                 : '';
 
-            // 회차 타이틀(당첨번호, 상세 버튼) 영역
             html += `
             <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 24px;">
                 <h4 style="margin: 0;">
                     ${times} 회차
+                    <button class="btn-round-detail"
+                        data-lotto='${JSON.stringify(lottoInfo)}'
+                        data-rank='${referenceItem.rank}'
+                    >상세</button>
                     <span style="margin-left: 12px; font-weight: normal; font-size: 14px;">
                        ${winningNumbersStr}${bonusStr}
                     </span>
                 </h4>
-                <button class="btn-round-detail"
-                    data-lotto='${JSON.stringify(lottoInfo)}'
-                    data-rank='${referenceItem.rank}'
-                >상세</button>
             </div>
 
             <table style="margin-top: 8px; width: 100%;">
@@ -943,7 +908,6 @@
         `;
 
             items.forEach(item => {
-                // 등수 표시
                 let displayRank = item.rank;
                 if (item.rank === null || item.rank === undefined) {
                     displayRank = "공개예정";
@@ -951,10 +915,7 @@
                     displayRank = "낙첨";
                 }
 
-                // 삭제 버튼
                 const deleteButtonHtml = `<button class="btn-delete" data-id="${item.id}">삭제</button>`;
-
-                // 입력번호 표시(이미 formatNumbers 등 함수가 있다면 교체 가능)
                 const inputNumbersHtml = formatNumbers(
                     item.numbers || [],
                     lottoInfo.numbers || []
@@ -1003,7 +964,6 @@
             });
         });
 
-        // **상세 버튼** 이벤트
         const detailButtons = registeredLottoContainer.querySelectorAll('.btn-round-detail');
         detailButtons.forEach(btn => {
             btn.addEventListener('click', () => {
@@ -1011,7 +971,6 @@
                 const rankStr = btn.getAttribute('data-rank');
                 if (!lottoStr) return;
 
-                // lotto 정보와 rank를 대화상자에 전달
                 const lottoObj = JSON.parse(lottoStr);
                 const rankVal = rankStr !== 'null' && rankStr !== 'undefined'
                     ? parseInt(rankStr, 10)
@@ -1024,7 +983,6 @@
     function showRoundDetailDialog(lotto, rank) {
         openModal();
 
-        // 모달 내부를 표 형태로 보여주고, '입력번호' 행은 제거
         modalBody.innerHTML = `
         <h3>상세 정보</h3>
         <table style="width: 100%; border-collapse: collapse;">
