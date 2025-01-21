@@ -141,7 +141,7 @@
         <div class="dropdown" id="dropdown">
             <button id="my-info">내 정보</button>
             <button id="question">문의</button>
-            <form method="post" style="margin: 0;">
+            <form th:action="@{/logout}" method="post" style="margin: 0;">
                 <button type="submit">로그아웃</button>
             </form>
         </div>
