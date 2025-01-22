@@ -1,12 +1,10 @@
 package com.hshim.lottomanager.api.account.admin
 
-import com.hshim.lottomanager.annotation.admin.Admin
 import com.hshim.lottomanager.model.account.user.UserResponse
 import com.hshim.lottomanager.service.account.admin.AdminCommandService
 import com.hshim.lottomanager.service.account.admin.AdminQueryService
 import org.springframework.web.bind.annotation.*
 
-@Admin
 @RestController
 @RequestMapping("/api/account/admin")
 class AdminController(

@@ -8,6 +8,7 @@ import com.hshim.lottomanager.model.send.SendModel
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.mail.javamail.JavaMailSender
 import org.springframework.mail.javamail.MimeMessageHelper
+import org.springframework.scheduling.annotation.Async
 import org.springframework.stereotype.Service
 
 @Service
@@ -19,17 +20,13 @@ class SendService(
 ) {
     fun send(user: User, message: SendModel) {
         when (user.sendType) {
-            SendType.EMAIL -> sendEmail(user, message)
+            SendType.EMAIL -> sendEmailAsync(user.email!!, message, user)
             else -> return
         }
     }
 
-    fun sendEmail(user: User, message: SendModel) {
-        sendEmail(user.email!!, message)
-        emailLogRepository.save(EmailLog(user = user))
-    }
-
-    fun sendEmail(email: String, message: SendModel) {
+    @Async
+    fun sendEmailAsync(email: String, message: SendModel, user: User? = null) {
         val mimeMessage = mailSender.createMimeMessage()
         val helper = MimeMessageHelper(mimeMessage, true, "UTF-8")
 
@@ -39,5 +36,6 @@ class SendService(
         helper.setFrom(mail)
 
         mailSender.send(mimeMessage)
+        emailLogRepository.save(EmailLog(user = user, email = user?.email ?: email))
     }
 }

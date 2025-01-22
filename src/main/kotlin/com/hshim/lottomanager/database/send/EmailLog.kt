@@ -14,6 +14,9 @@ class EmailLog(
     val id: String = uuid(),
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
-    val user: User,
+    @JoinColumn(name = "user_id", nullable = true)
+    val user: User?,
+
+    @Column(nullable = false)
+    val email: String,
 ) : BaseTimeEntity()

@@ -15,7 +15,7 @@ class QuestionAddMessage(
         html = """
             <h2>${question.type.description} | ${question.title}</h2>
             <p>답변 시 알림 ${if (question.isReplyAlert) "O" else "X"}</p>
-            <p>${question.content}</p>
+            <p>${question.content ?: ""}</p>
         """.trimIndent()
     )
 }

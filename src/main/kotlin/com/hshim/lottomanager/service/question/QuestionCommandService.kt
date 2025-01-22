@@ -24,7 +24,7 @@ class QuestionCommandService(
         val user = userQueryService.getUser()
         val question = questionRepository.save(request.toEntity(user))
         val emails = adminQueryService.getEmails()
-        emails.forEach { sendService.sendEmail(it, QuestionAddMessage(user, question)) }
+        emails.forEach { sendService.sendEmailAsync(it, QuestionAddMessage(user, question)) }
         return QuestionResponse(question)
     }
 
