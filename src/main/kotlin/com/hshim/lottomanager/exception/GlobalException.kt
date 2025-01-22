@@ -14,6 +14,8 @@ enum class GlobalException(
     NOT_FOUND_TIMES("로또 회 정보를 찾을 수 없습니다."),
     CAN_NOT_INIT_TIMES("등록할 수 없는 회차입니다."),
     NOT_FOUND_QUESTION("문의 정보를 찾을 수 없습니다."),
+    IS_NOT_ADMIN("관리자 권한이 없습니다.", HttpStatus.FORBIDDEN),
+    CAN_NOT_DELETE_MY_ADMIN_ROLE("본인의 관리자 권한은 삭제할 수 없습니다."),
     ;
 
     val exception = exception(null)

@@ -10,14 +10,12 @@
             padding: 0;
             box-sizing: border-box;
         }
-
         body {
             font-family: "Helvetica Neue", Arial, sans-serif;
             background-color: #f9f9f9;
             color: #333;
             padding: 20px;
         }
-
         header {
             width: 100%;
             position: fixed;
@@ -28,12 +26,21 @@
             padding: 10px 20px;
             z-index: 1000;
             display: flex;
-            justify-content: center;
+            justify-content: space-between;
             align-items: center;
         }
-
         header h1 {
             font-size: 18px;
+            position: fixed;
+            left: 50%;
+            transform: translate(-50%, 0);
+        }
+
+        header .left-button {
+            text-decoration: none;
+            color: #007bff;
+            font-size: 16px;
+            margin-right: 20px;
         }
 
         main {
@@ -97,20 +104,6 @@
             cursor: pointer;
         }
 
-        .btn-cancel {
-            background-color: #bbb;
-            color: #fff;
-        }
-
-        .btn-cancel:hover {
-            background-color: #a6a6a6;
-        }
-
-        .btn-submit {
-            background-color: #4CAF50;
-            color: #fff;
-        }
-
         .btn-submit:disabled {
             background-color: #ccc;
             cursor: not-allowed;
@@ -123,6 +116,7 @@
 </head>
 <body>
 <header>
+    <a href="/page/question/list" class="left-button">목록</a>
     <h1>문의 등록</h1>
 </header>
 <main>
@@ -141,7 +135,6 @@
             <textarea id="content" placeholder="문의 내용을 입력하세요"></textarea>
         </div>
         <div class="form-actions">
-            <button type="button" class="btn-cancel" onclick="location.href='/page/question/list'">취소</button>
             <button type="submit" class="btn-submit" disabled>등록</button>
         </div>
     </form>

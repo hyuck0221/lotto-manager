@@ -1,5 +1,6 @@
 package com.hshim.lottomanager.api.account.user
 
+import com.hshim.lottomanager.annotation.admin.Admin
 import com.hshim.lottomanager.model.account.user.UserRequest
 import com.hshim.lottomanager.model.account.user.UserResponse
 import com.hshim.lottomanager.service.account.user.UserCommandService
@@ -39,8 +40,9 @@ class UserController(
         return userCommandService.synchronization(id, authentication)
     }
 
+    @Admin
     @GetMapping("/search")
-    fun search(@RequestParam name: String): List<UserResponse> {
-        return userQueryService.search(name).map { UserResponse(it) }
+    fun search(@RequestParam(required = false) name: String?): List<UserResponse> {
+        return userQueryService.search(name)
     }
 }

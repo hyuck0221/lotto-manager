@@ -26,10 +26,14 @@ class UserQueryService(
 
     fun getUser() = getUser(SecurityContextHolder.getContext().authentication.name)
 
-    fun search(name: String): List<User> {
+    fun search(name: String?): List<UserResponse> {
         val me = getUser()
         val pageable = Pageable.ofSize(5)
-        return userRepository.findAllByNameAndUserIdNot(name, me.id, pageable).content
+        return userRepository.findAllByNameAndUserIdNot(
+            userId = me.id,
+            name = name ?: "",
+            pageable = pageable,
+        ).content.map { UserResponse(it) }
     }
 
     fun getInfo(id: String): UserResponse {

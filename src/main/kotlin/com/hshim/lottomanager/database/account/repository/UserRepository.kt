@@ -15,8 +15,8 @@ interface UserRepository : JpaRepository<User, String> {
         """
     )
     fun findAllByNameAndUserIdNot(
-        name: String,
         userId: String,
+        name: String,
         pageable: Pageable,
     ): Page<User>
 }
