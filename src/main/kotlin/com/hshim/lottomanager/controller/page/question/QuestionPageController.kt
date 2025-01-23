@@ -18,4 +18,7 @@ class QuestionPageController {
 
     @GetMapping("/edit")
     fun edit() = "page/question/edit"
+
+    @GetMapping("/reply")
+    fun reply() = "page/question/reply"
 }

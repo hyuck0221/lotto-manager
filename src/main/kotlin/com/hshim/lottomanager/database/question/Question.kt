@@ -33,4 +33,7 @@ class Question(
 
     @Column(nullable = true, columnDefinition = "TEXT")
     var reply: String? = null,
+
+    @Column(nullable = false)
+    val replyId: String = uuid(),
 ) : BaseTimeEntity()

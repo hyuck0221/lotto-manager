@@ -4,7 +4,9 @@ import com.hshim.lottomanager.database.question.repository.QuestionRepository
 import com.hshim.lottomanager.exception.GlobalException
 import com.hshim.lottomanager.model.question.QuestionRequest
 import com.hshim.lottomanager.model.question.QuestionResponse
+import com.hshim.lottomanager.model.question.ReplyRequest
 import com.hshim.lottomanager.model.send.QuestionAddMessage
+import com.hshim.lottomanager.model.send.QuestionReplyMessage
 import com.hshim.lottomanager.service.account.admin.AdminQueryService
 import com.hshim.lottomanager.service.account.user.UserQueryService
 import com.hshim.lottomanager.service.send.SendService
@@ -39,4 +41,15 @@ class QuestionCommandService(
     }
 
     fun delete(id: String) = questionRepository.deleteById(id)
+
+    fun initReply(
+        id: String,
+        request: ReplyRequest,
+    ) {
+        val question = questionRepository.findByReplyId(id) ?: return
+        val isAlreadyReplay = question.reply != null
+        request.updateTo(question)
+        if (question.isReplyAlert && !isAlreadyReplay)
+            sendService.send(question.user, QuestionReplyMessage(question.user, question))
+    }
 }

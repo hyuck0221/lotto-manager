@@ -1,6 +1,7 @@
 package com.hshim.lottomanager.api.question
 
 import com.hshim.lottomanager.model.question.QuestionRequest
+import com.hshim.lottomanager.model.question.ReplyRequest
 import com.hshim.lottomanager.service.question.QuestionCommandService
 import com.hshim.lottomanager.service.question.QuestionQueryService
 import org.springframework.web.bind.annotation.*
@@ -34,4 +35,10 @@ class QuestionController(
     fun deleteQuestion(
         @PathVariable id: String,
     ) = questionCommandService.delete(id)
+
+    @PostMapping("/reply/{id}")
+    fun initReply(
+        @PathVariable id: String,
+        @RequestBody request: ReplyRequest,
+    ) = questionCommandService.initReply(id, request)
 }

@@ -32,6 +32,8 @@ class SecurityConfig(
                         "/login",
                         "/icon/**",
                         "/api/lotto/statistics/**",
+                        "/api/question/reply/",
+                        "/page/question/reply",
                     ).permitAll()
                     .anyRequest().authenticated()
             }

@@ -6,4 +6,5 @@ import org.springframework.data.jpa.repository.JpaRepository
 
 interface QuestionRepository : JpaRepository<Question, String> {
     fun findAllByUserOrderByCreateDateDesc(user: User): List<Question>
+    fun findByReplyId(replyId: String): Question?
 }
