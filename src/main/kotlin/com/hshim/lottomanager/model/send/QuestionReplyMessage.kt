@@ -1,16 +1,12 @@
 package com.hshim.lottomanager.model.send
 
-import com.hshim.lottomanager.database.account.User
 import com.hshim.lottomanager.database.question.Question
 
 class QuestionReplyMessage(
     title: String,
     html: String,
 ) : SendModel(title, html) {
-    constructor(
-        user: User,
-        question: Question,
-    ) : this(
+    constructor(question: Question) : this(
         title = "문의 답변이 도착했습니다.",
         html = """
             <h2>${question.type.description} | ${question.title}</h2>

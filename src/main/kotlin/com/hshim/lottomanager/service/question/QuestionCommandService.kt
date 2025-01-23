@@ -50,6 +50,6 @@ class QuestionCommandService(
         val isAlreadyReplay = question.reply != null
         request.updateTo(question)
         if (question.isReplyAlert && !isAlreadyReplay)
-            sendService.send(question.user, QuestionReplyMessage(question.user, question))
+            sendService.send(question.user, QuestionReplyMessage(question))
     }
 }
