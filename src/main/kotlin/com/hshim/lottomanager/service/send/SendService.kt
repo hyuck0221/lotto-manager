@@ -20,7 +20,10 @@ class SendService(
 ) {
     fun send(user: User, message: SendModel) {
         when (user.sendType) {
-            SendType.EMAIL -> sendEmailAsync(user.email!!, message, user)
+            SendType.EMAIL -> {
+                if (user.email == null) return
+                sendEmailAsync(user.email!!, message, user)
+            }
             else -> return
         }
     }

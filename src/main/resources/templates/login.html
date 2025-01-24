@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
     <title>Login</title>
     <style>
         * {
@@ -26,7 +26,7 @@
             padding: 20px;
             border-radius: 10px;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-            max-width: 400px;
+            max-width: 500px;
             width: 90%;
         }
 
@@ -42,6 +42,14 @@
             margin-bottom: 20px;
         }
 
+        .btn-row {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
         .btn {
             display: flex;
             align-items: center;
@@ -53,9 +61,10 @@
             cursor: pointer;
             text-decoration: none;
             transition: background-color 0.3s ease, box-shadow 0.3s ease;
-            margin: 5px 0;
-            width: 100%;
             gap: 10px;
+            flex: 1 1 calc(33% - 20px);
+            box-sizing: border-box;
+            min-width: 150px;
         }
 
         .btn img {
@@ -86,20 +95,56 @@
             border-color: #aaa;
             box-shadow: 0 6px 10px rgba(0, 0, 0, 0.15);
         }
+
+        .btn-primary-github {
+            color: #ffffff;
+            background-color: #1b1f23;
+            border: 1px solid #ccc;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn-primary-github:hover {
+            background-color: #121317;
+            border-color: #aaa;
+            box-shadow: 0 6px 10px rgba(0, 0, 0, 0.15);
+        }
+
+        .btn-primary-kakao {
+            color: #191919;
+            background-color: #fee500;
+            border: 1px solid #ccc;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn-primary-kakao:hover {
+            background-color: #e8d524;
+            border-color: #aaa;
+            box-shadow: 0 6px 10px rgba(0, 0, 0, 0.15);
+        }
     </style>
 </head>
 <body>
 <div class="login-container">
-    <h1>로그인 필요</h1>
-    <p>사이트 이용을 위해 로그인하세요.</p>
-    <a href="/oauth2/authorization/google" class="btn btn-primary-google">
-        <img src="/icon/login-button/google.png" alt="Google 로고">
-        Google 로그인
-    </a>
-    <a href="/oauth2/authorization/discord" class="btn btn-primary-discord">
-        <img src="/icon/login-button/discord.png" alt="Discord 로고">
-        Discord 로그인
-    </a>
+    <h1>Lotto Manager</h1>
+    <p>로그인 후 이용 가능합니다</p>
+    <div class="btn-row">
+        <a href="/oauth2/authorization/google" class="btn btn-primary-google">
+            <img src="/icon/login-button/google.png" alt="Google 로고">
+            Google 로그인
+        </a>
+        <a href="/oauth2/authorization/kakao" class="btn btn-primary-kakao">
+            <img src="/icon/login-button/kakao.png" alt="Kakao 로고">
+            Kakao 로그인
+        </a>
+        <a href="/oauth2/authorization/discord" class="btn btn-primary-discord">
+            <img src="/icon/login-button/discord.png" alt="Discord 로고">
+            Discord 로그인
+        </a>
+        <a href="/oauth2/authorization/github" class="btn btn-primary-github">
+            <img src="/icon/login-button/github.png" alt="Github 로고">
+            Github 로그인
+        </a>
+    </div>
 </div>
 <script>
     document.addEventListener('DOMContentLoaded', async () => {

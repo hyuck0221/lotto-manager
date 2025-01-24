@@ -1,12 +1,12 @@
 package com.hshim.lottomanager.service.account.oauth2
 
-import com.hshim.lottomanager.database.account.repository.DiscordUserRepository
-import com.hshim.lottomanager.database.account.repository.GoogleUserRepository
-import com.hshim.lottomanager.database.account.repository.UserRepository
+import com.hshim.lottomanager.database.account.repository.*
 import com.hshim.lottomanager.enums.account.UserType
 import com.hshim.lottomanager.exception.GlobalException
 import com.hshim.lottomanager.model.account.oauth2.DiscordOauthAttribute
+import com.hshim.lottomanager.model.account.oauth2.GithubOauthAttribute
 import com.hshim.lottomanager.model.account.oauth2.GoogleOauthAttribute
+import com.hshim.lottomanager.model.account.oauth2.KakaoOauthAttribute
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest
 import org.springframework.security.oauth2.core.user.OAuth2User
@@ -17,6 +17,8 @@ import org.springframework.transaction.annotation.Transactional
 class CustomOAuth2UserService(
     private val discordUserRepository: DiscordUserRepository,
     private val googleUserRepository: GoogleUserRepository,
+    private val githubUserRepository: GithubUserRepository,
+    private val kakaoUserRepository: KakaoUserRepository,
     private val userRepository: UserRepository,
 ) : DefaultOAuth2UserService() {
     @Transactional
@@ -27,6 +29,8 @@ class CustomOAuth2UserService(
             when (userType) {
                 UserType.DISCORD -> discordUserRepository.save(DiscordOauthAttribute(oAuth2User.attributes).toEntity())
                 UserType.GOOGLE -> googleUserRepository.save(GoogleOauthAttribute(oAuth2User.attributes).toEntity())
+                UserType.GITHUB -> githubUserRepository.save(GithubOauthAttribute(oAuth2User.attributes).toEntity())
+                UserType.KAKAO -> kakaoUserRepository.save(KakaoOauthAttribute(oAuth2User.attributes).toEntity())
                 else -> throw GlobalException.NOT_SUPPORT_OAUTH.exception
             }
         }

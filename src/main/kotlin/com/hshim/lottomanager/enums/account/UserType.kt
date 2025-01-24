@@ -6,6 +6,8 @@ enum class UserType(
 ) {
     DISCORD("디스코드", "discord"),
     GOOGLE("구글", "google"),
+    GITHUB("깃허브", "github"),
+    KAKAO("카카오", "kakao"),
     ;
 
     companion object {

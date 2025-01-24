@@ -39,5 +39,5 @@ class User(
 
     @Column(nullable = true)
     @Enumerated(EnumType.STRING)
-    var sendType: SendType? = SendType.EMAIL,
+    var sendType: SendType? = email?.let { SendType.EMAIL },
 ) : BaseTimeEntity()
