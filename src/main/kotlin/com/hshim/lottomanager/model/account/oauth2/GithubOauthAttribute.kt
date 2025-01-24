@@ -1,17 +1,24 @@
 package com.hshim.lottomanager.model.account.oauth2
 
-import com.hshim.lottomanager.database.account.GithubUser
+import com.hshim.lottomanager.database.account.User
+import com.hshim.lottomanager.enums.account.UserType
 
 class GithubOauthAttribute(
+    id: Int,
+    email: String?,
     val login: String,
-    val id: Int,
     val nodeId: String,
     val avatarUrl: String?,
     val name: String,
     val createdAt: String,
     val updatedAt: String,
-    val email: String?,
     val notificationEmail: String?,
+) : OauthAttribute(
+    userType = UserType.GITHUB,
+    id = id.toString(),
+    displayName = name,
+    profileUrl = avatarUrl,
+    email = email,
 ) {
     constructor(attributeMap: Map<String, Any>) : this(
         login = attributeMap["login"] as String,
@@ -25,21 +32,9 @@ class GithubOauthAttribute(
         notificationEmail = attributeMap["notification_email"] as String?,
     )
 
-    fun toEntity() = GithubUser(
-        id = id.toString(),
-        avatarUrl = avatarUrl,
-        name = name,
-        email = email,
-        notificationEmail = notificationEmail,
-        createdAt = createdAt,
-        updatedAt = updatedAt,
-    )
-
-    fun updateTo(githubUser: GithubUser) {
-        githubUser.displayName = name
-        githubUser.profileUrl = avatarUrl
-        githubUser.email = email
-        githubUser.notificationEmail = notificationEmail
-        githubUser.updatedAt = updatedAt
+    override fun updateTo(user: User) {
+        user.displayName = displayName
+        user.profileUrl = profileUrl
+        user.email = email
     }
 }

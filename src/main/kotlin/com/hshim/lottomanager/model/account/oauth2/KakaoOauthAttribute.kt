@@ -1,11 +1,17 @@
 package com.hshim.lottomanager.model.account.oauth2
 
-import com.hshim.lottomanager.database.account.KakaoUser
+import com.hshim.lottomanager.enums.account.UserType
 
 class KakaoOauthAttribute(
-    val id: Long,
+    id: Long,
     val connectedAt: String,
     val kakaoAccount: KakaoAccount,
+) : OauthAttribute(
+    userType = UserType.KAKAO,
+    id = id.toString(),
+    displayName = kakaoAccount.profile.nickname,
+    profileUrl = kakaoAccount.profile.thumbnailImageUrl,
+    email = kakaoAccount.email,
 ) {
     class KakaoAccount(
         val profile: Profile,
@@ -17,6 +23,7 @@ class KakaoOauthAttribute(
             val thumbnailImageUrl: String?,
         )
     }
+
     constructor(attributeMap: Map<String, Any>) : this(
         id = attributeMap["id"] as Long,
         connectedAt = attributeMap["connected_at"] as String,
@@ -31,21 +38,4 @@ class KakaoOauthAttribute(
             email = (attributeMap["kakao_account"] as Map<*, *>)["email"] as String?,
         )
     )
-
-    fun toEntity() = KakaoUser(
-        id = id.toString(),
-        nickname = kakaoAccount.profile.nickname,
-        email = kakaoAccount.email,
-        connectedAt = connectedAt,
-        profileImageUrl = kakaoAccount.profile.profileImageUrl,
-        thumbnailImageUrl = kakaoAccount.profile.thumbnailImageUrl,
-    )
-
-    fun updateTo(kakaoUser: KakaoUser) {
-        kakaoUser.displayName = kakaoAccount.profile.nickname
-        kakaoUser.email = kakaoAccount.email
-        kakaoUser.connectedAt = connectedAt
-        kakaoUser.profileImageUrl = kakaoAccount.profile.profileImageUrl
-        kakaoUser.thumbnailImageUrl = kakaoAccount.profile.thumbnailImageUrl
-    }
 }

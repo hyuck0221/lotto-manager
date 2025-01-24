@@ -1,10 +1,10 @@
 package com.hshim.lottomanager.model.account.oauth2
 
-import com.hshim.lottomanager.database.account.DiscordUser
-import com.hshim.lottomanager.enums.account.DiscordPremiumType
+import com.hshim.lottomanager.database.account.User
+import com.hshim.lottomanager.enums.account.UserType
 
 class DiscordOauthAttribute(
-    val id: String,
+    id: String,
     val username: String,
     val avatar: String?,
     val discriminator: String,
@@ -20,10 +20,14 @@ class DiscordOauthAttribute(
     val mfaEnabled: Boolean,
     val locale: String,
     val premiumType: Int,
-    val email: String?,
+    email: String?,
+): OauthAttribute(
+    userType = UserType.DISCORD,
+    id = id,
+    displayName = globalName ?: username,
+    profileUrl = avatar?.let { "https://cdn.discordapp.com/avatars/$id/$it" },
+    email = email,
 ) {
-    val premiumTypeEnum = DiscordPremiumType.getByValue(premiumType)
-
     constructor(attributeMap: Map<String, Any>) : this(
         id = attributeMap["id"] as String,
         username = attributeMap["username"] as String,
@@ -44,23 +48,9 @@ class DiscordOauthAttribute(
         email = attributeMap["email"] as String?,
     )
 
-    fun toEntity() = DiscordUser(
-        email = this.email,
-        discordId = this.id,
-        username = this.username,
-        globalName = this.globalName ?: this.username,
-        avatar = this.avatar,
-        banner = this.banner,
-        premiumType = this.premiumTypeEnum,
-    )
-
-    fun updateTo(discordUser: DiscordUser) {
-        discordUser.username = this.username
-        discordUser.globalName = this.globalName ?: this.username
-        discordUser.avatar = this.avatar
-        discordUser.banner = this.banner
-        discordUser.premiumType = this.premiumTypeEnum
-        discordUser.displayName = this.globalName ?: this.username
-        discordUser.profileUrl = this.avatar?.let { "https://cdn.discordapp.com/avatars/$id/$it" }
+    override fun updateTo(user: User) {
+        user.displayName = displayName
+        user.profileUrl = avatar?.let { "https://cdn.discordapp.com/avatars/$id/$it" }
+        user.email = email
     }
 }
