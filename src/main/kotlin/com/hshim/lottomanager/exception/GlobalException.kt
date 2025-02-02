@@ -16,6 +16,7 @@ enum class GlobalException(
     NOT_FOUND_QUESTION("문의 정보를 찾을 수 없습니다."),
     IS_NOT_ADMIN("관리자 권한이 없습니다.", HttpStatus.FORBIDDEN),
     CAN_NOT_DELETE_MY_ADMIN_ROLE("본인의 관리자 권한은 삭제할 수 없습니다."),
+    ALREADY_DAILY_CHECK("이미 출석체크 하였습니다."),
     ;
 
     val exception = exception(null)

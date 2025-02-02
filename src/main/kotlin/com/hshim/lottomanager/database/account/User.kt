@@ -5,7 +5,6 @@ import com.hshim.lottomanager.enums.account.SendType
 import com.hshim.lottomanager.enums.account.UserType
 import jakarta.persistence.*
 
-
 @Entity
 @Table(name = "user")
 @Inheritance(strategy = InheritanceType.JOINED)
