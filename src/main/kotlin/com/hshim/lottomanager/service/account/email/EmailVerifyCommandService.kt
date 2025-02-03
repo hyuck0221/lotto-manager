@@ -34,7 +34,7 @@ class EmailVerifyCommandService(
 
     fun buildCode(user: User, email: String) {
         val emailVerify = emailVerifyRepository.save(EmailVerify(user, email))
-        sendService.sendEmailAsync(email, EmailVerifyMessage(user, emailVerify))
+        sendService.sendEmailAsync(email, EmailVerifyMessage(user, emailVerify), user)
     }
 
     fun deleteVerify(id: String) {
