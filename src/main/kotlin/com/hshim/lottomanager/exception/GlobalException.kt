@@ -18,6 +18,7 @@ enum class GlobalException(
     CAN_NOT_DELETE_MY_ADMIN_ROLE("본인의 관리자 권한은 삭제할 수 없습니다."),
     ALREADY_DAILY_CHECK("이미 출석체크 하였습니다."),
     NOT_VERIFY_EMAIL("인증되지 않은 이메일입니다.", HttpStatus.FORBIDDEN),
+    IS_NOT_LOTTO_URL("로또 URL이 아닙니다."),
     ;
 
     val exception = exception(null)

@@ -2,11 +2,11 @@ package com.hshim.lottomanager.api.lotto
 
 import com.hshim.lottomanager.model.lotto.LottoNumberBuildRequest
 import com.hshim.lottomanager.model.lotto.LottoNumberRequest
+import com.hshim.lottomanager.model.lotto.UrlDecodeRequest
 import com.hshim.lottomanager.service.lotto.LottoNumberCommandService
 import com.hshim.lottomanager.service.lotto.LottoNumberQueryService
 import com.hshim.lottomanager.service.lotto.LottoQueryService
 import org.springframework.web.bind.annotation.*
-import org.springframework.web.multipart.MultipartFile
 
 @RestController
 @RequestMapping("/api/lotto")
@@ -33,10 +33,10 @@ class LottoController(
         @PathVariable id: String,
     ) = lottoNumberCommandService.delete(id)
 
-    @PostMapping("/qr/decode")
+    @PostMapping("/url/decode")
     fun getRequests(
-        @RequestPart photos: List<MultipartFile>
-    ) = lottoNumberQueryService.getRequests(photos)
+        @RequestBody request: UrlDecodeRequest,
+    ) = lottoNumberQueryService.getRequests(request)
 
     @PostMapping("/numbers/build")
     fun numbersBuild(
