@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>QR 코드 인식 예제</title>
+    <!-- html5-qrcode 라이브러리 추가 (CDN) -->
+    <script src="https://unpkg.com/html5-qrcode"></script>
+    <style>
+        body {
+            font-family: sans-serif;
+            text-align: center;
+            margin: 20px;
+        }
+        #optionContainer {
+            margin: 20px 0;
+        }
+        button {
+            margin: 5px;
+            padding: 10px 20px;
+            font-size: 16px;
+        }
+        #reader {
+            width: 300px;
+            height: 300px;
+            margin: 20px auto;
+        }
+        #result {
+            margin-top: 20px;
+            font-size: 1.2em;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+<!-- QR 인식 시작 버튼 -->
+<button id="qrButton">QR 인식</button>
+
+<!-- 업로드 / 촬영 선택 옵션 (초기에는 숨김) -->
+<div id="optionContainer" style="display: none;">
+    <button id="uploadBtn">업로드</button>
+    <button id="cameraBtn">촬영</button>
+</div>
+
+<!-- 이미지 파일 선택 input (숨김 처리) -->
+<input type="file" id="fileInput" accept="image/*" style="display: none;">
+
+<!-- 카메라 스캔 영역 (촬영 시 표시) -->
+<div id="reader" style="display: none;"></div>
+
+<!-- 결과 표시 영역 -->
+<div id="result"></div>
+
+<script>
+    const qrButton = document.getElementById('qrButton');
+    const optionContainer = document.getElementById('optionContainer');
+    const uploadBtn = document.getElementById('uploadBtn');
+    const cameraBtn = document.getElementById('cameraBtn');
+    const fileInput = document.getElementById('fileInput');
+    const readerElement = document.getElementById('reader');
+    const resultDiv = document.getElementById('result');
+
+    let html5QrCodeCamera = null; // 촬영용 html5-qrcode 인스턴스
+    let cameraId = null;
+
+    // QR 인식 버튼 클릭 시 업로드/촬영 옵션 표시
+    qrButton.addEventListener('click', () => {
+        optionContainer.style.display = 'block';
+    });
+
+    // 업로드 버튼 클릭: 파일 선택창 열기
+    uploadBtn.addEventListener('click', () => {
+        fileInput.click();
+    });
+
+    // 파일 선택 후 QR 코드 인식 (업로드 방식)
+    fileInput.addEventListener('change', (event) => {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        // html5-qrcode 인스턴스를 생성 (파일 스캔용)
+        const html5QrCode = new Html5Qrcode("reader");
+        html5QrCode.scanFile(file, true)
+            .then(decodedText => {
+                displayResult(decodedText);
+            })
+            .catch(err => {
+                displayResult("QR 코드 인식 실패: " + err);
+            });
+    });
+
+    // 촬영 버튼 클릭: 카메라를 통해 실시간 QR 인식 시작
+    cameraBtn.addEventListener('click', () => {
+        // 옵션 숨기고 카메라 영역 표시
+        optionContainer.style.display = 'none';
+        readerElement.style.display = 'block';
+
+        // 사용 가능한 카메라 목록 가져오기
+        Html5Qrcode.getCameras().then(cameras => {
+            if (cameras && cameras.length) {
+                cameraId = cameras[0].id; // 첫 번째 카메라 선택
+                html5QrCodeCamera = new Html5Qrcode("reader");
+                html5QrCodeCamera.start(
+                    cameraId,
+                    {
+                        fps: 10,     // 초당 10 프레임 처리
+                        qrbox: 250   // QR 인식 영역 크기
+                    },
+                    (decodedText, decodedResult) => {
+                        // QR 코드 인식 성공 시 결과 처리 후 카메라 종료
+                        displayResult(decodedText);
+                        html5QrCodeCamera.stop().then(() => {
+                            readerElement.innerHTML = "";
+                            readerElement.style.display = 'none';
+                        }).catch(err => {
+                            console.error("카메라 종료 중 오류 발생:", err);
+                        });
+                    },
+                    (errorMessage) => {
+                        // 인식 중 오류 발생 시 로그 출력 (필수 아님)
+                        console.log("QR 스캔 오류:", errorMessage);
+                    }
+                ).catch(err => {
+                    displayResult("카메라 시작 실패: " + err);
+                });
+            } else {
+                displayResult("사용 가능한 카메라가 없습니다.");
+            }
+        }).catch(err => {
+            displayResult("카메라 접근 오류: " + err);
+        });
+    });
+
+    // 인식 결과를 화면에 표시하는 함수
+    function displayResult(message) {
+        if (isValidUrl(message)) {
+            resultDiv.innerHTML = "인식된 URL: " + message;
+        } else {
+            resultDiv.innerHTML = "인식된 데이터: " + message;
+        }
+    }
+
+    // URL 유효성 검사 함수
+    function isValidUrl(string) {
+        try {
+            new URL(string);
+            return true;
+        } catch (_) {
+            return false;
+        }
+    }
+</script>
+</body>
+</html>
