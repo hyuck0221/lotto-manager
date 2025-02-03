@@ -7,20 +7,12 @@ import jakarta.persistence.*
 
 @Entity
 @Table(name = "user")
-@Inheritance(strategy = InheritanceType.JOINED)
-@DiscriminatorColumn(name = "user_type")
 class User(
     @Id
     @Column(nullable = false, columnDefinition = "varchar(100)")
     var id: String,
 
-    @Column(
-        nullable = false,
-        name = "user_type",
-        insertable = false,
-        updatable = false,
-        columnDefinition = "varchar(15)"
-    )
+    @Column(nullable = false, columnDefinition = "varchar(255)")
     @Enumerated(EnumType.STRING)
     open var userType: UserType,
 

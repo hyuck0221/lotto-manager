@@ -2,6 +2,7 @@ package com.hshim.lottomanager.service.account.user
 
 import com.hshim.lottomanager.model.account.user.UserRequest
 import com.hshim.lottomanager.model.account.user.UserResponse
+import com.hshim.lottomanager.service.account.email.EmailVerifyCommandService
 import com.hshim.lottomanager.service.account.oauth2.wrapper.OauthAttributeWrapper
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken
 import org.springframework.stereotype.Service
@@ -11,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional
 @Transactional
 class UserCommandService(
     private val userQueryService: UserQueryService,
+    private val emailVerifyCommandService: EmailVerifyCommandService,
     private val oauthAttributeWrappers: List<OauthAttributeWrapper>,
 ) {
     fun update(
@@ -18,6 +20,7 @@ class UserCommandService(
         req: UserRequest,
     ): UserResponse {
         val user = userQueryService.getUser(id)
+        emailVerifyCommandService.verifyEmail(user, req.email)
         req.updateTo(user)
         return UserResponse(user)
     }

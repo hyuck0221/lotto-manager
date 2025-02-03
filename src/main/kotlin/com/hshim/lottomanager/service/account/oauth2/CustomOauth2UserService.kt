@@ -1,5 +1,7 @@
 package com.hshim.lottomanager.service.account.oauth2
 
+import com.hshim.lottomanager.database.account.email.EmailVerify
+import com.hshim.lottomanager.database.account.email.repository.EmailVerifyRepository
 import com.hshim.lottomanager.database.account.repository.UserRepository
 import com.hshim.lottomanager.enums.account.UserType
 import com.hshim.lottomanager.exception.GlobalException
@@ -13,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional
 @Service
 class CustomOAuth2UserService(
     private val userRepository: UserRepository,
+    private val emailVerifyRepository: EmailVerifyRepository,
     private val oauthAttributeWrappers: List<OauthAttributeWrapper>,
 ) : DefaultOAuth2UserService() {
     @Transactional
@@ -24,7 +27,8 @@ class CustomOAuth2UserService(
             ?.let { userType -> oauthAttributeWrappers.find { it.support(userType) } }
             ?: throw GlobalException.NOT_SUPPORT_OAUTH.exception
 
-        userRepository.save(wrapper.getAttribute(oAuth2User.attributes).toEntity())
+        val user = userRepository.save(wrapper.getAttribute(oAuth2User.attributes).toEntity())
+        if (user.email != null) emailVerifyRepository.save(EmailVerify(user))
         return oAuth2User
     }
 }

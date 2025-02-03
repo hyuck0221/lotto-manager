@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ko">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -17,7 +17,6 @@
             align-items: center;
             height: 100vh;
         }
-
         header {
             width: 100%;
             position: fixed;
@@ -42,12 +41,11 @@
             color: #007bff;
             font-size: 16px;
         }
-
         .profile-container {
             width: 100%;
             text-align: center;
+            margin-top: 60px;
         }
-
         .profile-img {
             width: 120px;
             height: 120px;
@@ -59,18 +57,15 @@
             cursor: pointer;
             transition: all 0.3s ease-in-out;
         }
-
         .profile-img img {
             width: 100%;
             height: 100%;
             object-fit: cover;
         }
-
         .profile-img:hover {
             background-color: rgba(0, 0, 0, 0.4);
             transform: scale(1.05);
         }
-
         .profile-img .hover-x {
             position: absolute;
             top: 50%;
@@ -82,16 +77,13 @@
             display: none;
             pointer-events: none;
         }
-
         .profile-img:hover .hover-x {
             display: block;
         }
-
         .info-field {
             margin-bottom: 20px;
             text-align: center;
         }
-
         .info-field label {
             display: block;
             font-size: 14px;
@@ -99,8 +91,8 @@
             margin-bottom: 5px;
             color: #555;
         }
-
-        .info-field input {
+        .info-field input,
+        .info-field select {
             width: 100%;
             padding: 10px;
             border: 1px solid #ddd;
@@ -112,17 +104,16 @@
             background-color: #fff;
             transition: border 0.2s ease-in-out;
         }
-
-        .info-field input:disabled {
+        .info-field input:disabled,
+        .info-field select:disabled {
             background-color: #f0f0f0;
             color: #999;
         }
-
-        .info-field input:focus {
+        .info-field input:focus,
+        .info-field select:focus {
             border-color: #007BFF;
             outline: none;
         }
-
         .sync-button {
             font-size: 12px;
             color: #007BFF;
@@ -131,16 +122,13 @@
             margin-left: 10px;
             transition: color 0.2s ease-in-out;
         }
-
         .sync-button:hover {
             color: #0056b3;
         }
-
         .edit-buttons {
             margin-top: 20px;
             text-align: center;
         }
-
         .edit-buttons button {
             padding: 10px 15px;
             margin: 0 5px;
@@ -152,11 +140,9 @@
             color: white;
             transition: background-color 0.3s ease-in-out;
         }
-
         .edit-buttons button:hover {
             background-color: #0056b3;
         }
-
         .dialog {
             width: 90%;
             max-width: 350px;
@@ -171,7 +157,9 @@
             display: none;
             z-index: 2000;
         }
-
+        .dialog h3 {
+            margin-top: 0;
+        }
         .dialog input {
             width: 92%;
             padding: 10px;
@@ -183,12 +171,10 @@
             box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
             background-color: #fff;
         }
-
         .dialog input:focus {
             border-color: #007BFF;
             outline: none;
         }
-
         .dialog-buttons button {
             padding: 10px 15px;
             margin: 0 5px;
@@ -200,11 +186,9 @@
             color: white;
             transition: background-color 0.3s ease-in-out;
         }
-
         .dialog-buttons button:hover {
             background-color: #0056b3;
         }
-
         .dialog-overlay {
             position: fixed;
             top: 0;
@@ -216,7 +200,6 @@
             display: none;
             z-index: 1500;
         }
-
         .profile-edit-button {
             display: none;
             margin-top: 10px;
@@ -230,7 +213,6 @@
             color: white;
             transition: background-color 0.3s ease-in-out;
         }
-
         .profile-edit-button:hover {
             background-color: #0056b3;
         }
@@ -260,11 +242,25 @@
             </label>
             <input id="user-type" type="text" disabled>
         </div>
+        <!-- 이메일 입력란 추가 -->
+        <div class="info-field">
+            <label style="display: flex; align-items: center;">이메일</label>
+            <input id="email" type="email" disabled>
+        </div>
+        <!-- 알림 방식 드롭다운 추가 -->
+        <div class="info-field">
+            <label style="display: flex; align-items: center;">알림 방식</label>
+            <select id="send-type" disabled>
+                <option value="null">없음</option>
+                <option value="EMAIL">이메일</option>
+            </select>
+        </div>
         <div class="edit-buttons">
             <button id="cancel-button" style="display: none;">취소</button>
             <button id="edit-button">정보 수정</button>
         </div>
     </div>
+    <!-- 프로필 URL 입력 팝업 -->
     <div class="dialog" id="profile-dialog">
         <input id="profile-url" type="text" placeholder="프로필 URL 입력">
         <div class="dialog-buttons">
@@ -272,16 +268,36 @@
             <button id="confirm-dialog">확인</button>
         </div>
     </div>
+    <!-- 이메일 인증 팝업 (디자인 동일) -->
+    <div class="dialog" id="email-verification-dialog">
+        <h3>이메일 인증</h3>
+        <div class="info-field">
+            <label>이메일</label>
+            <input id="verification-email" type="email" disabled>
+        </div>
+        <button id="send-code-button">인증번호 발송</button>
+        <div id="code-section" style="display:none; margin-top:10px;">
+            <div id="timer" style="margin-bottom:10px;"></div>
+            <input id="verification-code" type="text" placeholder="인증번호 입력">
+            <button id="confirm-code-button">확인</button>
+        </div>
+        <button id="complete-verification-button" disabled style="margin-top:10px;">완료</button>
+    </div>
 </div>
 <script>
     let profileUrl = null;
     let id = null;
+    let verificationTimer = null;
+    let timeLeft = 0;
 
     async function fetchUserInfo() {
         const response = await fetch('/api/account/user/my-info');
         const data = await response.json();
         document.getElementById('nickname').value = data.displayName;
         document.getElementById('user-type').value = data.displayUserType;
+        document.getElementById('email').value = data.email;
+        // sendType 값으로 드롭다운 선택 (예: "EMAIL" 또는 없을 경우 "null")
+        document.getElementById('send-type').value = data.sendType ? data.sendType : "null";
         profileUrl = data.profileUrl;
         id = data.id;
         const profileImage = document.getElementById('profile-image');
@@ -296,6 +312,8 @@
         const editButton = document.getElementById('edit-button');
         const cancelButton = document.getElementById('cancel-button');
         const nicknameInput = document.getElementById('nickname');
+        const emailInput = document.getElementById('email');
+        const sendTypeSelect = document.getElementById('send-type');
         const profileDialog = document.getElementById('profile-dialog');
         const profileUrlInput = document.getElementById('profile-url');
         const confirmDialogButton = document.getElementById('confirm-dialog');
@@ -303,6 +321,16 @@
         const profileEditButton = document.getElementById('profile-edit-button');
         const dialogOverlay = document.getElementById('dialog-overlay');
         const profileImage = document.getElementById('profile-image');
+
+        // 이메일 인증 관련 엘리먼트
+        const emailVerificationDialog = document.getElementById('email-verification-dialog');
+        const verificationEmailInput = document.getElementById('verification-email');
+        const sendCodeButton = document.getElementById('send-code-button');
+        const codeSection = document.getElementById('code-section');
+        const timerDiv = document.getElementById('timer');
+        const verificationCodeInput = document.getElementById('verification-code');
+        const confirmCodeButton = document.getElementById('confirm-code-button');
+        const completeVerificationButton = document.getElementById('complete-verification-button');
 
         profileImage.addEventListener('click', () => {
             if (editButton.textContent === '정보 수정') {
@@ -325,12 +353,15 @@
         dialogOverlay.addEventListener('click', () => {
             dialogOverlay.style.display = 'none';
             profileDialog.style.display = 'none';
+            emailVerificationDialog.style.display = 'none';
         });
 
         function editSetting() {
             editButton.textContent = '수정 완료';
             cancelButton.style.display = 'inline-block';
             nicknameInput.disabled = false;
+            emailInput.disabled = false;
+            sendTypeSelect.disabled = false;
             profileEditButton.style.display = 'inline-block';
         }
 
@@ -339,24 +370,31 @@
                 editSetting();
             } else {
                 const nickname = nicknameInput.value.trim();
+                const email = emailInput.value.trim();
                 if (!nickname) {
                     alert('닉네임은 필수입니다.');
                     return;
                 }
-
+                // 드롭다운에서 "null"이면 null, 그 외에는 sendType 값을 그대로 사용
+                const sendTypeValue = sendTypeSelect.value === "null" ? null : sendTypeSelect.value;
                 const updatedData = {
                     displayName: nickname,
                     profileUrl: profileUrl,
+                    email: email,
+                    sendType: sendTypeValue
                 };
 
                 fetch(`/api/account/user/${id}`, {
                     method: 'PUT',
                     headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify(updatedData),
+                    body: JSON.stringify(updatedData)
                 })
-                    .then((response) => {
+                    .then(async (response) => {
                         if (response.ok) {
                             location.reload();
+                        } else if (response.status === 403) {
+                            // 403인 경우 이메일 인증이 필요함
+                            showEmailVerificationDialog(email);
                         } else {
                             alert('수정에 실패했습니다.');
                         }
@@ -413,6 +451,105 @@
                     });
             }
         });
+
+        // 이메일 인증 팝업 관련 함수 및 이벤트
+        function showEmailVerificationDialog(email) {
+            // 수정 화면에서 입력한 이메일 값을 팝업의 이메일 입력란에 표시
+            verificationEmailInput.value = email;
+            // 초기화
+            codeSection.style.display = 'none';
+            verificationCodeInput.value = '';
+            completeVerificationButton.disabled = true;
+            timerDiv.textContent = '';
+            // 인증 관련 버튼은 활성화 상태로 초기화
+            sendCodeButton.disabled = false;
+            confirmCodeButton.disabled = false;
+            // 팝업 노출
+            dialogOverlay.style.display = 'block';
+            emailVerificationDialog.style.display = 'block';
+        }
+
+        sendCodeButton.addEventListener('click', () => {
+            // 중복 클릭 방지: 버튼 비활성화
+            sendCodeButton.disabled = true;
+            const email = verificationEmailInput.value;
+            fetch(`/api/account/email/verify/build-code?email=${encodeURIComponent(email)}`, {
+                method: 'POST'
+            })
+                .then((response) => {
+                    if (response.ok) {
+                        codeSection.style.display = 'block';
+                        startTimer(180);
+                    } else {
+                        alert('인증번호 발송에 실패했습니다.');
+                        sendCodeButton.disabled = false; // 실패 시 재활성화
+                    }
+                })
+                .catch(() => {
+                    alert('인증번호 발송 중 오류가 발생했습니다.');
+                    sendCodeButton.disabled = false;
+                });
+        });
+
+        confirmCodeButton.addEventListener('click', () => {
+            // 중복 클릭 방지: 버튼 비활성화
+            confirmCodeButton.disabled = true;
+            const email = verificationEmailInput.value;
+            const code = verificationCodeInput.value.trim();
+            if (!code) {
+                alert('인증번호를 입력하세요.');
+                confirmCodeButton.disabled = false;
+                return;
+            }
+            fetch(`/api/account/email/verify?email=${encodeURIComponent(email)}&code=${encodeURIComponent(code)}`, {
+                method: 'POST'
+            })
+                .then((response) => {
+                    if (response.ok) {
+                        alert('인증번호가 확인되었습니다.');
+                        completeVerificationButton.disabled = false;
+                        // 인증 성공 시 재인증 버튼들 비활성화
+                        sendCodeButton.disabled = true;
+                        confirmCodeButton.disabled = true;
+                        clearInterval(verificationTimer);
+                        timerDiv.textContent = '';
+                    } else if (response.status === 401) {
+                        alert('인증번호가 틀렸습니다.');
+                        confirmCodeButton.disabled = false;
+                    } else {
+                        alert('인증 확인에 실패했습니다.');
+                        confirmCodeButton.disabled = false;
+                    }
+                })
+                .catch(() => {
+                    alert('인증 확인 중 오류가 발생했습니다.');
+                    confirmCodeButton.disabled = false;
+                });
+        });
+
+        completeVerificationButton.addEventListener('click', () => {
+            emailVerificationDialog.style.display = 'none';
+            dialogOverlay.style.display = 'none';
+        });
+
+        function startTimer(seconds) {
+            timeLeft = seconds;
+            timerDiv.textContent = `남은 시간: ${formatTime(timeLeft)}`;
+            verificationTimer = setInterval(() => {
+                timeLeft--;
+                timerDiv.textContent = `남은 시간: ${formatTime(timeLeft)}`;
+                if (timeLeft <= 0) {
+                    clearInterval(verificationTimer);
+                    timerDiv.textContent = '시간 초과';
+                }
+            }, 1000);
+        }
+
+        function formatTime(sec) {
+            const minutes = Math.floor(sec / 60);
+            const seconds = sec % 60;
+            return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+        }
     });
 </script>
 </body>

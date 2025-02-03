@@ -34,6 +34,8 @@ class SecurityConfig(
                         "/api/lotto/statistics/**",
                         "/api/question/reply/",
                         "/page/question/reply",
+                        "/api/email/verify/",
+                        "/page/email/remove-code",
                     ).permitAll()
                     .anyRequest().authenticated()
             }
