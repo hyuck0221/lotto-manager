@@ -1182,6 +1182,11 @@
     /* ----------------------------
        QR 인식 관련 기능
     ---------------------------- */
+
+    let camerasList = [];
+    let currentCameraIndex = 0;
+    let html5QrCodeInstance = null;
+
     // QR 인식 버튼 (상단 그리드에 추가된 btn-read-qr)
     const btnReadQr = document.getElementById("btn-read-qr");
     btnReadQr.addEventListener("click", () => {
@@ -1194,19 +1199,6 @@
         modalBody.innerHTML = `
         <h3 style="text-align: center;">QR 코드 인식</h3>
         <div style="text-align: center; margin-top: 20px;">
-          <button id="initQrButton" style="font-size: 18px; padding: 15px 30px; border: none; border-radius: 8px; background-color: #fff; border: 1px solid #ddd; box-shadow: 0 2px 4px rgba(0,0,0,0.1); cursor: pointer;">
-            QR 인식 시작
-          </button>
-        </div>
-      `;
-        document.getElementById("initQrButton").addEventListener("click", showQrOptions);
-    }
-
-    // 업로드 / 촬영 옵션을 보여줌
-    function showQrOptions() {
-        modalBody.innerHTML = `
-        <h3 style="text-align: center;">QR 코드 인식</h3>
-        <div style="text-align: center; margin: 20px 0;">
           <button id="qrUploadButton" style="font-size: 16px; padding: 10px 20px; margin: 0 10px; border: none; border-radius: 8px; background-color: #fff; border: 1px solid #ddd; box-shadow: 0 2px 4px rgba(0,0,0,0.1); cursor: pointer;">업로드</button>
           <button id="qrCameraButton" style="font-size: 16px; padding: 10px 20px; margin: 0 10px; border: none; border-radius: 8px; background-color: #fff; border: 1px solid #ddd; box-shadow: 0 2px 4px rgba(0,0,0,0.1); cursor: pointer;">촬영</button>
         </div>
@@ -1221,7 +1213,7 @@
         document.getElementById("qrCameraButton").addEventListener("click", startQrCamera);
     }
 
-    // 업로드 방식으로 파일 선택 시 QR 코드 인식
+    // 파일 업로드 방식은 기존과 동일
     function handleQrFileUpload(e) {
         const file = e.target.files[0];
         if (!file) return;
@@ -1237,55 +1229,34 @@
             });
     }
 
-    // 촬영 방식: 카메라를 통해 실시간 QR 코드 인식
-    let html5QrCodeInstance = null;
-
+    // 촬영 방식: 기본적으로 모바일은 후면 카메라, 데스크탑은 전면 카메라 선택
     function startQrCamera() {
         document.getElementById("qrReader").style.display = "block";
         Html5Qrcode.getCameras()
             .then((cameras) => {
                 if (cameras && cameras.length) {
-                    let frontCamera = cameras.find((camera) => {
-                        const label = camera.label.toLowerCase();
-                        return label.includes("front") || label.includes("user");
-                    });
-                    if (!frontCamera) {
-                        frontCamera = cameras[0];
-                    }
-                    const cameraId = frontCamera.id;
-                    html5QrCodeInstance = new Html5Qrcode("qrReader");
-                    const config = { fps: 10, qrbox: 250, facingMode: "user" };
-                    html5QrCodeInstance
-                        .start(
-                            cameraId,
-                            config,
-                            (decodedText, decodedResult) => {
-                                processQrResult(decodedText);
-                                html5QrCodeInstance
-                                    .stop()
-                                    .then(() => {
-                                        document.getElementById("qrReader").innerHTML = "";
-                                        document.getElementById("qrReader").style.display = "none";
-                                        html5QrCodeInstance = null;
-                                    })
-                                    .catch((err) => {
-                                        if (err && err.message && err.message.indexOf("not running") !== -1) {
-                                            // 스캐너가 이미 종료된 경우, 무시하고 초기화
-                                            document.getElementById("qrReader").innerHTML = "";
-                                            document.getElementById("qrReader").style.display = "none";
-                                            html5QrCodeInstance = null;
-                                        } else {
-                                            console.error("카메라 종료 중 오류 발생:", err);
-                                        }
-                                    });
-                            },
-                            (errorMessage) => {
-                                // 인식 중 오류는 필요시 처리
-                            }
-                        )
-                        .catch((err) => {
-                            alert("카메라 시작 실패: " + err);
+                    camerasList = cameras;
+                    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+                    let preferredCamera = null;
+                    if (isMobile) {
+                        // 모바일: 후면 카메라
+                        preferredCamera = cameras.find(camera => {
+                            const label = camera.label.toLowerCase();
+                            return label.includes("back") || label.includes("rear");
                         });
+                    } else {
+                        // 데스크탑: 전면 카메라
+                        preferredCamera = cameras.find(camera => {
+                            const label = camera.label.toLowerCase();
+                            return label.includes("front") || label.includes("user");
+                        });
+                    }
+                    if (!preferredCamera) {
+                        // 원하는 카메라를 찾지 못하면 첫 번째 카메라 사용
+                        preferredCamera = cameras[0];
+                    }
+                    currentCameraIndex = cameras.indexOf(preferredCamera);
+                    startScanningWithCamera(preferredCamera.id);
                 } else {
                     alert("사용 가능한 카메라가 없습니다.");
                 }
@@ -1295,6 +1266,79 @@
             });
     }
 
+    // 선택된 카메라 ID로 스캔 시작, 그리고 "카메라 전환" 버튼 추가
+    function startScanningWithCamera(cameraId) {
+        html5QrCodeInstance = new Html5Qrcode("qrReader");
+        // facingMode는 환경설정과 관계없이 전달된 카메라 ID에 따라 작동하므로 따로 지정하지 않아도 됩니다.
+        const config = { fps: 10, qrbox: 250 };
+        html5QrCodeInstance
+            .start(
+                cameraId,
+                config,
+                (decodedText, decodedResult) => {
+                    processQrResult(decodedText);
+                    html5QrCodeInstance
+                        .stop()
+                        .then(() => {
+                            document.getElementById("qrReader").innerHTML = "";
+                            document.getElementById("qrReader").style.display = "none";
+                            html5QrCodeInstance = null;
+                        })
+                        .catch((err) => {
+                            if (err && err.message && err.message.indexOf("not running") !== -1) {
+                                document.getElementById("qrReader").innerHTML = "";
+                                document.getElementById("qrReader").style.display = "none";
+                                html5QrCodeInstance = null;
+                            } else {
+                                console.error("카메라 종료 중 오류 발생:", err);
+                            }
+                        });
+                },
+                (errorMessage) => {
+                    // 인식 중 오류 발생 시 필요한 처리
+                }
+            )
+            .catch((err) => {
+                alert("카메라 시작 실패: " + err);
+            });
+
+        // 카메라 전환 버튼 추가 (여러 대의 카메라가 있을 때)
+        if (camerasList.length > 1) {
+            let switchBtn = document.getElementById("switchCameraBtn");
+            if (!switchBtn) {
+                switchBtn = document.createElement("button");
+                switchBtn.id = "switchCameraBtn";
+                switchBtn.textContent = "카메라 전환";
+                switchBtn.style.fontSize = "16px";
+                switchBtn.style.padding = "10px 20px";
+                switchBtn.style.marginTop = "10px";
+                switchBtn.style.border = "none";
+                switchBtn.style.borderRadius = "8px";
+                switchBtn.style.backgroundColor = "#fff";
+                switchBtn.style.border = "1px solid #ddd";
+                switchBtn.style.boxShadow = "0 2px 4px rgba(0,0,0,0.1)";
+                switchBtn.style.cursor = "pointer";
+                switchBtn.addEventListener("click", switchCamera);
+                document.getElementById("qrReader").appendChild(switchBtn);
+            }
+        }
+    }
+
+    // 카메라 전환 함수: 현재 스캔 중인 카메라를 멈추고 다음 카메라로 전환
+    function switchCamera() {
+        if (!camerasList || camerasList.length < 2) return;
+        if (html5QrCodeInstance) {
+            html5QrCodeInstance.stop().then(() => {
+                html5QrCodeInstance.clear();
+                html5QrCodeInstance = null;
+                currentCameraIndex = (currentCameraIndex + 1) % camerasList.length;
+                const newCamera = camerasList[currentCameraIndex];
+                startScanningWithCamera(newCamera.id);
+            }).catch((err) => {
+                console.error("카메라 전환 중 오류 발생:", err);
+            });
+        }
+    }
 
     // 인식된 URL을 API로 전달하여 번호 등록 다이얼로그를 띄움
     function processQrResult(url) {
@@ -1317,12 +1361,10 @@
                 }
             })
             .then((data) => {
-                // 응답 예시: [{ "times": 0, "numbers": [0] }, ...]
+                // 응답 예시: [{ "times": 1153, "numbers": [...] }, ...]
                 closeModal();
                 openModal();
-                // 모든 항목의 times 값은 같으므로 첫 번째 값 사용
                 const defaultTimes = data.length > 0 ? data[0].times : null;
-                // 각 항목의 numbers 배열을 추출하여 다이얼로그에 전달
                 const numbersList = data.map((item) => item.numbers);
                 showNumberRegisterScreen(numbersList, defaultTimes);
             })
