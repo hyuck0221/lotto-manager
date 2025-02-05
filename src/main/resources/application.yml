@@ -2,9 +2,6 @@ server:
   port: 8080
   error:
     include-message: always
-  servlet:
-    session:
-      timeout: 30d
 
 spring:
   servlet:
