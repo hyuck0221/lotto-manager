@@ -142,6 +142,7 @@
         }
 
         .main-button {
+            display: none; /* 이미지 로드 전에는 버튼 숨김 */
             border: none;
             border-radius: 8px;
             padding: 20px;
@@ -151,7 +152,6 @@
             background-color: #fff;
             border: 1px solid #ddd;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
@@ -173,6 +173,10 @@
             height: 40px;
             margin-bottom: 8px;
             display: none; /* 로드 전에는 숨김 */
+        }
+
+        .main-button.loaded {
+            display: flex; /* 이미지가 로드되면 버튼 표시 */
         }
 
         /* 이미지 로드 완료 시 부모에 loaded 클래스 추가 */
@@ -501,11 +505,12 @@
         fetchUserInfo();
         fetchCurrentTimes();
         loadRegisteredLottoNumbers();
-        // 이미지 로드 이벤트 (각 버튼 이미지 로드 완료 시 부모에 loaded 클래스 추가)
         document.querySelectorAll(".main-button img").forEach((img) => {
-            img.addEventListener("load", function () {
-                this.parentElement.classList.add("loaded");
-            });
+            const showButton = () => {
+                img.parentElement.classList.add("loaded");
+            };
+            img.addEventListener("load", showButton);
+            img.addEventListener("error", showButton);
         });
     });
 
@@ -527,6 +532,24 @@
             }
         }
     }
+
+    function initializeImageLoading() {
+        document.querySelectorAll(".main-button img").forEach((img) => {
+            // 이미지가 이미 로드 완료된 상태라면 바로 처리
+            if (img.complete) {
+                img.parentElement.classList.add("loaded");
+            } else {
+                const showButton = () => {
+                    img.parentElement.classList.add("loaded");
+                };
+                img.addEventListener("load", showButton);
+                img.addEventListener("error", showButton);
+            }
+        });
+    }
+
+    document.addEventListener("DOMContentLoaded", initializeImageLoading);
+    window.addEventListener("pageshow", initializeImageLoading);
 
     /* ----------------------------
        기존 로또 관련 기능 (게임, 번호 등록, 번호 생성)

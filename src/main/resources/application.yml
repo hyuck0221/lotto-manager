@@ -109,7 +109,6 @@ spring:
   session:
     jdbc:
       initialize-schema: always
-    timeout: 30d
 
 open-api:
   lotto:
