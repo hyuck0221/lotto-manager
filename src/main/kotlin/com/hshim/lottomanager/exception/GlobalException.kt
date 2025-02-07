@@ -19,6 +19,7 @@ enum class GlobalException(
     ALREADY_DAILY_CHECK("이미 출석체크 하였습니다."),
     NOT_VERIFY_EMAIL("인증되지 않은 이메일입니다.", HttpStatus.FORBIDDEN),
     IS_NOT_LOTTO_URL("로또 URL이 아닙니다."),
+    NOT_FOUND_NOTICE("공지사항을 찾을 수 없습니다."),
     ;
 
     val exception = exception(null)

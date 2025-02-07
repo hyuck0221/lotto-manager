@@ -219,6 +219,7 @@
         <div class="dropdown" id="dropdown">
             <button id="my-info">내 정보</button>
             <button id="question">문의</button>
+            <button id="notice">공지사항</button>
             <form th:action="@{/logout}" method="post" style="margin: 0;">
                 <button type="submit">로그아웃</button>
             </form>
@@ -248,6 +249,7 @@
     const dropdown = document.getElementById('dropdown');
     const myInfo = document.getElementById('my-info');
     const question = document.getElementById('question');
+    const notice = document.getElementById("notice");
     let currentPoints = 0;
 
     // 사용자 정보 가져오기
@@ -287,6 +289,9 @@
     });
     question.addEventListener('click', () => {
         location.href = '/page/question/list';
+    });
+    notice.addEventListener("click", () => {
+        location.href = "/page/notice/list";
     });
 
     // 출석체크 관련 함수들

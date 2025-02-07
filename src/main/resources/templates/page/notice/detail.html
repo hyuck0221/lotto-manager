@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>공지사항 상세 - Lotto Manager</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: "Helvetica Neue", Arial, sans-serif; background-color: #f9f9f9; color: #333; padding: 20px; }
+    header {
+      width: 100%;
+      position: fixed;
+      top: 0;
+      left: 0;
+      background-color: #fff;
+      border-bottom: 1px solid #ddd;
+      padding: 10px 20px;
+      z-index: 1000;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      min-height: 58px;
+    }
+    header h1 { font-size: 18px; position: fixed; left: 50%; transform: translate(-50%, 0); }
+    header .left-button { text-decoration: none; color: #007bff; font-size: 16px; margin-right: 20px; }
+    main { margin-top: 80px; }
+    .notice-header { margin-bottom: 20px; }
+    /* 공지 제목을 왼쪽 정렬 */
+    .notice-title { font-size: 24px; font-weight: bold; margin-bottom: 10px; text-align: left; }
+    .notice-meta { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+    .notice-date { font-size: 14px; color: #555; }
+    .enable-comment { font-size: 14px; color: #555; }
+    .content-box {
+      padding: 16px;
+      font-size: 16px;
+      line-height: 1.5;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      background-color: #fff;
+      margin-bottom: 20px;
+    }
+    /* 댓글 섹션 */
+    .comment-section { margin-top: 20px; }
+    .comment-count { font-size: 16px; margin-bottom: 10px; }
+    .comment-form { margin-bottom: 20px; }
+    .comment-form textarea {
+      width: 100%;
+      padding: 8px;
+      font-size: 14px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      resize: none;          /* 입력창 사이즈 조절 안됨 */
+      min-height: 50px;       /* 상하 길이 줄임 */
+      overflow: hidden;       /* 스크롤바 숨김 */
+    }
+    .comment-form .form-controls {
+      margin-top: 8px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .comment-form button {
+      padding: 8px 16px;
+      font-size: 14px;
+      background-color: #007bff;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .comment-form button:hover { background-color: #0056b3; }
+    .comment-item {
+      padding: 12px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      background-color: #fff;
+      margin-bottom: 10px;
+    }
+    .comment-header {
+      display: flex;
+      align-items: center;
+      margin-bottom: 6px;
+    }
+    .comment-header img {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background-color: #ccc;
+      margin-right: 8px;
+    }
+    .comment-header .comment-author { font-size: 14px; font-weight: bold; }
+    .comment-header .comment-date {
+      font-size: 12px;
+      color: #777;
+      margin-left: auto;
+    }
+    .comment-content { font-size: 14px; margin-bottom: 6px; }
+    .comment-actions { font-size: 12px; color: #007bff; cursor: pointer; }
+    .comment-actions span { margin-right: 10px; }
+  </style>
+</head>
+<body>
+<header>
+  <a href="/page/notice/list" class="left-button">목록</a>
+  <h1>공지사항 상세</h1>
+</header>
+<main>
+  <div id="notice-detail">
+    <div class="notice-header">
+      <div class="notice-title" id="notice-title">제목 로딩 중...</div>
+      <div class="notice-meta">
+        <div class="notice-date" id="notice-date">작성일: </div>
+        <div class="enable-comment" id="enable-comment"></div>
+      </div>
+    </div>
+    <div class="content-box" id="notice-content">
+      내용 로딩 중...
+    </div>
+    <!-- 댓글 섹션 (댓글 허용일 때만 표시) -->
+    <div id="comment-section" class="comment-section" style="display:none;">
+      <div class="comment-count" id="comment-count">댓글 수: 0</div>
+      <div class="comment-form">
+        <textarea id="comment-input" placeholder="댓글을 입력하세요"></textarea>
+        <div class="form-controls">
+          <label>
+            <input type="checkbox" id="anonymous-checkbox"> 익명
+          </label>
+          <button id="comment-submit-button">입력</button>
+        </div>
+      </div>
+      <div id="comment-list">
+        <!-- 댓글 항목들이 여기에 표시됩니다. -->
+      </div>
+    </div>
+  </div>
+</main>
+<script>
+  const urlParams = new URLSearchParams(window.location.search);
+  const noticeId = urlParams.get('id');
+
+  // 공지사항 상세 정보 가져오기
+  async function fetchNoticeDetail() {
+    try {
+      const response = await fetch(`/api/notice/${noticeId}`);
+      if (response.ok) {
+        const data = await response.json();
+        displayNoticeDetail(data);
+      } else {
+        alert('공지사항 정보를 불러오는데 실패했습니다.');
+        location.href = '/page/notice/list';
+      }
+    } catch (error) {
+      console.error('Error fetching notice details:', error);
+      alert('오류가 발생했습니다.');
+      location.href = '/page/notice/list';
+    }
+  }
+
+  function displayNoticeDetail(data) {
+    document.getElementById('notice-title').textContent = data.title;
+    document.getElementById('notice-date').textContent = '작성일: ' + data.createDate;
+    document.getElementById('notice-content').textContent = data.content || '내용이 없습니다.';
+    // 댓글 허용 여부 표시
+    const enableCommentElem = document.getElementById('enable-comment');
+    if (data.enableComment) {
+      enableCommentElem.textContent = '댓글 허용: O';
+      // 댓글 섹션 보이기 및 댓글 수 업데이트
+      document.getElementById('comment-section').style.display = 'block';
+      // 초기 댓글 수를 data.commentCnt 대신, fetchComments()로 불러온 댓글 배열 길이로 업데이트함
+      fetchComments();
+    } else {
+      enableCommentElem.textContent = '댓글 허용: X';
+      document.getElementById('comment-section').style.display = 'none';
+    }
+  }
+
+  // 댓글 목록 가져오기 및 댓글 수 업데이트
+  async function fetchComments() {
+    try {
+      const response = await fetch(`/api/notice/${noticeId}/comments`);
+      if (response.ok) {
+        const comments = await response.json();
+        displayComments(comments);
+      } else {
+        console.error('댓글을 불러오는데 실패했습니다.');
+      }
+    } catch (error) {
+      console.error('Error fetching comments:', error);
+    }
+  }
+
+  function displayComments(comments) {
+    // 댓글 수 업데이트 (댓글이 없더라도 업데이트)
+    document.getElementById('comment-count').textContent = "댓글 수: " + comments.length;
+
+    const commentList = document.getElementById('comment-list');
+    commentList.innerHTML = "";
+    if (comments.length === 0) {
+      commentList.textContent = "댓글이 없습니다.";
+      return;
+    }
+    comments.forEach(comment => {
+      const commentItem = document.createElement('div');
+      commentItem.className = "comment-item";
+
+      const commentHeader = document.createElement('div');
+      commentHeader.className = "comment-header";
+
+      const profileImg = document.createElement('img');
+      profileImg.src = (comment.anonymous || !comment.userProfile)
+              ? 'https://cdn-icons-png.flaticon.com/512/747/747545.png'
+              : comment.userProfile;
+      commentHeader.appendChild(profileImg);
+
+      const authorSpan = document.createElement('span');
+      authorSpan.className = "comment-author";
+      authorSpan.textContent = (comment.anonymous || !comment.userName) ? "익명" : comment.userName;
+      commentHeader.appendChild(authorSpan);
+
+      const dateSpan = document.createElement('span');
+      dateSpan.className = "comment-date";
+      dateSpan.textContent = comment.createDate || "";
+      commentHeader.appendChild(dateSpan);
+
+      commentItem.appendChild(commentHeader);
+
+      const commentContent = document.createElement('div');
+      commentContent.className = "comment-content";
+      commentContent.textContent = comment.comment;
+      commentItem.appendChild(commentContent);
+
+      if (comment.myComment) {
+        const commentActions = document.createElement('div');
+        commentActions.className = "comment-actions";
+
+        const editSpan = document.createElement('span');
+        editSpan.textContent = "수정";
+        editSpan.style.cursor = "pointer";
+        editSpan.addEventListener('click', () => editComment(comment.id, comment.comment));
+        commentActions.appendChild(editSpan);
+
+        const deleteSpan = document.createElement('span');
+        deleteSpan.textContent = "삭제";
+        deleteSpan.style.cursor = "pointer";
+        deleteSpan.addEventListener('click', () => deleteComment(comment.id));
+        commentActions.appendChild(deleteSpan);
+
+        commentItem.appendChild(commentActions);
+      }
+      commentList.appendChild(commentItem);
+    });
+  }
+
+  // 댓글 작성
+  async function postComment() {
+    const commentInput = document.getElementById('comment-input');
+    const anonymousCheckbox = document.getElementById('anonymous-checkbox');
+    const commentText = commentInput.value.trim();
+    if (!commentText) {
+      alert("댓글을 입력해주세요.");
+      return;
+    }
+    const payload = {
+      comment: commentText,
+      anonymous: anonymousCheckbox.checked
+    };
+    try {
+      const response = await fetch(`/api/notice/${noticeId}/comment`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      if (response.ok) {
+        commentInput.value = "";
+        anonymousCheckbox.checked = false;
+        // 댓글 작성 후 댓글 수 업데이트 및 댓글 목록 재조회
+        fetchComments();
+      } else {
+        alert("댓글 등록에 실패했습니다.");
+      }
+    } catch (error) {
+      console.error('Error posting comment:', error);
+      alert("오류가 발생했습니다.");
+    }
+  }
+
+  // 댓글 삭제
+  async function deleteComment(commentId) {
+    if (!confirm("정말 이 댓글을 삭제하시겠습니까?")) return;
+    try {
+      const response = await fetch(`/api/notice/comment/${commentId}`, { method: 'DELETE' });
+      if (response.ok) {
+        fetchComments();
+      } else {
+        alert("댓글 삭제에 실패했습니다.");
+      }
+    } catch (error) {
+      console.error('Error deleting comment:', error);
+      alert("오류가 발생했습니다.");
+    }
+  }
+
+  // 댓글 수정 (수정 시 prompt를 사용)
+  async function editComment(commentId, currentComment) {
+    const newComment = prompt("수정할 댓글을 입력하세요.", currentComment);
+    if (newComment === null || newComment.trim() === "") return;
+    const payload = { comment: newComment.trim() };
+    try {
+      const response = await fetch(`/api/notice/comment/${commentId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      if (response.ok) {
+        fetchComments();
+      } else {
+        alert("댓글 수정에 실패했습니다.");
+      }
+    } catch (error) {
+      console.error('Error editing comment:', error);
+      alert("오류가 발생했습니다.");
+    }
+  }
+
+  // 댓글 입력창 자동 높이 조절 (내용에 따라 아래로 길어짐)
+  const commentInputElem = document.getElementById('comment-input');
+  commentInputElem.addEventListener('input', function() {
+    this.style.height = 'auto';
+    this.style.height = this.scrollHeight + 'px';
+  });
+
+  document.getElementById('comment-submit-button').addEventListener('click', postComment);
+  window.addEventListener('DOMContentLoaded', fetchNoticeDetail);
+</script>
+</body>
+</html>

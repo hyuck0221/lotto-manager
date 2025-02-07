@@ -36,6 +36,7 @@ class SecurityConfig(
                         "/page/question/reply",
                         "/api/email/verify/",
                         "/page/email/remove-code",
+                        "/api/notice"
                     ).permitAll()
                     .anyRequest().authenticated()
             }
