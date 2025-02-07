@@ -31,6 +31,18 @@ class NoticeCommandService(
         noticeCommentRepository.save(request.toEntity(notice, user))
     }
 
+    fun updateComment(
+        id: String,
+        request: NoticeCommentRequest,
+    ) {
+        val user = userQueryService.getUser()
+        noticeCommentRepository.findByIdOrNull(id)
+            ?.apply {
+                if (user.id != this.user.id) throw GlobalException.IS_NOT_MY_COMMENT.exception
+                request.updateTo(this)
+            } ?: throw GlobalException.NOT_FOUND_NOTICE_COMMENT.exception
+    }
+
     fun delete(id: String) = noticeRepository.deleteById(id)
     fun deleteComment(id: String) = noticeCommentRepository.deleteById(id)
 }

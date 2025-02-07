@@ -39,6 +39,12 @@ class NoticeController(
         @RequestBody request: NoticeCommentRequest,
     ) = noticeCommandService.initComment(id, request)
 
+    @PutMapping("/comment/{id}")
+    fun updateComment(
+        @PathVariable id: String,
+        @RequestBody request: NoticeCommentRequest,
+    ) = noticeCommandService.updateComment(id, request)
+
     @DeleteMapping("/{id}")
     fun delete(@PathVariable id: String) = noticeCommandService.delete(id)
 

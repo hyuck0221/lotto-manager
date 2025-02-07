@@ -20,6 +20,8 @@ enum class GlobalException(
     NOT_VERIFY_EMAIL("인증되지 않은 이메일입니다.", HttpStatus.FORBIDDEN),
     IS_NOT_LOTTO_URL("로또 URL이 아닙니다."),
     NOT_FOUND_NOTICE("공지사항을 찾을 수 없습니다."),
+    NOT_FOUND_NOTICE_COMMENT("공지사항 댓글을 찾을 수 없습니다."),
+    IS_NOT_MY_COMMENT("본인의 댓글이 아닙니다.")
     ;
 
     val exception = exception(null)

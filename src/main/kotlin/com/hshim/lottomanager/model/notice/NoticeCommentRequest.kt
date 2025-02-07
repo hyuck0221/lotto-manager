@@ -17,4 +17,9 @@ class NoticeCommentRequest(
         comment = comment,
         anonymous = anonymous,
     )
+
+    fun updateTo(noticeComment: NoticeComment) {
+        noticeComment.comment = comment
+        noticeComment.anonymous = anonymous
+    }
 }
