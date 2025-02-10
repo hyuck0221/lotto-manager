@@ -52,6 +52,7 @@ class AlgorithmTestService(
                 algorithm = it,
                 cnt = cnt,
                 detail = null,
+                progressingId = "test",
             )
             test(times, request, taskId)
         }

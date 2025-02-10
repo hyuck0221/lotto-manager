@@ -2,9 +2,11 @@ package com.hshim.lottomanager.service.lotto.algorithm
 
 import com.hshim.lottomanager.database.lotto.repository.LottoRepository
 import com.hshim.lottomanager.enums.lotto.NumberBuildAlgorithm
+import com.hshim.lottomanager.service.emitter.model.EmitterEventModel
 import com.hshim.lottomanager.service.lotto.algorithm.model.GeneticDetail
 import com.hshim.lottomanager.service.lotto.algorithm.model.LottoAlgorithmDetail
 import com.hshim.lottomanager.service.lotto.algorithm.model.LottoChromosome
+import com.hshim.lottomanager.service.progressing.ProgressingService
 import com.hshim.lottomanager.util.ClassUtil.toClass
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Component
@@ -13,7 +15,8 @@ import kotlin.random.Random
 @Component
 class GeneticWrapper(
     private val lottoRepository: LottoRepository,
-) : LottoNumberBuildImpl() {
+    progressingService: ProgressingService,
+) : LottoNumberBuildImpl(progressingService) {
     override fun support(algorithm: NumberBuildAlgorithm) = algorithm == NumberBuildAlgorithm.GENETIC
     override fun getDetail(detailMap: Map<String, Any>?): LottoAlgorithmDetail? {
         return when (detailMap == null) {
@@ -22,18 +25,50 @@ class GeneticWrapper(
         }
     }
 
-    override fun build(cnt: Int, detail: LottoAlgorithmDetail?): List<List<Int>> {
+    override fun build(
+        cnt: Int,
+        progressingId: String,
+        detail: LottoAlgorithmDetail?,
+    ): List<List<Int>> {
         val detail = detail as? GeneticDetail ?: GeneticDetail()
         val lottoCnt = lottoRepository.count().toInt()
+        val progressingModel = EmitterEventModel.ProcessingInfo(
+            id = progressingId,
+            description = "지난 당첨번호 불러오는 중",
+            totalCnt = 3,
+        )
+        var totalCnt = 1
+        var finish = 0
+        progressingModel.updatePercent(totalCnt, finish)
+
         val pageable = Pageable.ofSize(detail.getPageSize(lottoCnt))
         val pastWinNumbers = lottoRepository.findAllByTimesBeforeAndIsOpenTrue(
             times = detail.timesBefore,
             pageable = pageable
         ).map { it.numbers ?: emptyList() }
 
-        var population = generatePopulation(detail)
+        totalCnt = detail.populationSize
+        finish = 0
+        progressingModel.apply {
+            this.description = "로또 DNA 생성 중"
+            this.executeCnt++
+        }.updatePercent(totalCnt, finish)
 
-        return (0..<cnt).map {
+        var population = List(detail.populationSize) {
+            val numbers = (1..45).toMutableList()
+            numbers.shuffle()
+            progressingModel.updatePercent(totalCnt, ++finish)
+            numbers.take(6)
+        }
+
+        totalCnt = (cnt * detail.generations) + (cnt * detail.populationSize)
+        finish = 0
+        progressingModel.apply {
+            this.description = "교차 & 돌연변이 생성하여 최종 세대 로또 추출 중"
+            this.executeCnt++
+        }.updatePercent(totalCnt, finish)
+
+        val result = (0..<cnt).map {
             repeat(detail.generations) {
                 val fitnessScores = population.map { calculateFitness(it, pastWinNumbers) }
                 val matingPool = selection(population, fitnessScores, detail.populationSize)
@@ -63,26 +98,23 @@ class GeneticWrapper(
                     }
                 }
 
+                progressingModel.updatePercent(totalCnt, ++finish)
                 population = mutatedPopulation
             }
 
             // 최종 세대에서 가장 적합도 높은 해 반환
-            val finalFitness = population.map { calculateFitness(it, pastWinNumbers) }
+            val finalFitness = population.map {
+                progressingModel.updatePercent(totalCnt, ++finish)
+                calculateFitness(it, pastWinNumbers)
+            }
             val bestIndex = finalFitness.indices.maxByOrNull { finalFitness[it] } ?: 0
 
             population[bestIndex].sorted()
         }
+
+        progressingModel.complete()
+        return result
     }
-}
-
-private fun generatePopulation(detail: GeneticDetail): List<LottoChromosome> {
-    return List(detail.populationSize) { generateRandomLotto() }
-}
-
-private fun generateRandomLotto(): LottoChromosome {
-    val numbers = (1..45).toMutableList()
-    numbers.shuffle()
-    return numbers.take(6)
 }
 
 private fun calculateFitness(
@@ -161,4 +193,10 @@ fun fixChromosome(candidate: List<Int>): LottoChromosome {
     }
 
     return cleaned.take(6)
+}
+
+private fun generateRandomLotto(): LottoChromosome {
+    val numbers = (1..45).toMutableList()
+    numbers.shuffle()
+    return numbers.take(6)
 }

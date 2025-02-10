@@ -1040,17 +1040,62 @@
         }
 
         btnGenerate.addEventListener("click", async () => {
-            setLoadingState(btnGenerate, true, "생성");
+            // 1. 기존 입력 필드에서 값을 먼저 추출합니다.
+            const algorithm = algorithmDropdown.value;
+            const count = document.getElementById("countInput").value;
+            const detail = collectDetails(algorithm);
+
+            // 2. UUID 생성 (최신 브라우저에서는 crypto.randomUUID() 사용 가능)
+            const progressingId = crypto.randomUUID ? crypto.randomUUID() : 'progressingId_' + Math.random().toString(36).substr(2, 12);
+
+            // 3. SSE 연결: /api/progressing/{uuid} 엔드포인트에 연결
+            const eventSource = new EventSource(`/api/progressing/${progressingId}`);
+
+            // 4. 모달에 프로그레스바 UI로 교체 (입력 필드 대신 진행 상태 표시)
+            modalBody.innerHTML = `
+        <h3>번호 생성 진행 중</h3>
+        <div id="progressInfo" style="font-size: 12px; color: gray; margin-bottom: 8px;">
+            0% (0/0) |
+        </div>
+        <div style="width: 100%; background-color: #e0e0e0; border-radius: 4px;">
+            <div id="progressBar" style="width: 0%; height: 20px; background-color: #4caf50; border-radius: 4px;"></div>
+        </div>
+    `;
+
+            // 5. SSE 이벤트 리스너 등록
+            eventSource.addEventListener("processing_info", (event) => {
+                const data = JSON.parse(event.data);
+                const {percent, executeCnt, totalCnt, description} = data;
+                document.getElementById("progressInfo").textContent = `${percent}% (${executeCnt}/${totalCnt}) | ${description}`;
+                document.getElementById("progressBar").style.width = percent + "%";
+            });
+
+            eventSource.addEventListener("processing_success_info", (event) => {
+                console.log("processing_success_info 이벤트 수신:", event);
+                eventSource.close();  // 연결 종료
+                closeModal();         // 모달 닫기 또는 다른 화면 전환 로직 실행
+            });
+
+            eventSource.onerror = (err) => {
+                eventSource.close();
+            };
+
+            // 6. 번호 생성 API 호출 (progressingId 포함)
             try {
-                const algorithm = algorithmDropdown.value;
-                const count = document.getElementById("countInput").value;
-                const detail = collectDetails(algorithm);
-                const result = await fetchGeneratedNumbers(algorithm, count, detail);
-                showGeneratedResult(result);
+                const response = await fetch("/api/lotto/numbers/build", {
+                    method: "POST",
+                    headers: {"Content-Type": "application/json"},
+                    body: JSON.stringify({
+                        algorithm,
+                        cnt: parseInt(count, 10),
+                        detail,
+                        progressingId: progressingId,
+                    }),
+                });
+                showGeneratedResult(await response.json());
             } catch (error) {
                 alert(`에러가 발생했습니다: ${error.message}`);
-            } finally {
-                setLoadingState(btnGenerate, false, "생성");
+                eventSource.close();
             }
         });
         updateAlgorithmDetails(algorithmDropdown.value);
@@ -1138,15 +1183,6 @@
             detail.minConfidence = parseFloat(document.getElementById("minConfidenceInput").value);
         }
         return detail;
-    }
-
-    async function fetchGeneratedNumbers(algorithm, count, detail) {
-        const response = await fetch("/api/lotto/numbers/build", {
-            method: "POST",
-            headers: {"Content-Type": "application/json"},
-            body: JSON.stringify({algorithm, cnt: parseInt(count, 10), detail}),
-        });
-        return response.ok ? await response.json() : [];
     }
 
     async function fetchCurrentTimes() {
@@ -1298,7 +1334,7 @@
     function startScanningWithCamera(cameraId) {
         html5QrCodeInstance = new Html5Qrcode("qrReader");
         // facingMode는 환경설정과 관계없이 전달된 카메라 ID에 따라 작동하므로 따로 지정하지 않아도 됩니다.
-        const config = { fps: 10, qrbox: 250 };
+        const config = {fps: 10, qrbox: 250};
         html5QrCodeInstance
             .start(
                 cameraId,

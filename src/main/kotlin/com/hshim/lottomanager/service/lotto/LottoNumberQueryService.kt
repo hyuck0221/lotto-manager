@@ -48,7 +48,7 @@ class LottoNumberQueryService(
         val wrapper = LottoNumberBuildWrappers.find { it.support(request.algorithm) }
             ?: throw GlobalException.NOT_FOUND_TIMES.exception
         val detail = wrapper.getDetail(request.detail)
-        val numbersList = wrapper.build(request.cnt, detail)
+        val numbersList = wrapper.build(request.cnt, request.progressingId, detail)
         return numbersList.map { LottoNumberBuildResponse(it) }
     }
 }

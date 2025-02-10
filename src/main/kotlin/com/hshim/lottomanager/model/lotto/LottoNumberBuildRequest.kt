@@ -6,4 +6,5 @@ class LottoNumberBuildRequest(
     val algorithm: NumberBuildAlgorithm,
     val cnt: Int,
     var detail: MutableMap<String, Any>?,
+    val progressingId: String,
 )

@@ -6,5 +6,5 @@ import com.hshim.lottomanager.service.lotto.algorithm.model.LottoAlgorithmDetail
 interface LottoNumberBuildWrapper {
     fun support(algorithm: NumberBuildAlgorithm): Boolean
     fun getDetail(detailMap: Map<String, Any>?): LottoAlgorithmDetail?
-    fun build(cnt: Int, detail: LottoAlgorithmDetail?): List<List<Int>>
+    fun build(cnt: Int, progressingId:String, detail: LottoAlgorithmDetail?): List<List<Int>>
 }

@@ -2,8 +2,10 @@ package com.hshim.lottomanager.service.lotto.algorithm
 
 import com.hshim.lottomanager.database.lotto.repository.LottoRepository
 import com.hshim.lottomanager.enums.lotto.NumberBuildAlgorithm
+import com.hshim.lottomanager.service.emitter.model.EmitterEventModel
 import com.hshim.lottomanager.service.lotto.algorithm.model.AprioriDetail
 import com.hshim.lottomanager.service.lotto.algorithm.model.LottoAlgorithmDetail
+import com.hshim.lottomanager.service.progressing.ProgressingService
 import com.hshim.lottomanager.util.ClassUtil.toClass
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Component
@@ -12,7 +14,8 @@ import kotlin.random.Random
 @Component
 class AprioriWrapper(
     private val lottoRepository: LottoRepository,
-) : LottoNumberBuildImpl() {
+    progressingService: ProgressingService,
+) : LottoNumberBuildImpl(progressingService) {
     override fun support(algorithm: NumberBuildAlgorithm) = algorithm == NumberBuildAlgorithm.APRIORI
     override fun getDetail(detailMap: Map<String, Any>?): LottoAlgorithmDetail? {
         return when (detailMap == null) {
@@ -21,48 +24,68 @@ class AprioriWrapper(
         }
     }
 
-    override fun build(cnt: Int, detail: LottoAlgorithmDetail?): List<List<Int>> {
+    override fun build(
+        cnt: Int,
+        progressingId: String,
+        detail: LottoAlgorithmDetail?,
+    ): List<List<Int>> {
         val detail = detail as? AprioriDetail ?: AprioriDetail()
         val lottoCnt = lottoRepository.count().toInt()
+        val progressingModel = EmitterEventModel.ProcessingInfo(
+            id = progressingId,
+            description = "지난 당첨번호 불러오는 중",
+            totalCnt = 3,
+        )
+        var totalCnt = 1
+        var finish = 0
+        progressingModel.updatePercent(totalCnt, finish)
+
         val pageable = Pageable.ofSize(detail.getPageSize(lottoCnt))
         val pastWinNumbers = lottoRepository.findAllByTimesBeforeAndIsOpenTrue(
             times = detail.timesBefore,
             pageable = pageable
         ).map { it.numbers ?: emptyList() }
 
-        val frequentItemsets = apriori(pastWinNumbers, detail.minSupportCnt)
-        return (0..<cnt).map {
+        val frequentItemsets = apriori(progressingModel, pastWinNumbers, detail.minSupportCnt)
+
+        totalCnt = cnt
+        finish = 0
+        progressingModel.apply {
+            this.description = "신뢰도 높은 규칙 우선으로 번호 추출 중"
+            this.executeCnt++
+        }.updatePercent(totalCnt, finish)
+
+        val result = (0..<cnt).map {
             val rules = generateAssociationRules(frequentItemsets, pastWinNumbers, detail.minConfidence)
-            pick6NumbersFromRules(rules)
-        }
-    }
+            run {
+                for ((lhs, rhs, conf) in rules.sortedByDescending { it.third }) {
+                    val unionSet = (lhs union rhs).toMutableSet()
 
-    fun pick6NumbersFromRules(
-        rules: List<Triple<Set<Int>, Set<Int>, Double>>,
-        maxNum: Int = 45
-    ): List<Int> {
-        // 신뢰도 높은 규칙부터 순회
-        for ((lhs, rhs, conf) in rules.sortedByDescending { it.third }) {
-            val unionSet = (lhs union rhs).toMutableSet()
+                    // 이미 6개 초과라면 스킵(다른 규칙 시도)
+                    if (unionSet.size > 6) {
+                        continue
+                    }
 
-            // 이미 6개 초과라면 스킵(다른 규칙 시도)
-            if (unionSet.size > 6) {
-                continue
+                    // 부족하면 6개가 될 때까지 랜덤 보충
+                    while (unionSet.size < 6) {
+                        val candidate = Random.nextInt(1, 46)
+                        unionSet.add(candidate)
+                    }
+
+                    // 오름차순 정렬 후 리턴
+                    unionSet.sorted()
+                    return@run
+                }
             }
 
-            // 부족하면 6개가 될 때까지 랜덤 보충
-            while (unionSet.size < 6) {
-                val candidate = Random.nextInt(1, maxNum + 1)
-                unionSet.add(candidate)
-            }
-
-            // 오름차순 정렬 후 리턴
-            return unionSet.sorted()
+            // 마땅한 규칙이 없거나 모두 6개 초과라면,
+            // 완전 랜덤/또는 다른 로직으로 6개 생성(여기선 단순 랜덤 예시)
+            progressingModel.updatePercent(totalCnt, ++finish)
+            generateRandom6(45)
         }
 
-        // 마땅한 규칙이 없거나 모두 6개 초과라면,
-        // 완전 랜덤/또는 다른 로직으로 6개 생성(여기선 단순 랜덤 예시)
-        return generateRandom6(maxNum)
+        progressingModel.complete()
+        return result
     }
 
     /**
@@ -87,10 +110,18 @@ class AprioriWrapper(
      * @return Map<Set<Int>, Int> : (빈발 아이템셋, 해당 아이템셋 등장 횟수)
      */
     fun apriori(
+        progressingModel: EmitterEventModel.ProcessingInfo,
         transactions: List<List<Int>>,
         minSupportCnt: Int,
-        maxItemsetSize: Int = 3
+        maxItemsetSize: Int = 3,
     ): Map<Set<Int>, Int> {
+        val totalCnt = maxItemsetSize - 1
+        var finish = 0
+        progressingModel.apply {
+            this.description = "지난 당첨이력 규칙 찾는 중"
+            this.executeCnt++
+        }.updatePercent(totalCnt, finish)
+
         val transactionSets = transactions.map { it.toSet() }
 
         // 2) 1-아이템셋 수집
@@ -135,6 +166,7 @@ class AprioriWrapper(
                 .toMap()
 
             // 3-4) 전역 itemsets에 추가
+            progressingModel.updatePercent(totalCnt, ++finish)
             itemsets.putAll(currentLevelSets)
         }
 
