@@ -5,6 +5,7 @@ import com.hshim.lottomanager.database.game.Point
 import com.hshim.lottomanager.database.game.PointLog
 import com.hshim.lottomanager.database.game.repository.PointLogRepository
 import com.hshim.lottomanager.database.game.repository.PointRepository
+import com.hshim.lottomanager.exception.GlobalException
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
@@ -23,7 +24,10 @@ class PointCommandService(
 
     fun minusPoint(user: User, amount: Int) {
         val point = pointRepository.findByUserId(user.id)
-            ?.apply { this.amount -= amount }
+            ?.apply {
+                this.amount -= amount
+                if (this.amount < 0) throw GlobalException.POINT_UNDER_ZERO.exception
+            }
             ?: pointRepository.save(Point(user = user, amount = -amount))
         pointLogRepository.save(PointLog(point = point, changedAmount = -amount, currentAmount = point.amount))
     }

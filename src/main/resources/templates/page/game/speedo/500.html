@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>스피또 500</title>
+    <style>
+        /* 기존 스타일 복사 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: "Helvetica Neue", Arial, sans-serif;
+            background-color: #f9f9f9;
+            color: #333;
+        }
+
+        header {
+            width: 100%;
+            position: fixed;
+            top: 0;
+            left: 0;
+            background-color: #fff;
+            border-bottom: 1px solid #ddd;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 20px;
+            z-index: 1000;
+            min-height: 58px;
+        }
+
+        header .left-section {
+            display: flex;
+            align-items: center;
+        }
+
+        header h1 {
+            font-size: 18px;
+            position: fixed;
+            left: 50%;
+            transform: translate(-50%, 0);
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            position: relative;
+            cursor: pointer;
+        }
+
+        .profile-img {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background-color: #ccc;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .profile-img img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .user-details {
+            margin-left: 8px;
+        }
+
+        .display-name {
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .dropdown {
+            position: absolute;
+            top: calc(100% + 5px);
+            right: 0;
+            background: #fff;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 8px 0;
+            display: none;
+            flex-direction: column;
+            min-width: 90px;
+        }
+
+        .dropdown button {
+            background: none;
+            border: none;
+            padding: 8px 16px;
+            width: 100%;
+            text-align: left;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .dropdown button:hover {
+            background-color: #f5f5f5;
+        }
+
+        .dropdown.open {
+            display: flex;
+        }
+
+        header .home-button {
+            text-decoration: none;
+            color: #007bff;
+            font-size: 16px;
+        }
+
+        main {
+            margin-top: 70px;
+            padding: 16px;
+        }
+
+        /* 포인트 컨테이너 */
+        .status-section {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+
+        .points-container {
+            display: flex;
+            align-items: center;
+            background: #fff;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 8px 16px;
+        }
+
+        .points-container span {
+            font-size: 16px;
+            margin-right: 8px;
+        }
+
+        /* 스피또 500 게임 영역 */
+        .speedo-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 16px;
+            background-color: #fff;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            max-width: 400px;
+            margin: 0 auto;
+        }
+
+        .speedo-purchase-button {
+            background-color: #2196f3;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            padding: 12px 20px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        .speedo-purchase-button:hover {
+            background-color: #1976d2;
+        }
+
+        /* 스크래치 영역 */
+        .scratch-container {
+            position: relative;
+            width: 300px;
+            height: 160px;
+            margin: 0 auto;
+            overflow: hidden;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            background-color: #fff;
+            display: none; /* 처음엔 숨김 */
+        }
+
+        /* 결과 텍스트(밑바탕) */
+        .scratch-result {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 300px;
+            height: 160px;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            align-content: center;
+            text-align: center;
+            font-size: 20px;
+            color: #000;
+            z-index: 1;
+            user-select: none;
+            pointer-events: none;
+        }
+
+        .scratch-result div {
+            margin: 10px 0;
+        }
+
+        /* 스크래치 오버레이(캔버스) */
+        #scratch-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 300px;
+            height: 160px;
+            z-index: 2;
+            cursor: crosshair;
+        }
+
+        /* 안내 문구(처음엔 숨김) */
+        .info-text {
+            font-size: 14px;
+            color: #555;
+            display: none;
+        }
+
+        /* 당첨 정보 */
+        .speedo-result-info {
+            margin-top: 10px;
+            font-size: 16px;
+        }
+
+        .speedo-result-info span {
+            display: block;
+            margin-bottom: 4px;
+        }
+
+        .highlight {
+            color: green;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+<header>
+    <div class="left-section">
+        <a href="/" class="home-button">홈</a>
+    </div>
+    <h1>스피또 500</h1>
+    <div class="user-info" id="user-info">
+        <div class="profile-img" id="profile-img">
+            <img id="profile-image" src="" alt=""/>
+        </div>
+        <div class="user-details">
+            <div class="display-name" id="display-name"></div>
+        </div>
+        <div class="dropdown" id="dropdown">
+            <button id="my-info">내 정보</button>
+            <button id="question">문의</button>
+            <button id="notice">공지사항</button>
+            <form th:action="@{/logout}" method="post" style="margin: 0;">
+                <button type="submit">로그아웃</button>
+            </form>
+        </div>
+    </div>
+</header>
+
+<main>
+    <!-- 포인트 표시 섹션 -->
+    <div class="status-section">
+        <div class="points-container" id="points-container">
+            <span id="current-points">포인트: 0</span>
+        </div>
+    </div>
+
+    <!-- 스피또 500 게임 컨테이너 -->
+    <div class="speedo-container">
+        <button class="speedo-purchase-button" onclick="onPurchaseClick()">
+            스피또 구매 (500원)
+        </button>
+
+        <!-- 안내 문구(처음엔 숨김) -->
+        <div class="info-text" id="info-text">스피또를 긁어주세요!</div>
+
+        <!-- 스크래치 영역 -->
+        <div class="scratch-container" id="scratch-container">
+            <div class="scratch-result" id="scratch-result">
+                <!-- 서버로부터 받은 results 6개를 3x2 형태로 표시 -->
+            </div>
+            <canvas id="scratch-canvas"></canvas>
+        </div>
+
+        <!-- 당첨 정보 -->
+        <div class="speedo-result-info" id="speedo-result-info" style="display: none;">
+            <span id="rank-info"></span>
+            <span id="point-info"></span>
+        </div>
+    </div>
+</main>
+
+<script>
+    // 사용자 정보 및 드롭다운 관련
+    const userInfo = document.getElementById('user-info');
+    const dropdown = document.getElementById('dropdown');
+    const myInfo = document.getElementById('my-info');
+    const question = document.getElementById('question');
+    const notice = document.getElementById("notice");
+    let currentResults = [];
+    let currentPoints = 0;
+    let currentRank = 0;
+    let currentPoint = 0;
+
+    userInfo.addEventListener('click', () => {
+        dropdown.classList.toggle('open');
+    });
+    document.addEventListener('click', (event) => {
+        if (!userInfo.contains(event.target) && !dropdown.contains(event.target)) {
+            dropdown.classList.remove('open');
+        }
+    });
+    myInfo.addEventListener('click', () => {
+        location.href = '/page/account/user/my-info';
+    });
+    question.addEventListener('click', () => {
+        location.href = '/page/question/list';
+    });
+    notice.addEventListener("click", () => {
+        location.href = "/page/notice/list";
+    });
+
+    // 사용자 정보 가져오기
+    async function fetchUserInfo() {
+        try {
+            const response = await fetch('/api/account/user/my-info');
+            if (response.ok) {
+                const user = await response.json();
+                const profileImg = document.getElementById('profile-image');
+                const displayName = document.getElementById('display-name');
+
+                displayName.textContent = user.displayName;
+                if (user.profileUrl) {
+                    profileImg.src = user.profileUrl;
+                    profileImg.style.backgroundColor = 'transparent';
+                } else {
+                    profileImg.src = 'https://cdn-icons-png.flaticon.com/512/747/747545.png';
+                    profileImg.style.backgroundColor = '#ccc';
+                }
+            }
+        } catch (error) {
+            console.log(error);
+        }
+    }
+
+    // 현재 포인트 가져오기
+    async function fetchPoints() {
+        try {
+            const response = await fetch('/api/game/point');
+            if (response.ok) {
+                const data = await response.json();
+                currentPoints = data.point;
+                document.getElementById('current-points').textContent = `포인트: ${currentPoints}`;
+            }
+        } catch (error) {
+            console.error(error);
+        }
+    }
+
+    // 페이지 로드시 사용자 정보와 포인트 불러오기, 스크래치 캔버스 초기화
+    window.addEventListener('DOMContentLoaded', async () => {
+        fetchUserInfo();
+        fetchPoints();
+        initScratchCanvas();
+    });
+
+    // 스피또 구매 버튼 로직
+    async function onPurchaseClick() {
+        try {
+            const response = await fetch('/api/game/speedo/500', { method: 'POST' });
+            if (response.ok) {
+                const data = await response.json();
+                // 서버에서 새로운 포인트 값을 받거나, 포인트 갱신을 위해 fetchPoints() 호출
+                fetchPoints();
+                currentResults = data.results; // 결과 배열 저장
+                currentRank = data.rank;
+                currentPoint = data.point;
+
+                // 결과를 바로 보여주되, 아직는 하이라이트 적용 없이 표시
+                displayResults(data.results);
+
+                // 스크래치 영역 및 안내 문구 표시
+                document.getElementById('info-text').style.display = 'block';
+                document.getElementById('scratch-container').style.display = 'block';
+                document.getElementById('speedo-result-info').style.display = 'none';
+
+                // 스크래치 캔버스 초기화 (오버레이 채우기)
+                cleared = false;
+                fillCanvasSilver();
+            } else {
+                if (response.status === 400) {
+                    alert("포인트가 부족합니다");
+                }
+            }
+        } catch (error) {
+            console.error(error);
+        }
+    }
+
+    // 스크래치 캔버스 관련
+    let ctx, isDrawing = false, lastX, lastY, cleared = false;
+    let scratchedPixels = 0, totalPixels = 0;
+    const threshold = 0.5; // 50% 이상 긁으면 전체 오픈
+
+    function initScratchCanvas() {
+        const canvas = document.getElementById('scratch-canvas');
+        ctx = canvas.getContext('2d');
+
+        // 초기 은색(또는 원하는 색)으로 전체 덮기
+        fillCanvasSilver();
+
+        // 마우스/터치 이벤트 등록
+        canvas.addEventListener('mousedown', startDrawing);
+        canvas.addEventListener('mousemove', draw);
+        canvas.addEventListener('mouseup', stopDrawing);
+        canvas.addEventListener('touchstart', startDrawing, {passive: true});
+        canvas.addEventListener('touchmove', draw, {passive: true});
+        canvas.addEventListener('touchend', stopDrawing, {passive: true});
+    }
+
+    function fillCanvasSilver() {
+        const canvas = document.getElementById('scratch-canvas');
+        ctx.globalCompositeOperation = 'source-over';
+        ctx.fillStyle = '#BDBDBD'; // 은색 계열
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // 픽셀 수 계산 (전체 픽셀)
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        totalPixels = imageData.data.length / 4;
+    }
+
+    function startDrawing(e) {
+        isDrawing = true;
+        const {x, y} = getCursorPosition(e);
+        lastX = x;
+        lastY = y;
+    }
+
+    function draw(e) {
+        if (!isDrawing || cleared) return;
+        const {x, y} = getCursorPosition(e);
+
+        ctx.globalCompositeOperation = 'destination-out';
+        ctx.lineWidth = 40;  // 브러쉬 크기 크게
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+
+        ctx.beginPath();
+        ctx.moveTo(lastX, lastY);
+        ctx.lineTo(x, y);
+        ctx.stroke();
+        lastX = x;
+        lastY = y;
+
+        // 긁힌 픽셀 계산
+        calculateScratchedPixels();
+    }
+
+    function stopDrawing() {
+        isDrawing = false;
+    }
+
+    function getCursorPosition(e) {
+        const canvas = document.getElementById('scratch-canvas');
+        const rect = canvas.getBoundingClientRect();
+        let clientX, clientY;
+
+        if (e.touches && e.touches.length > 0) {
+            clientX = e.touches[0].clientX;
+            clientY = e.touches[0].clientY;
+        } else {
+            clientX = e.clientX;
+            clientY = e.clientY;
+        }
+
+        return {
+            x: clientX - rect.left,
+            y: clientY - rect.top
+        };
+    }
+
+    function calculateScratchedPixels() {
+        const canvas = document.getElementById('scratch-canvas');
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        let count = 0;
+        for (let i = 0; i < imageData.data.length; i += 4) {
+            // RGBA 중 A값(투명도)이 0이면 긁힌 부분
+            if (imageData.data[i + 3] === 0) {
+                count++;
+            }
+        }
+        scratchedPixels = count;
+
+        // 50% 이상 긁혔으면 전체 제거 & 결과 노출
+        if (scratchedPixels / totalPixels > threshold && !cleared) {
+            clearCanvas();
+            // 결과 노출
+            revealFinalResult();
+        }
+    }
+
+    function clearCanvas() {
+        const canvas = document.getElementById('scratch-canvas');
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        cleared = true;
+    }
+
+    // 스크래치 완료 시 서버에서 결과 받아오기
+    async function revealFinalResult() {
+        // 스크래치 완료 후 당첨 조건에 해당하면 하이라이트 적용
+        applyWinningHighlight(currentResults);
+        displayRankPoint(currentRank, currentPoint);
+        fetchPoints();
+    }
+
+    // 3x2 형태로 results 표시 + 3개 이상 같은 항목이 있으면 초록색 강조
+    function displayResults(results) {
+        const scratchResult = document.getElementById('scratch-result');
+        scratchResult.innerHTML = ''; // 초기화
+        results.forEach(item => {
+            const div = document.createElement('div');
+            div.textContent = item;
+            // 구매 시에는 하이라이트를 적용하지 않음
+            scratchResult.appendChild(div);
+        });
+    }
+
+    function applyWinningHighlight(results) {
+        const countMap = {};
+        results.forEach(item => {
+            countMap[item] = (countMap[item] || 0) + 1;
+        });
+        const scratchResult = document.getElementById('scratch-result');
+        const children = scratchResult.children;
+        for (let i = 0; i < children.length; i++) {
+            const item = children[i].textContent;
+            if (countMap[item] >= 3) {
+                children[i].classList.add('highlight');
+            }
+        }
+    }
+
+    function displayRankPoint(rank, point) {
+        const rankInfo = document.getElementById('rank-info');
+        const pointInfo = document.getElementById('point-info');
+        const infoContainer = document.getElementById('speedo-result-info');
+
+        rankInfo.textContent = `${rank}등`;
+        pointInfo.textContent = `당첨 포인트 ${point}`;
+        infoContainer.style.display = 'block';
+    }
+</script>
+</body>
+</html>
