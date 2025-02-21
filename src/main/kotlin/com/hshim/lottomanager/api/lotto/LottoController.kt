@@ -45,4 +45,9 @@ class LottoController(
 
     @GetMapping("/times/latest")
     fun timesLatest() = lottoQueryService.timesLatest()
+
+    @PutMapping("/number/{id}/note")
+    fun updateNote(@PathVariable id: String, @RequestBody request: Map<String, String?>) {
+        lottoNumberCommandService.updateNote(id, request["note"])
+    }
 }

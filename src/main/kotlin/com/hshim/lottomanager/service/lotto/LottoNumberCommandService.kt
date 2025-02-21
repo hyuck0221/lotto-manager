@@ -3,6 +3,7 @@ package com.hshim.lottomanager.service.lotto
 import com.hshim.lottomanager.database.lotto.repository.LottoNumberRepository
 import com.hshim.lottomanager.model.lotto.LottoNumberRequest
 import com.hshim.lottomanager.service.account.user.UserQueryService
+import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
@@ -30,5 +31,10 @@ class LottoNumberCommandService(
 
     fun delete(id: String) {
         lottoNumberRepository.deleteById(id)
+    }
+
+    fun updateNote(id: String, note: String?) {
+        lottoNumberRepository.findByIdOrNull(id)
+            ?.apply { this.note = note }
     }
 }

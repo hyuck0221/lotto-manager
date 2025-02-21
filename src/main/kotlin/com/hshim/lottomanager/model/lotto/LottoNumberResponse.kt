@@ -7,11 +7,13 @@ class LottoNumberResponse(
     val numbers: List<Int>,
     val rank: Int?,
     val lotto: LottoResponse,
+    val note: String?,
 ) {
     constructor(lottoNumber: LottoNumber): this (
         id = lottoNumber.id,
         numbers = lottoNumber.numbers,
         rank = lottoNumber.rank,
         lotto = LottoResponse(lottoNumber.lotto),
+        note = lottoNumber.note,
     )
 }

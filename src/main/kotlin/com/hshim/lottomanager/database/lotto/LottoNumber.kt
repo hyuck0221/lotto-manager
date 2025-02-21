@@ -26,6 +26,9 @@ class LottoNumber(
     @Convert(converter = IntConverter::class)
     val numbers: List<Int> = emptyList(),
 
+    @Column(nullable = true, columnDefinition = "varchar(255)")
+    var note: String? = null,
+
 ) : BaseTimeEntity() {
     @Column(nullable = true)
     var rank: Int? = when (lotto.isOpen) {

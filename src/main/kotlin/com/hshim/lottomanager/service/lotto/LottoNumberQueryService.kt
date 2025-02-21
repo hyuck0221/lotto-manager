@@ -35,7 +35,7 @@ class LottoNumberQueryService(
             val numbers = (1..6).map { queue.polls(2).toIntOrNull() ?: 0 }
             numbersList.add(numbers)
         }
-        return numbersList.map { LottoNumberRequest(times, it) }
+        return numbersList.map { LottoNumberRequest(times, it, null) }
     }
 
     fun getNumbers(): List<LottoNumberResponse> {

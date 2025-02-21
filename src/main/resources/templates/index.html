@@ -254,6 +254,10 @@
             background-color: #f7f7f7;
         }
 
+        .memo-cell {
+            cursor: pointer;
+        }
+
         .footer-info {
             margin-top: 32px;
             padding: 20px;
@@ -375,6 +379,11 @@
             background-color: #43a047;
             transform: translateY(-1px);
         }
+
+        [id^="numberPopupContainer_"] button.active {
+            background-color: #00ab00;
+            color: #fff;
+        }
     </style>
 </head>
 <body>
@@ -460,7 +469,6 @@
                 html5QrCodeInstance = null;
             }).catch((err) => {
                 if (err && err.message && err.message.indexOf("not running") !== -1) {
-                    // 이미 종료된 경우 초기화 처리
                     html5QrCodeInstance.clear();
                     html5QrCodeInstance = null;
                 } else {
@@ -470,6 +478,8 @@
         }
         modalOverlay.style.display = "none";
         modalBody.innerHTML = "";
+        const popups = document.querySelectorAll("[id^='numberPopupContainer_']");
+        popups.forEach(popup => popup.remove());
     }
 
     modalOverlay.addEventListener("click", (e) => {
@@ -576,13 +586,18 @@
 
     async function showNumberRegisterScreen(initialNumbersList = [], defaultTimes = null) {
         modalBody.innerHTML = `
-    <h3>번호 등록</h3>
-    <div>
-      <label>회차: </label>
-      <input type="number" id="timesInput" class="lotto-times-input" value="" style="width:120px;" />
-    </div>
-    <div id="lottoRowsContainer" style="margin: 16px 0;"></div>
-  `;
+      <h3>번호 등록</h3>
+      <div>
+        <label>회차: </label>
+        <input type="number" id="timesInput" class="lotto-times-input" value="" style="width:120px;" />
+      </div>
+      <div id="lottoRowsContainer" style="margin: 16px 0;"></div>
+      <!-- 메모 입력란 추가: 로또 번호 인풋 아래와 등록 버튼 사이 -->
+      <div style="margin: 16px 0;">
+        <label>메모: </label>
+        <input type="text" id="memoInput" style="width:100%;" placeholder="메모를 입력하세요" />
+      </div>
+    `;
 
         // 로또 번호 입력 행 초기화
         lottoRows = [];
@@ -595,8 +610,8 @@
         const buttonRow = document.createElement("div");
         buttonRow.className = "dialog-button-row";
         buttonRow.innerHTML = `
-    <button class="dialog-button btn-submit" id="btnSubmitManual" disabled>등록</button>
-  `;
+      <button class="dialog-button btn-submit" id="btnSubmitManual" disabled>등록</button>
+    `;
         modalBody.appendChild(buttonRow);
         document.getElementById("btnSubmitManual").addEventListener("click", () => {
             const btn = document.getElementById("btnSubmitManual");
@@ -604,8 +619,6 @@
         });
         modalBody.addEventListener("input", checkAllInputsFilled);
 
-        // defaultTimes 값이 전달되면 해당 값으로 회차 입력란을 채우고,
-        // 없을 경우 기존 로직대로 최신 회차를 가져옵니다.
         if (defaultTimes !== null) {
             document.getElementById("timesInput").value = defaultTimes;
             checkAllInputsFilled();
@@ -636,35 +649,125 @@
         div.id = rowId;
         let inputHtml = "";
         for (let i = 0; i < 6; i++) {
-            const numberValue =
-                preFilledNumbers[i] !== undefined ? preFilledNumbers[i] : "";
-            inputHtml += `<input
-                type="number"
-                class="lotto-number-input"
-                value="${numberValue}"
-            />`;
+            const numberValue = preFilledNumbers[i] !== undefined ? preFilledNumbers[i] : "";
+            inputHtml += `<input type="number" class="lotto-number-input" value="${numberValue}" />`;
         }
-        if (rowIndex === 0) {
-            div.innerHTML = `
-                ${inputHtml}
-                <button class="btn-plus" id="btnPlus_${rowIndex}">+</button>
-            `;
-        } else {
-            div.innerHTML = `
-                ${inputHtml}
-                <button class="btn-plus" id="btnPlus_${rowIndex}">+</button>
-                <button class="btn-minus" id="btnMinus_${rowIndex}">-</button>
-            `;
-        }
+        // 모든 행에 선택 버튼 추가 (가로 60px, 세로 30px, 텍스트 크기 10px)
+        div.innerHTML = `
+        <button class="btn-number-popup" id="btnNumberPopup_${rowIndex}" style="width:40px; height:30px; margin-right:8px; font-size:10px;">선택</button>
+        ${inputHtml}
+        <button class="btn-plus" id="btnPlus_${rowIndex}">+</button>
+        ${rowIndex > 0 ? `<button class="btn-minus" id="btnMinus_${rowIndex}">-</button>` : ""}
+    `;
         container.appendChild(div);
         lottoRows.push(rowId);
+        // 선택 버튼: 각 행에 대해 팝업 토글 이벤트 연결 (해당 행 id 전달)
+        document.getElementById(`btnNumberPopup_${rowIndex}`).addEventListener("click", function (event) {
+            toggleNumberPopup(event, rowId);
+        });
+        // + 버튼: 새 행 추가
         document.getElementById(`btnPlus_${rowIndex}`).addEventListener("click", () => {
             addLottoRow();
         });
+        // - 버튼: 해당 행 삭제 (첫 번째 행은 삭제하지 않음)
         if (rowIndex > 0) {
             document.getElementById(`btnMinus_${rowIndex}`).addEventListener("click", () => {
                 removeLottoRow(rowId);
             });
+        }
+        checkAllInputsFilled();
+    }
+
+    function toggleNumberPopup(event, rowId) {
+        const popupId = "numberPopupContainer_" + rowId;
+        let popup = document.getElementById(popupId);
+        if (!popup) {
+            popup = document.createElement("div");
+            popup.id = popupId;
+            popup.style.position = "absolute";
+            // 선택 버튼 위치 기준: 버튼 바로 아래에 표시
+            const btn = event.target;
+            const rect = btn.getBoundingClientRect();
+            popup.style.top = (rect.bottom + window.scrollY + 5) + "px";
+            popup.style.left = (rect.left + window.scrollX) + "px";
+            popup.style.width = "250px";
+            popup.style.backgroundColor = "#fff";
+            popup.style.border = "1px solid #ccc";
+            popup.style.padding = "5px";
+            popup.style.display = "grid";
+            popup.style.gridTemplateColumns = "repeat(5, 1fr)";
+            popup.style.gap = "5px";
+            popup.style.zIndex = "1001"; // 모달 다이얼로그보다 위에 표시
+            // 1부터 45까지 번호 버튼 생성
+            for (let i = 1; i <= 45; i++) {
+                const numBtn = document.createElement("button");
+                numBtn.textContent = i;
+                numBtn.style.padding = "5px";
+                numBtn.style.fontSize = "12px";
+                numBtn.style.border = "1px solid #ccc";
+                numBtn.style.borderRadius = "4px";
+                numBtn.style.margin = "0";
+                numBtn.dataset.number = i;
+                numBtn.addEventListener("click", function () {
+                    // 선택되지 않은 상태일 때 이미 6개 선택되었다면 추가 선택 불가
+                    const activeCount = popup.querySelectorAll("button.active").length;
+                    if (!numBtn.classList.contains("active") && activeCount >= 6) {
+                        return;
+                    }
+                    numBtn.classList.toggle("active");
+                    updateRowInput(rowId, popup);
+                });
+                popup.appendChild(numBtn);
+            }
+            // 팝업을 모달 오버레이의 자식으로 추가하여 모달 위에 표시
+            document.getElementById("modalOverlay").appendChild(popup);
+        } else {
+            // 토글: 보이면 숨기고, 숨겨져 있으면 보이게
+            popup.style.display = (popup.style.display === "none" || popup.style.display === "") ? "grid" : "none";
+        }
+    }
+
+    function updateRowInput(rowId, popup) {
+        const activeButtons = popup.querySelectorAll("button.active");
+        let selectedNumbers = Array.from(activeButtons).map(btn => parseInt(btn.dataset.number, 10));
+        selectedNumbers.sort((a, b) => a - b);
+        const rowDiv = document.getElementById(rowId);
+        if (rowDiv) {
+            const inputs = rowDiv.querySelectorAll(".lotto-number-input");
+            for (let i = 0; i < inputs.length; i++) {
+                inputs[i].value = selectedNumbers[i] !== undefined ? selectedNumbers[i] : "";
+            }
+        }
+        checkAllInputsFilled();
+    }
+
+    // 모달 오버레이 클릭 시, 팝업 박스 외부를 클릭하면 팝업 닫기 (선택 버튼 클릭 시 닫히지 않도록)
+    (function attachPopupOutsideClickListener() {
+        const modalOverlay = document.getElementById("modalOverlay");
+        if (!modalOverlay.hasAttribute("data-popup-listener")) {
+            modalOverlay.setAttribute("data-popup-listener", "true");
+            modalOverlay.addEventListener("click", function (e) {
+                // id가 "numberPopupContainer_" 로 시작하는 모든 팝업에 대해 처리
+                const popups = document.querySelectorAll("[id^='numberPopupContainer_']");
+                popups.forEach(popup => {
+                    if (!popup.contains(e.target) && !e.target.classList.contains("btn-number-popup")) {
+                        popup.style.display = "none";
+                    }
+                });
+            });
+        }
+    })();
+
+    function updateFirstInput() {
+        const activeButtons = document.querySelectorAll("#numberPopupContainer button.active");
+        let selectedNumbers = Array.from(activeButtons).map(btn => parseInt(btn.dataset.number, 10));
+        selectedNumbers.sort((a, b) => a - b);
+        const lottoRow = document.getElementById("lottoRow_0");
+        if (lottoRow) {
+            const inputs = lottoRow.querySelectorAll(".lotto-number-input");
+            for (let i = 0; i < inputs.length; i++) {
+                inputs[i].value = selectedNumbers[i] !== undefined ? selectedNumbers[i] : "";
+            }
         }
         checkAllInputsFilled();
     }
@@ -700,6 +803,8 @@
 
     function submitManualNumbers() {
         const timesValue = document.getElementById("timesInput").value.trim();
+        // 메모 입력란 값 가져오기
+        const memo = document.getElementById("memoInput").value.trim();
         const requestData = [];
         lottoRows.forEach((rowId) => {
             const rowDiv = document.getElementById(rowId);
@@ -712,6 +817,7 @@
                 requestData.push({
                     times: parseInt(timesValue, 10),
                     numbers: numbers,
+                    note: memo  // 메모 값 포함
                 });
             }
         });
@@ -795,6 +901,7 @@
                 <thead>
                     <tr>
                         <th style="width: 200px;">입력번호</th>
+                        <th style="width: 150px;">메모</th>
                         <th style="width: 100px;">등수</th>
                         <th style="width: 80px;">삭제</th>
                     </tr>
@@ -813,9 +920,12 @@
                     item.numbers || [],
                     lottoInfo.numbers || []
                 );
+                // 메모 컬럼 추가 (메모 셀 클릭 시 수정 가능하도록 data-id 설정)
+                const note = item.note ? item.note : "";
                 html += `
                 <tr>
                     <td style="font-family: monospace;">${inputNumbersHtml}</td>
+                    <td class="memo-cell" data-id="${item.id}" style="cursor: pointer;">${note}</td>
                     <td>${displayRank}</td>
                     <td>${deleteButtonHtml}</td>
                 </tr>
@@ -830,6 +940,8 @@
             html = "<p>등록된 로또 번호가 없습니다.</p>";
         }
         registeredLottoContainer.innerHTML = html;
+
+        // 삭제 버튼 이벤트 처리
         const deleteButtons = registeredLottoContainer.querySelectorAll(".btn-delete");
         deleteButtons.forEach((btn) => {
             btn.addEventListener("click", async () => {
@@ -848,6 +960,8 @@
                 }
             });
         });
+
+        // 상세 버튼 이벤트 처리
         const detailButtons = registeredLottoContainer.querySelectorAll(".btn-round-detail");
         detailButtons.forEach((btn) => {
             btn.addEventListener("click", () => {
@@ -860,6 +974,63 @@
                 showRoundDetailDialog(lottoObj, rankVal);
             });
         });
+
+        // 메모 셀 클릭 시 인풋 전환 및 수정 이벤트 처리
+        const memoCells = registeredLottoContainer.querySelectorAll(".memo-cell");
+        memoCells.forEach(cell => {
+            cell.addEventListener("click", function (e) {
+                // 이미 수정 중이면 리턴
+                if (cell.querySelector("input")) return;
+                const originalNote = cell.textContent;
+                const id = cell.getAttribute("data-id");
+                const input = document.createElement("input");
+                input.type = "text";
+                input.value = originalNote;
+                input.style.width = "100%";
+                input.style.boxSizing = "border-box";
+                cell.innerHTML = "";
+                cell.appendChild(input);
+                input.focus();
+
+                // blur 이벤트: 수정 완료 후 API 호출
+                input.addEventListener("blur", function (e) {
+                    submitNoteChange(id, input.value, cell, originalNote);
+                });
+
+                // keydown 이벤트: Enter로 제출, Esc로 취소
+                input.addEventListener("keydown", function (e) {
+                    if (e.key === "Enter") {
+                        e.preventDefault();
+                        input.blur();
+                    } else if (e.key === "Escape") {
+                        cell.textContent = originalNote;
+                    }
+                });
+            });
+        });
+    }
+
+    async function submitNoteChange(id, newNote, cell, originalNote) {
+        if (newNote === originalNote) {
+            cell.textContent = originalNote;
+            return;
+        }
+        try {
+            const response = await fetch(`/api/lotto/number/${id}/note`, {
+                method: "PUT",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({note: newNote})
+            });
+            if (response.ok) {
+                cell.textContent = newNote;
+            } else {
+                alert("메모 수정 실패");
+                cell.textContent = originalNote;
+            }
+        } catch (err) {
+            alert("에러 발생: " + err.message);
+            cell.textContent = originalNote;
+        }
     }
 
     function showRoundDetailDialog(lotto, rank) {
