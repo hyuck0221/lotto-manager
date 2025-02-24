@@ -349,6 +349,12 @@
             transform: translateY(-1px);
         }
 
+        .disabled-btn {
+            background-color: #ccc;
+            color: #888;
+            cursor: default;
+        }
+
         .dialog-button {
             padding: 10px 16px;
             border: none;
@@ -458,6 +464,9 @@
     const modalClose = document.getElementById("modalClose");
     const modalBody = document.getElementById("modalBody");
 
+    let latest = 0;
+    let algorithms = null;
+
     function openModal() {
         modalOverlay.style.display = "flex";
     }
@@ -497,7 +506,6 @@
     const myInfo = document.getElementById("my-info");
     const question = document.getElementById("question");
     const notice = document.getElementById("notice");
-    let userId = null;
     userInfo.addEventListener("click", () => {
         dropdown.classList.toggle("open");
     });
@@ -517,7 +525,7 @@
     });
 
     window.addEventListener("DOMContentLoaded", async () => {
-        fetchUserInfo();
+        await fetchUserInfo();
         fetchCurrentTimes();
         loadRegisteredLottoNumbers();
         document.querySelectorAll(".main-button img").forEach((img) => {
@@ -527,24 +535,89 @@
             img.addEventListener("load", showButton);
             img.addEventListener("error", showButton);
         });
+
+        // 로그인 안된 경우 UI 제한 적용
+        if (!isLoggedIn) {
+            // 1. 게임 버튼에 회색 배경과 "로그인 시 이용 가능" 문구 추가
+            const btnGame = document.getElementById("btn-game");
+            btnGame.style.backgroundColor = "#ccc";
+            btnGame.style.cursor = "default";
+            let noticeSpan = document.createElement("span");
+            noticeSpan.style.fontSize = "10px";
+            noticeSpan.style.display = "block";
+            noticeSpan.textContent = "로그인 시 이용 가능";
+            btnGame.appendChild(noticeSpan);
+
+            // 2. 드롭다운 내 "내 정보"와 "문의" 버튼 회색 처리
+            document.getElementById("my-info").classList.add("disabled-btn");
+            document.getElementById("question").classList.add("disabled-btn");
+
+            // 3. 드롭다운의 로그아웃 버튼을 로그인 버튼으로 대체
+            const dropdown = document.getElementById("dropdown");
+            const logoutForm = dropdown.querySelector("form");
+            if (logoutForm) {
+                logoutForm.remove();
+            }
+            const loginBtn = document.createElement("button");
+            loginBtn.id = "login";
+            loginBtn.textContent = "로그인";
+            loginBtn.style.cursor = "pointer";
+            loginBtn.addEventListener("click", () => {
+                location.href = "/login";
+            });
+            dropdown.appendChild(loginBtn);
+        }
     });
 
+    let isLoggedIn = false;
+    let userId = null;
+
     async function fetchUserInfo() {
-        const response = await fetch("/api/account/user/my-info");
-        if (response.ok) {
-            const user = await response.json();
-            userId = user.id;
-            const profileImg = document.getElementById("profile-image");
-            const displayName = document.getElementById("display-name");
-            displayName.textContent = user.displayName;
-            if (user.profileUrl) {
-                profileImg.src = user.profileUrl;
-                profileImg.style.backgroundColor = "transparent";
+        try {
+            const response = await fetch("/api/account/user/my-info");
+            if (response.ok) {
+                const user = await response.json();
+                userId = user.id;
+                isLoggedIn = true;
+                const profileImg = document.getElementById("profile-image");
+                const displayName = document.getElementById("display-name");
+                displayName.textContent = user.displayName;
+                if (user.profileUrl) {
+                    profileImg.src = user.profileUrl;
+                    profileImg.style.backgroundColor = "transparent";
+                } else {
+                    // 로그인된 상태지만 프로필 이미지가 없으면 기본 회색 원 처리
+                    profileImg.src = "";
+                    profileImg.style.backgroundColor = "#ccc";
+                }
             } else {
-                profileImg.src =
-                    "https://cdn-icons-png.flaticon.com/512/747/747545.png";
-                profileImg.style.backgroundColor = "#ccc";
+                throw new Error();
             }
+        } catch (err) {
+            isLoggedIn = false;
+            setNotLoggedInProfile();
+        }
+    }
+
+    function setNotLoggedInProfile() {
+        const profileImg = document.getElementById("profile-image");
+        profileImg.src = "";
+        profileImg.style.backgroundColor = "#ccc";
+    }
+
+
+    async function fetchCurrentTimes() {
+        try {
+            const response = await fetch("/api/lotto/times/latest");
+            if (!response.ok) {
+                throw new Error("회차 정보를 가져오지 못했습니다.");
+            }
+            const data = await response.json();
+            const headerLeft = document.getElementById("headerLeft");
+            headerLeft.textContent = `${data.times + 1} 회차 공개예정`;
+            latest = data.times + 1;
+        } catch (err) {
+            console.error("회차 조회 에러:", err.message);
         }
     }
 
@@ -586,18 +659,17 @@
 
     async function showNumberRegisterScreen(initialNumbersList = [], defaultTimes = null) {
         modalBody.innerHTML = `
-      <h3>번호 등록</h3>
-      <div>
-        <label>회차: </label>
-        <input type="number" id="timesInput" class="lotto-times-input" value="" style="width:120px;" />
-      </div>
-      <div id="lottoRowsContainer" style="margin: 16px 0;"></div>
-      <!-- 메모 입력란 추가: 로또 번호 인풋 아래와 등록 버튼 사이 -->
-      <div style="margin: 16px 0;">
-        <label>메모: </label>
-        <input type="text" id="memoInput" style="width:100%;" placeholder="메모를 입력하세요" />
-      </div>
-    `;
+    <h3>번호 등록</h3>
+    <div>
+      <label>회차: </label>
+      <input type="number" id="timesInput" class="lotto-times-input" value="" style="width:120px;" />
+    </div>
+    <div id="lottoRowsContainer" style="margin: 16px 0;"></div>
+    <div style="margin: 16px 0;">
+      <label>메모: </label>
+      <input type="text" id="memoInput" style="width:100%;" placeholder="메모를 입력하세요" />
+    </div>
+  `;
 
         // 로또 번호 입력 행 초기화
         lottoRows = [];
@@ -610,33 +682,64 @@
         const buttonRow = document.createElement("div");
         buttonRow.className = "dialog-button-row";
         buttonRow.innerHTML = `
-      <button class="dialog-button btn-submit" id="btnSubmitManual" disabled>등록</button>
-    `;
+    <button class="dialog-button btn-submit" id="btnSubmitManual">등록</button>
+  `;
         modalBody.appendChild(buttonRow);
+
+        // 등록 버튼 클릭 이벤트 처리 (로그인 상태라면 실행)
         document.getElementById("btnSubmitManual").addEventListener("click", () => {
+            if (!isLoggedIn) return; // 혹시 모를 중복 체크
             const btn = document.getElementById("btnSubmitManual");
             handleButtonClick(btn, () => submitManualNumbers());
         });
+
         modalBody.addEventListener("input", checkAllInputsFilled);
 
         if (defaultTimes !== null) {
             document.getElementById("timesInput").value = defaultTimes;
             checkAllInputsFilled();
         } else {
-            try {
-                const res = await fetch("/api/lotto/times/latest");
-                if (!res.ok) throw new Error("서버 응답이 정상이 아닙니다.");
-                const data = await res.json();
-                const nextTimes = data.times + 1;
-                const timesInputEl = document.getElementById("timesInput");
-                timesInputEl.value = nextTimes;
-                checkAllInputsFilled();
-            } catch (err) {
-                console.error("회차 조회 오류:", err.message);
-                document.getElementById("timesInput").value = 1;
-                checkAllInputsFilled();
+            const timesInputEl = document.getElementById("timesInput");
+            timesInputEl.value = latest;
+            checkAllInputsFilled();
+        }
+
+        // 로그인하지 않은 경우 등록 버튼 비활성화 및 스타일/툴팁 적용
+        if (!isLoggedIn) {
+            const btnSubmitManual = document.getElementById("btnSubmitManual");
+            btnSubmitManual.disabled = true;
+            btnSubmitManual.style.backgroundColor = "#ccc";
+            btnSubmitManual.style.cursor = "default";
+            btnSubmitManual.title = "로그인 후 이용 가능";
+        }
+    }
+
+
+    // checkAllInputsFilled 함수 내에서도 로그인 여부를 우선 확인
+    function checkAllInputsFilled() {
+        const timesInput = document.getElementById("timesInput");
+        if (!timesInput) return;
+        const btnSubmitManual = document.getElementById("btnSubmitManual");
+        if (!btnSubmitManual) return;
+
+        if (!isLoggedIn) {
+            btnSubmitManual.disabled = true;
+            btnSubmitManual.title = "로그인 시 이용 가능";
+            return;
+        }
+        const timesValue = timesInput.value.trim();
+        const numbersInputs = modalBody.querySelectorAll(".lotto-number-input");
+        if (!timesValue) {
+            btnSubmitManual.disabled = true;
+            return;
+        }
+        for (let input of numbersInputs) {
+            if (!input.value.trim()) {
+                btnSubmitManual.disabled = true;
+                return;
             }
         }
+        btnSubmitManual.disabled = false;
     }
 
 
@@ -1159,8 +1262,10 @@
     });
 
     async function fetchAlgorithms() {
+        if (algorithms !== null) return algorithms
         const response = await fetch("/api/config/number/build/algorithms");
-        return response.ok ? await response.json() : [];
+        algorithms = await response.json();
+        return algorithms;
     }
 
     function showGenerateDialog(algorithms) {
@@ -1353,20 +1458,6 @@
             detail.minConfidence = parseFloat(document.getElementById("minConfidenceInput").value);
         }
         return detail;
-    }
-
-    async function fetchCurrentTimes() {
-        try {
-            const response = await fetch("/api/lotto/times/latest");
-            if (!response.ok) {
-                throw new Error("회차 정보를 가져오지 못했습니다.");
-            }
-            const data = await response.json();
-            const headerLeft = document.getElementById("headerLeft");
-            headerLeft.textContent = `${data.times + 1} 회차 공개예정`;
-        } catch (err) {
-            console.error("회차 조회 에러:", err.message);
-        }
     }
 
     function showGeneratedResult(result) {

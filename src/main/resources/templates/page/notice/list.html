@@ -1,347 +1,397 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>공지사항 - Lotto Manager</title>
-  <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-    body {
-      font-family: "Helvetica Neue", Arial, sans-serif;
-      background-color: #f9f9f9;
-      color: #333;
-    }
-    header {
-      width: 100%;
-      position: fixed;
-      top: 0;
-      left: 0;
-      background-color: #fff;
-      border-bottom: 1px solid #ddd;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 10px 20px;
-      z-index: 1000;
-      min-height: 58px;
-    }
-    header h1 {
-      font-size: 18px;
-      position: fixed;
-      left: 50%;
-      transform: translate(-50%, 0);
-    }
-    header .home-button {
-      text-decoration: none;
-      color: #007bff;
-      font-size: 16px;
-    }
-    .user-info {
-      display: flex;
-      align-items: center;
-      position: relative;
-      cursor: pointer;
-    }
-    .profile-img {
-      width: 36px;
-      height: 36px;
-      border-radius: 50%;
-      background-color: #ccc;
-      overflow: hidden;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-    }
-    .profile-img img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-    .user-details {
-      margin-left: 8px;
-    }
-    .display-name {
-      font-size: 14px;
-      font-weight: 600;
-    }
-    .dropdown {
-      position: absolute;
-      top: calc(100% + 5px);
-      right: 0;
-      background: #fff;
-      border: 1px solid #ddd;
-      border-radius: 4px;
-      padding: 8px 0;
-      display: none;
-      flex-direction: column;
-      min-width: 90px;
-    }
-    .dropdown button {
-      background: none;
-      border: none;
-      padding: 8px 16px;
-      width: 100%;
-      text-align: left;
-      cursor: pointer;
-      font-size: 14px;
-    }
-    .dropdown button:hover {
-      background-color: #f5f5f5;
-    }
-    .dropdown.open {
-      display: flex;
-    }
-    main {
-      margin-top: 70px;
-      padding: 16px;
-    }
-    /* 검색창 스타일 */
-    .search-container {
-      margin-bottom: 16px;
-      display: flex;
-      gap: 8px;
-    }
-    .search-container input[type="text"] {
-      flex: 1;
-      padding: 8px;
-      font-size: 14px;
-      border: 1px solid #ddd;
-      border-radius: 4px;
-    }
-    .search-container button {
-      padding: 8px 16px;
-      font-size: 14px;
-      background-color: #007bff;
-      color: white;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-    }
-    .search-container button:hover {
-      background-color: #0056b3;
-    }
-    .table-container {
-      position: relative;
-    }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 16px;
-      background-color: #fff;
-    }
-    th, td {
-      border: 1px solid #ddd;
-      padding: 8px;
-      text-align: center;
-      font-size: 14px;
-    }
-    th {
-      background-color: #f7f7f7;
-    }
-    /* 페이징 스타일 */
-    .pagination {
-      margin-top: 16px;
-      text-align: center;
-    }
-    .pagination button {
-      margin: 0 4px;
-      padding: 4px 8px;
-      font-size: 14px;
-      background-color: #fff;
-      border: 1px solid #ddd;
-      border-radius: 4px;
-      cursor: pointer;
-    }
-    .pagination button:hover {
-      background-color: #f5f5f5;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>공지사항 - Lotto Manager</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: "Helvetica Neue", Arial, sans-serif;
+            background-color: #f9f9f9;
+            color: #333;
+        }
+
+        header {
+            width: 100%;
+            position: fixed;
+            top: 0;
+            left: 0;
+            background-color: #fff;
+            border-bottom: 1px solid #ddd;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 20px;
+            z-index: 1000;
+            min-height: 58px;
+        }
+
+        header h1 {
+            font-size: 18px;
+            position: fixed;
+            left: 50%;
+            transform: translate(-50%, 0);
+        }
+
+        header .home-button {
+            text-decoration: none;
+            color: #007bff;
+            font-size: 16px;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            position: relative;
+            cursor: pointer;
+        }
+
+        .profile-img {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background-color: #ccc;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .profile-img img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .user-details {
+            margin-left: 8px;
+        }
+
+        .display-name {
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .dropdown {
+            position: absolute;
+            top: calc(100% + 5px);
+            right: 0;
+            background: #fff;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 8px 0;
+            display: none;
+            flex-direction: column;
+            min-width: 90px;
+        }
+
+        .dropdown button {
+            background: none;
+            border: none;
+            padding: 8px 16px;
+            width: 100%;
+            text-align: left;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .dropdown button:hover {
+            background-color: #f5f5f5;
+        }
+
+        .dropdown.open {
+            display: flex;
+        }
+
+        main {
+            margin-top: 70px;
+            padding: 16px;
+        }
+
+        /* 검색창 스타일 */
+        .search-container {
+            margin-bottom: 16px;
+            display: flex;
+            gap: 8px;
+        }
+
+        .search-container input[type="text"] {
+            flex: 1;
+            padding: 8px;
+            font-size: 14px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        .search-container button {
+            padding: 8px 16px;
+            font-size: 14px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .search-container button:hover {
+            background-color: #0056b3;
+        }
+
+        .table-container {
+            position: relative;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 16px;
+            background-color: #fff;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: center;
+            font-size: 14px;
+        }
+
+        th {
+            background-color: #f7f7f7;
+        }
+
+        /* 페이징 스타일 */
+        .pagination {
+            margin-top: 16px;
+            text-align: center;
+        }
+
+        .pagination button {
+            margin: 0 4px;
+            padding: 4px 8px;
+            font-size: 14px;
+            background-color: #fff;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .pagination button:hover {
+            background-color: #f5f5f5;
+        }
+    </style>
 </head>
 <body>
 <header>
-  <a href="/" class="home-button">홈</a>
-  <h1>공지사항</h1>
-  <div class="user-info" id="user-info">
-    <div class="profile-img" id="profile-img">
-      <img id="profile-image" src="" alt=""/>
+    <a href="/" class="home-button">홈</a>
+    <h1>공지사항</h1>
+    <div class="user-info" id="user-info">
+        <div class="profile-img" id="profile-img">
+            <img id="profile-image" src="" alt=""/>
+        </div>
+        <div class="user-details">
+            <div class="display-name" id="display-name"></div>
+        </div>
+        <div class="dropdown" id="dropdown">
+            <button id="my-info">내 정보</button>
+            <button id="question">문의</button>
+            <button id="notice">공지사항</button>
+            <form action="/logout" method="post" style="margin: 0;">
+                <button type="submit">로그아웃</button>
+            </form>
+        </div>
     </div>
-    <div class="user-details">
-      <div class="display-name" id="display-name"></div>
-    </div>
-    <div class="dropdown" id="dropdown">
-      <button id="my-info">내 정보</button>
-      <button id="question">문의</button>
-      <button id="notice">공지사항</button>
-      <form action="/logout" method="post" style="margin: 0;">
-        <button type="submit">로그아웃</button>
-      </form>
-    </div>
-  </div>
 </header>
 <main>
-  <!-- 검색창 -->
-  <div class="search-container">
-    <input type="text" id="search-input" placeholder="검색어를 입력하세요">
-    <button id="search-button">검색</button>
-  </div>
-  <!-- 공지사항 목록 테이블 -->
-  <div class="table-container">
-    <table>
-      <thead>
-      <tr>
-        <th style="width: 60%;">제목</th>
-        <th style="width: 10%;">댓글 허용</th>
-        <th style="width: 10%;">댓글 수</th>
-        <th style="width: 10%;">작성일</th>
-        <th style="width: 10%;">상세</th>
-      </tr>
-      </thead>
-      <tbody id="notice-list"></tbody>
-    </table>
-  </div>
-  <!-- 페이지 네비게이션 -->
-  <div class="pagination" id="pagination"></div>
+    <!-- 검색창 -->
+    <div class="search-container">
+        <input type="text" id="search-input" placeholder="검색어를 입력하세요">
+        <button id="search-button">검색</button>
+    </div>
+    <!-- 공지사항 목록 테이블 -->
+    <div class="table-container">
+        <table>
+            <thead>
+            <tr>
+                <th style="width: 60%;">제목</th>
+                <th style="width: 10%;">댓글 허용</th>
+                <th style="width: 10%;">댓글 수</th>
+                <th style="width: 10%;">작성일</th>
+                <th style="width: 10%;">상세</th>
+            </tr>
+            </thead>
+            <tbody id="notice-list"></tbody>
+        </table>
+    </div>
+    <!-- 페이지 네비게이션 -->
+    <div class="pagination" id="pagination"></div>
 </main>
 <script>
-  const userInfo = document.getElementById('user-info');
-  const dropdown = document.getElementById('dropdown');
-  const myInfo = document.getElementById('my-info');
-  const question = document.getElementById('question');
-  const notice = document.getElementById("notice");
+    const userInfo = document.getElementById('user-info');
+    const dropdown = document.getElementById('dropdown');
+    const myInfo = document.getElementById('my-info');
+    const question = document.getElementById('question');
+    const notice = document.getElementById("notice");
 
-  userInfo.addEventListener('click', () => {
-    dropdown.classList.toggle('open');
-  });
+    userInfo.addEventListener('click', () => {
+        dropdown.classList.toggle('open');
+    });
 
-  document.addEventListener('click', (event) => {
-    if (!userInfo.contains(event.target) && !dropdown.contains(event.target)) {
-      dropdown.classList.remove('open');
+    document.addEventListener('click', (event) => {
+        if (!userInfo.contains(event.target) && !dropdown.contains(event.target)) {
+            dropdown.classList.remove('open');
+        }
+    });
+
+    myInfo.addEventListener('click', () => {
+        location.href = '/page/account/user/my-info';
+    });
+
+    question.addEventListener('click', () => {
+        location.href = '/page/question/list';
+    });
+    notice.addEventListener("click", () => {
+        location.href = "/page/notice/list";
+    });
+
+    let currentPage = 1; // 화면상 표시되는 페이지 (1부터 시작)
+    let isLoggedIn = false;
+
+    // 공지사항 목록 API 호출 함수
+    async function fetchNotices(page) {
+        currentPage = page;
+        const searchQuery = document.getElementById('search-input').value.trim();
+        let url = `/api/notice?page=${page - 1}`;
+        if (searchQuery !== "") {
+            url += `&search=${encodeURIComponent(searchQuery)}`;
+        }
+        try {
+            const response = await fetch(url);
+            if (response.ok) {
+                const data = await response.json();
+                populateNoticeTable(data.content);
+                generatePagination(data.totalPages);
+            } else {
+                console.error("공지사항을 불러오는데 실패했습니다:", response.statusText);
+            }
+        } catch (error) {
+            console.error("공지사항을 불러오는 중 오류 발생:", error);
+        }
     }
-  });
 
-  myInfo.addEventListener('click', () => {
-    location.href = '/page/account/user/my-info';
-  });
-
-  question.addEventListener('click', () => {
-    location.href = '/page/question/list';
-  });
-  notice.addEventListener("click", () => {
-    location.href = "/page/notice/list";
-  });
-
-  let currentPage = 1; // 화면상 표시되는 페이지 (1부터 시작)
-
-  // 공지사항 목록 API 호출 함수
-  async function fetchNotices(page) {
-    currentPage = page;
-    const searchQuery = document.getElementById('search-input').value.trim();
-    let url = `/api/notice?page=${page - 1}`;
-    if (searchQuery !== "") {
-      url += `&search=${encodeURIComponent(searchQuery)}`;
-    }
-    try {
-      const response = await fetch(url);
-      if (response.ok) {
-        const data = await response.json();
-        populateNoticeTable(data.content);
-        generatePagination(data.totalPages);
-      } else {
-        console.error("공지사항을 불러오는데 실패했습니다:", response.statusText);
-      }
-    } catch (error) {
-      console.error("공지사항을 불러오는 중 오류 발생:", error);
-    }
-  }
-
-  // 테이블에 공지사항 데이터를 채워넣는 함수
-  function populateNoticeTable(notices) {
-    const tbody = document.getElementById('notice-list');
-    tbody.innerHTML = "";
-    if (notices.length === 0) {
-      const tr = document.createElement('tr');
-      const td = document.createElement('td');
-      td.colSpan = 5;
-      td.textContent = "공지사항이 없습니다.";
-      tr.appendChild(td);
-      tbody.appendChild(tr);
-      return;
-    }
-    notices.forEach(notice => {
-      const tr = document.createElement('tr');
-      tr.innerHTML = `
+    // 테이블에 공지사항 데이터를 채워넣는 함수
+    function populateNoticeTable(notices) {
+        const tbody = document.getElementById('notice-list');
+        tbody.innerHTML = "";
+        if (notices.length === 0) {
+            const tr = document.createElement('tr');
+            const td = document.createElement('td');
+            td.colSpan = 5;
+            td.textContent = "공지사항이 없습니다.";
+            tr.appendChild(td);
+            tbody.appendChild(tr);
+            return;
+        }
+        notices.forEach(notice => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
           <td>${notice.title}</td>
           <td>${notice.enableComment ? 'O' : 'X'}</td>
           <td>${notice.commentCnt}</td>
           <td>${notice.createDate}</td>
           <td><button onclick="viewDetail('${notice.id}')">상세</button></td>
         `;
-      tbody.appendChild(tr);
+            tbody.appendChild(tr);
+        });
+    }
+
+    // 페이지 네비게이션 생성 함수
+    function generatePagination(totalPages) {
+        const paginationContainer = document.getElementById('pagination');
+        paginationContainer.innerHTML = "";
+        if (totalPages <= 1) return;
+        for (let i = 1; i <= totalPages; i++) {
+            const pageButton = document.createElement('button');
+            pageButton.textContent = i;
+            if (i === currentPage) {
+                pageButton.style.fontWeight = 'bold';
+            }
+            pageButton.addEventListener('click', () => {
+                fetchNotices(i);
+            });
+            paginationContainer.appendChild(pageButton);
+        }
+    }
+
+    // 상세 페이지로 이동하는 함수
+    function viewDetail(id) {
+        window.location.href = `/page/notice/detail?id=${id}`;
+    }
+
+    // 검색 버튼 이벤트
+    document.getElementById('search-button').addEventListener('click', () => {
+        fetchNotices(1);
     });
-  }
 
-  // 페이지 네비게이션 생성 함수
-  function generatePagination(totalPages) {
-    const paginationContainer = document.getElementById('pagination');
-    paginationContainer.innerHTML = "";
-    if (totalPages <= 1) return;
-    for (let i = 1; i <= totalPages; i++) {
-      const pageButton = document.createElement('button');
-      pageButton.textContent = i;
-      if (i === currentPage) {
-        pageButton.style.fontWeight = 'bold';
-      }
-      pageButton.addEventListener('click', () => {
-        fetchNotices(i);
-      });
-      paginationContainer.appendChild(pageButton);
+    // 검색창에서 엔터키를 눌렀을 때 검색 버튼과 동일하게 동작하도록 이벤트 추가
+    document.getElementById('search-input').addEventListener('keydown', (event) => {
+        if (event.key === 'Enter') {
+            event.preventDefault();
+            fetchNotices(1);
+        }
+    });
+
+    // 사용자 정보 불러오기 함수 (헤더 관련)
+    async function fetchUserInfo() {
+        try {
+            const response = await fetch('/api/account/user/my-info');
+            if (response.ok) {
+                const user = await response.json();
+                const profileImg = document.getElementById('profile-image');
+                const displayName = document.getElementById('display-name');
+                displayName.textContent = user.displayName;
+                if (user.profileUrl) {
+                    profileImg.src = user.profileUrl;
+                    profileImg.style.backgroundColor = 'transparent';
+                } else {
+                    profileImg.src = 'https://cdn-icons-png.flaticon.com/512/747/747545.png';
+                    profileImg.style.backgroundColor = '#ccc';
+                }
+                isLoggedIn = true;
+            } else {
+                throw new Error();
+            }
+        } catch(err) {
+            isLoggedIn = false;
+        }
+
     }
-  }
 
-  // 상세 페이지로 이동하는 함수
-  function viewDetail(id) {
-    window.location.href = `/page/notice/detail?id=${id}`;
-  }
+    document.addEventListener('DOMContentLoaded', async () => {
+        await fetchUserInfo();
+        fetchNotices(1);
 
-  // 검색 버튼 이벤트
-  document.getElementById('search-button').addEventListener('click', () => {
-    fetchNotices(1);
-  });
-
-  // 검색창에서 엔터키를 눌렀을 때 검색 버튼과 동일하게 동작하도록 이벤트 추가
-  document.getElementById('search-input').addEventListener('keydown', (event) => {
-    if (event.key === 'Enter') {
-      event.preventDefault();
-      fetchNotices(1);
-    }
-  });
-
-  // 사용자 정보 불러오기 함수 (헤더 관련)
-  async function fetchUserInfo() {
-    const response = await fetch('/api/account/user/my-info');
-    if (response.ok) {
-      const user = await response.json();
-      const profileImg = document.getElementById('profile-image');
-      const displayName = document.getElementById('display-name');
-      displayName.textContent = user.displayName;
-      if (user.profileUrl) {
-        profileImg.src = user.profileUrl;
-        profileImg.style.backgroundColor = 'transparent';
-      } else {
-        profileImg.src = 'https://cdn-icons-png.flaticon.com/512/747/747545.png';
-        profileImg.style.backgroundColor = '#ccc';
-      }
-    }
-  }
-
-  document.addEventListener('DOMContentLoaded', () => {
-    fetchUserInfo();
-    fetchNotices(1);
-  });
+        if (!isLoggedIn) {
+            const dropdown = document.getElementById("dropdown");
+            const logoutForm = dropdown.querySelector("form");
+            if (logoutForm) {
+                logoutForm.remove();
+            }
+            const loginBtn = document.createElement("button");
+            loginBtn.id = "login";
+            loginBtn.textContent = "로그인";
+            loginBtn.style.cursor = "pointer";
+            loginBtn.addEventListener("click", () => {
+                location.href = "/login";
+            });
+            dropdown.appendChild(loginBtn);
+        }
+    });
 </script>
 </body>
 </html>
