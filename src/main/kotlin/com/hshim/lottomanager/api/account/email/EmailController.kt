@@ -1,5 +1,6 @@
 package com.hshim.lottomanager.api.account.email
 
+import com.hshim.lottomanager.annotation.PublicEndpoint
 import com.hshim.lottomanager.service.account.email.EmailVerifyCommandService
 import com.hshim.lottomanager.service.account.user.UserQueryService
 import org.springframework.web.bind.annotation.*
@@ -24,6 +25,7 @@ class EmailController(
     }
 
     @DeleteMapping("/verify/{id}")
+    @PublicEndpoint
     fun deleteVerify(@PathVariable id: String) {
         emailVerifyCommandService.deleteVerify(id)
     }

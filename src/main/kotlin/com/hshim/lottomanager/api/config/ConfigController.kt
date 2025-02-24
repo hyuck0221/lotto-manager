@@ -1,5 +1,6 @@
 package com.hshim.lottomanager.api.config
 
+import com.hshim.lottomanager.annotation.PublicEndpoint
 import com.hshim.lottomanager.enums.lotto.NumberBuildAlgorithm
 import com.hshim.lottomanager.enums.question.QuestionType
 import com.hshim.lottomanager.model.config.ConfigResponse
@@ -12,6 +13,7 @@ import org.springframework.web.bind.annotation.RestController
 @RequestMapping("/api/config")
 class ConfigController(
 ) {
+    @PublicEndpoint
     @GetMapping("/number/build/algorithms")
     fun getNumberBuildAlgorithms(): List<NumberBuildAlgorithmResponse> {
         return NumberBuildAlgorithm.entries.filter { !it.disable }.map { NumberBuildAlgorithmResponse(it) }

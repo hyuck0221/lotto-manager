@@ -1,5 +1,6 @@
 package com.hshim.lottomanager.api.lotto
 
+import com.hshim.lottomanager.annotation.PublicEndpoint
 import com.hshim.lottomanager.model.lotto.LottoNumberBuildRequest
 import com.hshim.lottomanager.model.lotto.LottoNumberRequest
 import com.hshim.lottomanager.model.lotto.UrlDecodeRequest
@@ -39,11 +40,13 @@ class LottoController(
     ) = lottoNumberQueryService.getRequests(request)
 
     @PostMapping("/numbers/build")
+    @PublicEndpoint
     fun numbersBuild(
         @RequestBody request: LottoNumberBuildRequest,
     ) = lottoNumberQueryService.numbersBuild(request)
 
     @GetMapping("/times/latest")
+    @PublicEndpoint
     fun timesLatest() = lottoQueryService.timesLatest()
 
     @PutMapping("/number/{id}/note")

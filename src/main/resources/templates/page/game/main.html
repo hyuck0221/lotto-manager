@@ -372,7 +372,6 @@
             if (imageCache[url]) {
                 // 캐시된 이미지가 있다면 clone 후 반환
                 resolve(imageCache[url].cloneNode(true));
-                console.log("cash image");
             } else {
                 const img = new Image();
                 img.classList.add('game-item-img');

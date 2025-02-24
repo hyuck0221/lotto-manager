@@ -1,5 +1,6 @@
 package com.hshim.lottomanager.api.progressing
 
+import com.hshim.lottomanager.annotation.PublicEndpoint
 import com.hshim.lottomanager.service.progressing.ProgressingService
 import org.springframework.http.MediaType
 import org.springframework.web.bind.annotation.GetMapping
@@ -14,6 +15,7 @@ class ProgressingController(
     private val progressingService: ProgressingService,
 ) {
     @GetMapping("/{id}", produces = [MediaType.TEXT_EVENT_STREAM_VALUE])
+    @PublicEndpoint
     fun connect(@PathVariable id: String): SseEmitter {
         return progressingService.connect(id)
     }

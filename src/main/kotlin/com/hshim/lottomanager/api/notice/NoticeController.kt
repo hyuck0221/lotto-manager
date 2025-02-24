@@ -1,5 +1,6 @@
 package com.hshim.lottomanager.api.notice
 
+import com.hshim.lottomanager.annotation.PublicEndpoint
 import com.hshim.lottomanager.model.notice.NoticeCommentRequest
 import com.hshim.lottomanager.model.notice.NoticeRequest
 import com.hshim.lottomanager.model.notice.NoticeResponse
@@ -16,6 +17,7 @@ class NoticeController(
     private val noticeCommandService: NoticeCommandService,
 ) {
     @GetMapping
+    @PublicEndpoint
     fun noticePage(
         @RequestParam(required = true) page: Int,
         @RequestParam(required = false) search: String?,
@@ -25,6 +27,7 @@ class NoticeController(
     }
 
     @GetMapping("/{id}")
+    @PublicEndpoint
     fun notice(@PathVariable id: String) = noticeQueryService.findById(id)
 
     @GetMapping("/{id}/comments")

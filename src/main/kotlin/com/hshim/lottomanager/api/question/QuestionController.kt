@@ -1,5 +1,6 @@
 package com.hshim.lottomanager.api.question
 
+import com.hshim.lottomanager.annotation.PublicEndpoint
 import com.hshim.lottomanager.model.question.QuestionRequest
 import com.hshim.lottomanager.model.question.ReplyRequest
 import com.hshim.lottomanager.service.question.QuestionCommandService
@@ -37,6 +38,7 @@ class QuestionController(
     ) = questionCommandService.delete(id)
 
     @PostMapping("/reply/{id}")
+    @PublicEndpoint
     fun initReply(
         @PathVariable id: String,
         @RequestBody request: ReplyRequest,

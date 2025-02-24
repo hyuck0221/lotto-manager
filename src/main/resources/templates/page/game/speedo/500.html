@@ -243,7 +243,7 @@
 <body>
 <header>
     <div class="left-section">
-        <a href="/" class="home-button">홈</a>
+        <a href="/page/game/main" class="home-button">목록</a>
     </div>
     <h1>스피또 500</h1>
     <div class="user-info" id="user-info">
@@ -378,7 +378,7 @@
             if (response.ok) {
                 const data = await response.json();
                 // 서버에서 새로운 포인트 값을 받거나, 포인트 갱신을 위해 fetchPoints() 호출
-                fetchPoints();
+                document.getElementById('current-points').textContent = `포인트: ${currentPoints - 500}`;
                 currentResults = data.results; // 결과 배열 저장
                 currentRank = data.rank;
                 currentPoint = data.point;
@@ -407,7 +407,7 @@
     // 스크래치 캔버스 관련
     let ctx, isDrawing = false, lastX, lastY, cleared = false;
     let scratchedPixels = 0, totalPixels = 0;
-    const threshold = 0.5; // 50% 이상 긁으면 전체 오픈
+    const threshold = 0.6; // 50% 이상 긁으면 전체 오픈
 
     function initScratchCanvas() {
         const canvas = document.getElementById('scratch-canvas');
