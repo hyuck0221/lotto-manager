@@ -8,6 +8,7 @@ import com.hshim.lottomanager.service.notice.NoticeCommandService
 import com.hshim.lottomanager.service.notice.NoticeQueryService
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
+import org.springframework.data.domain.Sort
 import org.springframework.web.bind.annotation.*
 
 @RestController
@@ -21,8 +22,16 @@ class NoticeController(
     fun noticePage(
         @RequestParam(required = true) page: Int,
         @RequestParam(required = false) search: String?,
+        @RequestParam(required = false) sort: String?,
     ): Page<NoticeResponse> {
-        val pageable = PageRequest.of(page, 10)
+        val sortSplit = sort?.split(",") ?: emptyList()
+        val pageable = PageRequest.of(
+            page, 10,
+            when (sortSplit.isEmpty()) {
+                true -> Sort.unsorted()
+                false -> Sort.by(Sort.Direction.valueOf(sortSplit[1].uppercase()), sortSplit[0])
+            },
+        )
         return noticeQueryService.getNoticePage(pageable, search)
     }
 

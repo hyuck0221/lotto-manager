@@ -17,6 +17,7 @@ class QuestionController(
     fun getMyQuestions() = questionQueryService.getMyQuestions()
 
     @GetMapping("/{id}")
+    @PublicEndpoint
     fun getQuestion(
         @PathVariable id: String
     ) = questionQueryService.getQuestion(id)

@@ -5,46 +5,66 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>내 정보 - Lotto Manager</title>
     <style>
+        :root {
+            --primary-color: #0C2C4D;
+            --secondary-color: #D1B174;
+            --accent-color: #007BFF;
+            --bg-color: #f5f5f5;
+            --white: #fff;
+            --gray: #ddd;
+            --text-color: #333;
+            --border-radius: 8px;
+            --transition: 0.3s;
+            --max-width: 400px;
+        }
+
+        *, *::before, *::after {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
         body {
             font-family: Arial, sans-serif;
-            background-color: #f5f5f5;
-            max-width: 400px;
-            margin: 0 auto;
-            padding: 20px;
-            box-sizing: border-box;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            min-height: 100vh;
             display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
+            flex-direction: column;
         }
         header {
-            width: 100%;
             position: fixed;
             top: 0;
             left: 0;
-            background-color: #fff;
-            border-bottom: 1px solid #ddd;
+            width: 100%;
+            height: 60px;
+            background-color: var(--white);
+            border-bottom: 1px solid var(--gray);
             display: flex;
-            justify-content: space-between;
             align-items: center;
-            padding: 10px 20px;
+            justify-content: space-between;
+            padding: 0 20px;
             z-index: 1000;
         }
         header h1 {
             font-size: 18px;
-            position: fixed;
-            left: 50%;
-            transform: translate(-50%, 0);
+            color: var(--primary-color);
+            flex-grow: 1;
+            text-align: center;
         }
         header .home-button {
-            text-decoration: none;
-            color: #007bff;
             font-size: 16px;
+            text-decoration: none;
+            color: var(--accent-color);
+        }
+        .container {
+            max-width: var(--max-width);
+            width: 100%;
+            margin: 80px auto 20px;
+            padding: 0 20px;
+            flex-grow: 1;
         }
         .profile-container {
-            width: 100%;
             text-align: center;
-            margin-top: 60px;
         }
         .profile-img {
             width: 120px;
@@ -52,10 +72,10 @@
             border-radius: 50%;
             background-color: #ccc;
             overflow: hidden;
+            margin: 0 auto 20px;
             position: relative;
-            margin: 0 auto 20px auto;
             cursor: pointer;
-            transition: all 0.3s ease-in-out;
+            transition: transform var(--transition), background-color var(--transition);
         }
         .profile-img img {
             width: 100%;
@@ -63,15 +83,15 @@
             object-fit: cover;
         }
         .profile-img:hover {
-            background-color: rgba(0, 0, 0, 0.4);
             transform: scale(1.05);
+            background-color: rgba(0, 0, 0, 0.4);
         }
         .profile-img .hover-x {
             position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            color: white;
+            color: var(--white);
             font-size: 24px;
             font-weight: bold;
             display: none;
@@ -79,6 +99,21 @@
         }
         .profile-img:hover .hover-x {
             display: block;
+        }
+        .profile-edit-button {
+            display: none;
+            margin: 10px auto 20px;
+            padding: 8px 12px;
+            font-size: 14px;
+            border: none;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            background-color: var(--accent-color);
+            color: var(--white);
+            transition: background-color var(--transition);
+        }
+        .profile-edit-button:hover {
+            background-color: #0056b3;
         }
         .info-field {
             margin-bottom: 20px;
@@ -95,32 +130,30 @@
         .info-field select {
             width: 100%;
             padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
+            border: 1px solid var(--gray);
+            border-radius: var(--border-radius);
             font-size: 14px;
-            color: #333;
             text-align: center;
-            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
-            background-color: #fff;
-            transition: border 0.2s ease-in-out;
+            transition: border-color var(--transition);
+            background-color: var(--white);
+        }
+        .info-field input:focus,
+        .info-field select:focus {
+            outline: none;
+            border-color: var(--accent-color);
         }
         .info-field input:disabled,
         .info-field select:disabled {
             background-color: #f0f0f0;
             color: #999;
         }
-        .info-field input:focus,
-        .info-field select:focus {
-            border-color: #007BFF;
-            outline: none;
-        }
         .sync-button {
             font-size: 12px;
-            color: #007BFF;
+            color: var(--accent-color);
             text-decoration: underline;
             cursor: pointer;
             margin-left: 10px;
-            transition: color 0.2s ease-in-out;
+            transition: color var(--transition);
         }
         .sync-button:hover {
             color: #0056b3;
@@ -134,61 +167,16 @@
             margin: 0 5px;
             font-size: 14px;
             border: none;
-            border-radius: 5px;
+            border-radius: var(--border-radius);
             cursor: pointer;
-            background-color: #007BFF;
-            color: white;
-            transition: background-color 0.3s ease-in-out;
+            background-color: var(--accent-color);
+            color: var(--white);
+            transition: background-color var(--transition);
         }
         .edit-buttons button:hover {
             background-color: #0056b3;
         }
-        .dialog {
-            width: 90%;
-            max-width: 350px;
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: white;
-            border-radius: 10px;
-            padding: 20px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
-            display: none;
-            z-index: 2000;
-        }
-        .dialog h3 {
-            margin-top: 0;
-        }
-        .dialog input {
-            width: 92%;
-            padding: 10px;
-            margin-bottom: 10px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            font-size: 14px;
-            color: #333;
-            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
-            background-color: #fff;
-        }
-        .dialog input:focus {
-            border-color: #007BFF;
-            outline: none;
-        }
-        .dialog-buttons button {
-            padding: 10px 15px;
-            margin: 0 5px;
-            font-size: 14px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            background-color: #007BFF;
-            color: white;
-            transition: background-color 0.3s ease-in-out;
-        }
-        .dialog-buttons button:hover {
-            background-color: #0056b3;
-        }
+        /* 다이얼로그 */
         .dialog-overlay {
             position: fixed;
             top: 0;
@@ -200,20 +188,54 @@
             display: none;
             z-index: 1500;
         }
-        .profile-edit-button {
+        .dialog {
+            width: 90%;
+            max-width: 350px;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: var(--white);
+            border-radius: var(--border-radius);
+            padding: 20px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
             display: none;
-            margin-top: 10px;
+            z-index: 2000;
+            text-align: center;
+        }
+        .dialog h3 {
             margin-bottom: 10px;
-            padding: 8px 12px;
+            color: var(--primary-color);
+        }
+        .dialog input {
+            width: 92%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid var(--gray);
+            border-radius: var(--border-radius);
+            font-size: 14px;
+            transition: border-color var(--transition);
+            background-color: var(--white);
+        }
+        .dialog input:focus {
+            outline: none;
+            border-color: var(--accent-color);
+        }
+        .dialog-buttons {
+            text-align: center;
+        }
+        .dialog-buttons button {
+            padding: 10px 15px;
+            margin: 0 5px;
             font-size: 14px;
             border: none;
-            border-radius: 5px;
+            border-radius: var(--border-radius);
             cursor: pointer;
-            background-color: #007BFF;
-            color: white;
-            transition: background-color 0.3s ease-in-out;
+            background-color: var(--accent-color);
+            color: var(--white);
+            transition: background-color var(--transition);
         }
-        .profile-edit-button:hover {
+        .dialog-buttons button:hover {
             background-color: #0056b3;
         }
     </style>
@@ -222,6 +244,8 @@
 <header>
     <a href="/" class="home-button">홈</a>
     <h1>내 정보</h1>
+    <!-- 오른쪽 영역에 빈 공간 처리 -->
+    <div style="width:50px;"></div>
 </header>
 <div class="dialog-overlay" id="dialog-overlay"></div>
 <div class="container">
@@ -232,35 +256,33 @@
         </div>
         <button id="profile-edit-button" class="profile-edit-button">프로필 수정</button>
         <div class="info-field">
-            <label style="display: flex; align-items: center;">닉네임</label>
+            <label>닉네임</label>
             <input id="nickname" type="text" disabled>
         </div>
         <div class="info-field">
-            <label style="display: flex; align-items: center;">
+            <label>
                 로그인 타입
                 <span id="sync-button" class="sync-button">동기화</span>
             </label>
             <input id="user-type" type="text" disabled>
         </div>
-        <!-- 이메일 입력란 추가 -->
         <div class="info-field">
-            <label style="display: flex; align-items: center;">이메일</label>
+            <label>이메일</label>
             <input id="email" type="email" disabled>
         </div>
-        <!-- 알림 방식 드롭다운 추가 -->
         <div class="info-field">
-            <label style="display: flex; align-items: center;">알림 방식</label>
+            <label>알림 방식</label>
             <select id="send-type" disabled>
                 <option value="null">없음</option>
                 <option value="EMAIL">이메일</option>
             </select>
         </div>
         <div class="edit-buttons">
-            <button id="cancel-button" style="display: none;">취소</button>
+            <button id="cancel-button" style="display:none;">취소</button>
             <button id="edit-button">정보 수정</button>
         </div>
     </div>
-    <!-- 프로필 URL 입력 팝업 -->
+    <!-- 프로필 URL 입력 다이얼로그 -->
     <div class="dialog" id="profile-dialog">
         <input id="profile-url" type="text" placeholder="프로필 URL 입력">
         <div class="dialog-buttons">
@@ -268,7 +290,7 @@
             <button id="confirm-dialog">확인</button>
         </div>
     </div>
-    <!-- 이메일 인증 팝업 (디자인 동일) -->
+    <!-- 이메일 인증 다이얼로그 (디자인 통일) -->
     <div class="dialog" id="email-verification-dialog">
         <h3>이메일 인증</h3>
         <div class="info-field">
@@ -296,13 +318,11 @@
         document.getElementById('nickname').value = data.displayName;
         document.getElementById('user-type').value = data.displayUserType;
         document.getElementById('email').value = data.email;
-        // sendType 값으로 드롭다운 선택 (예: "EMAIL" 또는 없을 경우 "null")
         document.getElementById('send-type').value = data.sendType ? data.sendType : "null";
         profileUrl = data.profileUrl;
         id = data.id;
-        const profileImage = document.getElementById('profile-image');
         if (data.profileUrl) {
-            profileImage.src = data.profileUrl;
+            document.getElementById('profile-image').src = data.profileUrl;
         }
     }
 
@@ -322,7 +342,7 @@
         const dialogOverlay = document.getElementById('dialog-overlay');
         const profileImage = document.getElementById('profile-image');
 
-        // 이메일 인증 관련 엘리먼트
+        // 이메일 인증 관련 요소
         const emailVerificationDialog = document.getElementById('email-verification-dialog');
         const verificationEmailInput = document.getElementById('verification-email');
         const sendCodeButton = document.getElementById('send-code-button');
@@ -336,7 +356,7 @@
             if (editButton.textContent === '정보 수정') {
                 editSetting();
             }
-            profileImage.src = null;
+            profileImage.src = "";
             profileUrl = null;
         });
 
@@ -375,7 +395,6 @@
                     alert('닉네임은 필수입니다.');
                     return;
                 }
-                // 드롭다운에서 "null"이면 null, 그 외에는 sendType 값을 그대로 사용
                 const sendTypeValue = sendTypeSelect.value === "null" ? null : sendTypeSelect.value;
                 const updatedData = {
                     displayName: nickname,
@@ -383,7 +402,6 @@
                     email: email,
                     sendType: sendTypeValue
                 };
-
                 fetch(`/api/account/user/${id}`, {
                     method: 'PUT',
                     headers: {'Content-Type': 'application/json'},
@@ -393,7 +411,6 @@
                         if (response.ok) {
                             location.reload();
                         } else if (response.status === 403) {
-                            // 403인 경우 이메일 인증이 필요함
                             showEmailVerificationDialog(email);
                         } else {
                             alert('수정에 실패했습니다.');
@@ -419,7 +436,6 @@
                         if (response.ok) {
                             document.getElementById('profile-image').src = url;
                             profileUrl = url;
-                            profileDialog.style.display = 'none';
                         } else {
                             alert('유효하지 않거나 접근할 수 없습니다.');
                         }
@@ -431,10 +447,8 @@
         });
 
         const syncButton = document.getElementById('sync-button');
-
         syncButton.addEventListener('click', () => {
-            const confirmSync = confirm('동기화 하시겠습니까?');
-            if (confirmSync) {
+            if (confirm('동기화 하시겠습니까?')) {
                 fetch(`/api/account/user/${id}/synchronization`, {
                     method: 'PUT',
                     headers: {'Content-Type': 'application/json'}
@@ -452,25 +466,19 @@
             }
         });
 
-        // 이메일 인증 팝업 관련 함수 및 이벤트
         function showEmailVerificationDialog(email) {
-            // 수정 화면에서 입력한 이메일 값을 팝업의 이메일 입력란에 표시
             verificationEmailInput.value = email;
-            // 초기화
             codeSection.style.display = 'none';
             verificationCodeInput.value = '';
             completeVerificationButton.disabled = true;
             timerDiv.textContent = '';
-            // 인증 관련 버튼은 활성화 상태로 초기화
             sendCodeButton.disabled = false;
             confirmCodeButton.disabled = false;
-            // 팝업 노출
             dialogOverlay.style.display = 'block';
             emailVerificationDialog.style.display = 'block';
         }
 
         sendCodeButton.addEventListener('click', () => {
-            // 중복 클릭 방지: 버튼 비활성화
             sendCodeButton.disabled = true;
             const email = verificationEmailInput.value;
             fetch(`/api/account/email/verify/build-code?email=${encodeURIComponent(email)}`, {
@@ -482,7 +490,7 @@
                         startTimer(180);
                     } else {
                         alert('인증번호 발송에 실패했습니다.');
-                        sendCodeButton.disabled = false; // 실패 시 재활성화
+                        sendCodeButton.disabled = false;
                     }
                 })
                 .catch(() => {
@@ -492,7 +500,6 @@
         });
 
         confirmCodeButton.addEventListener('click', () => {
-            // 중복 클릭 방지: 버튼 비활성화
             confirmCodeButton.disabled = true;
             const email = verificationEmailInput.value;
             const code = verificationCodeInput.value.trim();
@@ -508,7 +515,6 @@
                     if (response.ok) {
                         alert('인증번호가 확인되었습니다.');
                         completeVerificationButton.disabled = false;
-                        // 인증 성공 시 재인증 버튼들 비활성화
                         sendCodeButton.disabled = true;
                         confirmCodeButton.disabled = true;
                         clearInterval(verificationTimer);
@@ -544,7 +550,6 @@
                 }
             }, 1000);
         }
-
         function formatTime(sec) {
             const minutes = Math.floor(sec / 60);
             const seconds = sec % 60;

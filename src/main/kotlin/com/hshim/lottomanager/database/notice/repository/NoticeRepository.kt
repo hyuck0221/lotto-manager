@@ -11,7 +11,6 @@ interface NoticeRepository : JpaRepository<Notice, String> {
         """
             select n from Notice n 
             left join fetch n.noticeComments 
-            order by n.createDate desc
         """
     )
     fun findAllPage(pageable: Pageable): Page<Notice>
@@ -21,7 +20,6 @@ interface NoticeRepository : JpaRepository<Notice, String> {
             left join fetch n.noticeComments
             where n.title like concat('%', :search, '%') 
             or n.content like concat('%', :search, '%') 
-            order by n.createDate desc
         """
     )
     fun findAllBySearch(pageable: Pageable, search: String): Page<Notice>

@@ -5,108 +5,144 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>문의 상세 - Lotto Manager</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
+        :root {
+            --font-family: "Helvetica Neue", Arial, sans-serif;
+            --bg-color: #f9f9f9;
+            --text-color: #333;
+            --white: #fff;
+            --primary-color: #007bff;
+            --danger-color: #F44336;
+            --success-color: #43a047;
+            --hover-bg: #f5f5f5;
+            --border-color: #ddd;
+            --transition: 0.3s;
+        }
+        *, *::before, *::after {
+            margin: 0; padding: 0;
             box-sizing: border-box;
         }
-
         body {
-            font-family: "Helvetica Neue", Arial, sans-serif;
-            background-color: #f9f9f9;
-            color: #333;
+            font-family: var(--font-family);
+            background-color: var(--bg-color);
+            color: var(--text-color);
             padding: 20px;
         }
-
         header {
             width: 100%;
             position: fixed;
             top: 0;
             left: 0;
-            background-color: #fff;
-            border-bottom: 1px solid #ddd;
+            background-color: var(--white);
+            border-bottom: 1px solid var(--border-color);
             padding: 10px 20px;
             z-index: 1000;
             display: flex;
             justify-content: space-between;
             align-items: center;
             min-height: 58px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
         }
-
         header h1 {
             font-size: 18px;
             position: fixed;
             left: 50%;
-            transform: translate(-50%, 0);
+            transform: translateX(-50%);
+            color: var(--text-color);
         }
-
         header .left-button {
             text-decoration: none;
-            color: #007bff;
+            color: var(--primary-color);
             font-size: 16px;
             margin-right: 20px;
         }
-
         header .action-buttons {
             display: flex;
             gap: 10px;
         }
-
         header .action-buttons button {
             padding: 8px 12px;
             border: none;
             border-radius: 4px;
             font-size: 14px;
             cursor: pointer;
-            color: #fff;
+            color: var(--white);
+            transition: background-color var(--transition);
         }
-
-        .btn-edit {
-            background-color: #2196F3;
-        }
-
-        .btn-edit:hover {
-            background-color: #1976D2;
-        }
-
-        .btn-delete {
-            background-color: #F44336;
-        }
-
-        .btn-delete:hover {
-            background-color: #D32F2F;
-        }
-
+        .btn-edit { background-color: #2196F3; }
+        .btn-edit:hover { background-color: #1976D2; }
+        .btn-delete { background-color: var(--danger-color); }
+        .btn-delete:hover { background-color: #D32F2F; }
         main {
             margin-top: 80px;
         }
-
         .question-header {
             font-size: 18px;
             font-weight: bold;
             margin-bottom: 10px;
         }
-
         .reply-alert {
             font-size: 14px;
             color: #555;
             margin-bottom: 20px;
         }
-
-        .content,
-        .reply {
+        h4 { margin-bottom: 10px; }
+        .content, .reply {
             padding: 16px;
             font-size: 16px;
             line-height: 1.5;
-            border: 1px solid #ddd;
+            border: 1px solid var(--border-color);
             border-radius: 4px;
-            background-color: #fff;
+            background-color: var(--white);
             margin-bottom: 20px;
         }
+        .reply { font-weight: bold; color: var(--text-color); }
 
-        .reply {
-            font-weight: bold;
-            color: #333;
+        /* 모달 공통 스타일 */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100vw; height: 100vh;
+            background: rgba(0,0,0,0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+        }
+        .modal-content {
+            background: var(--white);
+            padding: 20px;
+            border-radius: 4px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            max-width: 90%;
+            width: 400px;
+            text-align: center;
+        }
+        .modal-buttons {
+            margin-top: 20px;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+        }
+        .modal-buttons button {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: background-color var(--transition);
+            color: var(--white);
+        }
+        .modal-confirm { background-color: var(--primary-color); }
+        .modal-confirm:hover { background-color: var(--success-color); }
+        .modal-cancel { background-color: var(--danger-color); }
+        .modal-cancel:hover { background-color: #D32F2F; }
+
+        /* 반응형 */
+        @media (max-width: 480px) {
+            header h1 { font-size: 16px; }
+            .question-header { font-size: 16px; }
+            .content, .reply { font-size: 14px; padding: 12px; }
+            .modal-content { width: 90%; }
         }
     </style>
 </head>
@@ -115,20 +151,28 @@
     <a href="/page/question/list" class="left-button">목록</a>
     <h1>문의 상세</h1>
     <div class="action-buttons">
-        <button class="btn-edit" onclick="editQuestion()">수정</button>
-        <button class="btn-delete" onclick="deleteQuestion()">삭제</button>
+        <button class="btn-edit" onclick="showEditPreview()">수정</button>
+        <button class="btn-delete" onclick="showDeleteConfirm()">삭제</button>
     </div>
 </header>
 <main>
     <div id="question-detail">
         <div class="question-header" id="question-header"></div>
         <div class="reply-alert" id="reply-alert"></div>
-        <h4 style="margin-bottom: 10px">내용</h4>
+        <h4>내용</h4>
         <div class="content" id="content"></div>
-        <h4 style="margin-bottom: 10px">답변</h4>
+        <h4>답변</h4>
         <div class="reply" id="reply"></div>
     </div>
 </main>
+
+<!-- 모달 공통 영역 -->
+<div id="modal-overlay" class="modal-overlay">
+    <div class="modal-content" id="modal-content">
+        <!-- 동적으로 내용 채움 -->
+    </div>
+</div>
+
 <script>
     const urlParams = new URLSearchParams(window.location.search);
     const questionId = urlParams.get('id');
@@ -151,33 +195,45 @@
     }
 
     function displayQuestionDetail(data) {
-        const questionHeader = document.getElementById('question-header');
-        const replyAlert = document.getElementById('reply-alert');
-        const content = document.getElementById('content');
-        const reply = document.getElementById('reply');
-
-        // 문의 유형 | 제목
-        questionHeader.textContent = `${data.displayType} | ${data.title}`;
-
-        // 답변 시 알림 여부
-        replyAlert.textContent = data.isReplyAlert ? '답변 시 알림 O' : '답변 시 알림 X';
-
-        // 문의 내용
-        content.textContent = data.content || '내용이 없습니다.';
-
-        // 문의 답변
-        reply.textContent = data.reply || '답변이 없습니다.';
+        document.getElementById('question-header').textContent = `${data.displayType} | ${data.title}`;
+        document.getElementById('reply-alert').textContent = data.isReplyAlert ? '답변 시 알림 O' : '답변 시 알림 X';
+        document.getElementById('content').textContent = data.content || '내용이 없습니다.';
+        document.getElementById('reply').textContent = data.reply || '답변이 없습니다.';
     }
 
-    function editQuestion() {
-        location.href = '/page/question/edit?id=' + questionId;
+    // 수정 미리보기 모달: 현재 문의 내용을 보여주고 확인 시 수정 페이지로 이동
+    function showEditPreview() {
+        const modalContent = document.getElementById('modal-content');
+        modalContent.innerHTML = `
+      <h3>문의 수정 미리보기</h3>
+      <p style="text-align:left; margin:10px 0;"><strong>제목:</strong> ${document.getElementById('question-header').textContent.split('|')[1] || ''}</p>
+      <p style="text-align:left; margin:10px 0;"><strong>내용:</strong><br>${document.getElementById('content').innerHTML}</p>
+      <div class="modal-buttons">
+        <button class="modal-confirm" onclick="location.href='/page/question/edit?id=${questionId}'">수정하기</button>
+        <button class="modal-cancel" onclick="closeModal()">취소</button>
+      </div>
+    `;
+        showModal();
+    }
+
+    // 삭제 확인 모달
+    function showDeleteConfirm() {
+        const modalContent = document.getElementById('modal-content');
+        modalContent.innerHTML = `
+      <h3>삭제 확인</h3>
+      <p>정말 이 문의를 삭제하시겠습니까?</p>
+      <div class="modal-buttons">
+        <button class="modal-confirm" onclick="deleteQuestion()">삭제</button>
+        <button class="modal-cancel" onclick="closeModal()">취소</button>
+      </div>
+    `;
+        showModal();
     }
 
     async function deleteQuestion() {
-        if (!confirm('정말 삭제하시겠습니까?')) return;
-
+        closeModal();
         try {
-            const response = await fetch(`/api/question/${questionId}`, {method: 'DELETE'});
+            const response = await fetch(`/api/question/${questionId}`, { method: 'DELETE' });
             if (response.ok) {
                 alert('문의가 삭제되었습니다.');
                 location.href = '/page/question/list';
@@ -190,7 +246,14 @@
         }
     }
 
-    // 페이지 로드 시 데이터 가져오기
+    // 모달 제어 함수
+    function showModal() {
+        document.getElementById('modal-overlay').style.display = 'flex';
+    }
+    function closeModal() {
+        document.getElementById('modal-overlay').style.display = 'none';
+    }
+
     window.addEventListener('DOMContentLoaded', fetchQuestionDetail);
 </script>
 </body>

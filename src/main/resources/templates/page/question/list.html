@@ -5,47 +5,66 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>문의 - Lotto Manager</title>
     <style>
-        * {
+        :root {
+            --font-family: "Helvetica Neue", Arial, sans-serif;
+            --bg-color: #f9f9f9;
+            --text-color: #333;
+            --white: #fff;
+            --primary-color: #007bff;
+            --hover-bg: #f5f5f5;
+            --border-color: #ddd;
+            --transition: 0.3s;
+        }
+
+        *, *::before, *::after {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
+
         body {
-            font-family: "Helvetica Neue", Arial, sans-serif;
-            background-color: #f9f9f9;
-            color: #333;
+            font-family: var(--font-family);
+            background-color: var(--bg-color);
+            color: var(--text-color);
         }
+
         header {
             width: 100%;
             position: fixed;
             top: 0;
             left: 0;
-            background-color: #fff;
-            border-bottom: 1px solid #ddd;
+            background-color: var(--white);
+            border-bottom: 1px solid var(--border-color);
             display: flex;
             justify-content: space-between;
             align-items: center;
             padding: 10px 20px;
             z-index: 1000;
             min-height: 58px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
         }
+
         header h1 {
             font-size: 18px;
             position: fixed;
             left: 50%;
-            transform: translate(-50%, 0);
+            transform: translateX(-50%);
+            color: var(--text-color);
         }
+
         header .home-button {
             text-decoration: none;
-            color: #007bff;
+            color: var(--primary-color);
             font-size: 16px;
         }
+
         .user-info {
             display: flex;
             align-items: center;
             position: relative;
             cursor: pointer;
         }
+
         .profile-img {
             width: 36px;
             height: 36px;
@@ -56,30 +75,37 @@
             justify-content: center;
             align-items: center;
         }
+
         .profile-img img {
             width: 100%;
             height: 100%;
             object-fit: cover;
         }
+
         .user-details {
             margin-left: 8px;
         }
+
         .display-name {
             font-size: 14px;
             font-weight: 600;
         }
+
         .dropdown {
             position: absolute;
             top: calc(100% + 5px);
             right: 0;
-            background: #fff;
-            border: 1px solid #ddd;
+            background: var(--white);
+            border: 1px solid var(--border-color);
             border-radius: 4px;
             padding: 8px 0;
             display: none;
             flex-direction: column;
             min-width: 90px;
+            z-index: 10;
+            transition: background-color var(--transition);
         }
+
         .dropdown button {
             background: none;
             border: none;
@@ -88,56 +114,102 @@
             text-align: left;
             cursor: pointer;
             font-size: 14px;
+            transition: background-color var(--transition);
         }
+
         .dropdown button:hover {
-            background-color: #f5f5f5;
+            background-color: var(--hover-bg);
         }
+
         .dropdown.open {
             display: flex;
         }
+
+        main {
+            margin-top: 70px;
+            padding: 16px;
+        }
+
+        /* 테이블 및 등록 버튼 */
         .table-container {
             margin-top: 16px;
             position: relative;
         }
+
         .table-container .register-btn {
             position: absolute;
             top: -40px;
             right: 0;
             padding: 8px 16px;
             background-color: #4CAF50;
-            color: white;
+            color: var(--white);
             border: none;
             border-radius: 4px;
             cursor: pointer;
             font-size: 14px;
+            transition: background-color var(--transition);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
+
         .table-container .register-btn:hover {
             background-color: #45a049;
         }
+
         table {
             width: 100%;
             border-collapse: collapse;
             margin-top: 16px;
-            background-color: #fff;
+            background-color: var(--white);
         }
+
         th, td {
-            border: 1px solid #ddd;
+            border: 1px solid var(--border-color);
             padding: 8px;
             text-align: center;
             font-size: 14px;
         }
+
         th {
             background-color: #f7f7f7;
+        }
+
+        /* 로딩 인디케이터 */
+        .loading-indicator {
+            text-align: center;
+            font-size: 16px;
+            color: var(--primary-color);
+            padding: 16px 0;
+            display: none;
+        }
+
+        /* 반응형 */
+        @media (max-width: 480px) {
+            header h1 {
+                font-size: 16px;
+            }
+            .home-button {
+                font-size: 14px;
+            }
+            th, td {
+                font-size: 12px;
+                padding: 6px;
+            }
+            .register-btn {
+                font-size: 12px;
+                padding: 6px 12px;
+            }
         }
     </style>
 </head>
 <body>
 <header>
-    <a href="/" class="home-button">홈</a>
-    <h1>문의</h1>
+    <div class="left-section">
+        <a href="/" class="home-button">홈</a>
+    </div>
+    <h1>공지사항</h1>
     <div class="user-info" id="user-info">
         <div class="profile-img" id="profile-img">
-            <img id="profile-image" src="" alt=""/>
+            <img id="profile-image" src="" alt="">
         </div>
         <div class="user-details">
             <div class="display-name" id="display-name"></div>
@@ -146,15 +218,16 @@
             <button id="my-info">내 정보</button>
             <button id="question">문의</button>
             <button id="notice">공지사항</button>
-            <form th:action="@{/logout}" method="post" style="margin: 0;">
+            <form action="/logout" method="post" style="margin: 0;">
                 <button type="submit">로그아웃</button>
             </form>
         </div>
     </div>
 </header>
-<main style="margin-top: 70px; padding: 16px;">
+<main>
     <div class="table-container">
         <button class="register-btn" onclick="location.href='/page/question/register'">문의하기</button>
+        <div class="loading-indicator" id="loading-indicator">로딩 중...</div>
         <table>
             <thead>
             <tr>
@@ -176,59 +249,76 @@
     const question = document.getElementById('question');
     const notice = document.getElementById("notice");
 
-    async function fetchUserInfo() {
-        const response = await fetch('/api/account/user/my-info');
-        if (response.ok) {
-            const user = await response.json();
-            const profileImg = document.getElementById('profile-image');
-            const displayName = document.getElementById('display-name');
-
-            displayName.textContent = user.displayName;
-            if (user.profileUrl) {
-                profileImg.src = user.profileUrl;
-                profileImg.style.backgroundColor = 'transparent';
-            } else {
-                profileImg.src = 'https://cdn-icons-png.flaticon.com/512/747/747545.png';
-                profileImg.style.backgroundColor = '#ccc';
-            }
-        }
-    }
-
     userInfo.addEventListener('click', () => {
         dropdown.classList.toggle('open');
     });
-
     document.addEventListener('click', (event) => {
         if (!userInfo.contains(event.target) && !dropdown.contains(event.target)) {
             dropdown.classList.remove('open');
         }
     });
+    myInfo.addEventListener('click', () => { location.href = '/page/account/user/my-info'; });
+    question.addEventListener('click', () => { location.href = '/page/question/list'; });
+    notice.addEventListener('click', () => { location.href = '/page/notice/list'; });
 
-    myInfo.addEventListener('click', () => {
-        location.href = '/page/account/user/my-info';
-    });
+    let isLoggedIn = false;
 
-    question.addEventListener('click', () => {
-        location.href = '/page/question/list';
-    });
+    async function fetchUserInfo() {
+        try {
+            const response = await fetch('/api/account/user/my-info');
+            if (response.ok) {
+                const user = await response.json();
+                document.getElementById('display-name').textContent = user.displayName;
+                const profileImg = document.getElementById('profile-image');
+                if (user.profileUrl) {
+                    profileImg.src = user.profileUrl;
+                    profileImg.style.backgroundColor = 'transparent';
+                } else {
+                    profileImg.src = 'https://cdn-icons-png.flaticon.com/512/747/747545.png';
+                    profileImg.style.backgroundColor = '#ccc';
+                }
+                isLoggedIn = true;
+            } else {
+                throw new Error();
+            }
+        } catch (err) {
+            isLoggedIn = false;
+        }
+    }
 
-    notice.addEventListener("click", () => {
-        location.href = "/page/notice/list";
-    });
     async function fetchQuestions() {
-        const response = await fetch('/api/question/list');
-        const data = await response.json();
-        const tbody = document.getElementById('question-list');
+        try {
+            const response = await fetch('/api/question/list');
+            if (response.ok) {
+                const data = await response.json();
+                populateQuestionTable(data);
+            }
+        } catch (error) {
+            console.error(error);
+        }
+    }
 
-        data.forEach(question => {
+    function populateQuestionTable(questions) {
+        const tbody = document.getElementById('question-list');
+        tbody.innerHTML = "";
+        if (questions.length === 0) {
+            const tr = document.createElement('tr');
+            const td = document.createElement('td');
+            td.colSpan = 5;
+            td.textContent = "문의가 없습니다.";
+            tr.appendChild(td);
+            tbody.appendChild(tr);
+            return;
+        }
+        questions.forEach(q => {
             const tr = document.createElement('tr');
             tr.innerHTML = `
-                <td>${question.title}</td>
-                <td>${question.displayType}</td>
-                <td>${question.isReplyAlert ? 'O' : 'X'}</td>
-                <td>${question.reply ? 'O' : 'X'}</td>
-                <td><button onclick="viewDetail('${question.id}')">상세</button></td>
-            `;
+        <td>${q.title}</td>
+        <td>${q.displayType}</td>
+        <td>${q.isReplyAlert ? 'O' : 'X'}</td>
+        <td>${q.reply ? 'O' : 'X'}</td>
+        <td><button onclick="viewDetail('${q.id}')">상세</button></td>
+      `;
             tbody.appendChild(tr);
         });
     }
@@ -236,10 +326,30 @@
     function viewDetail(id) {
         window.location.href = `/page/question/detail?id=${id}`;
     }
-    window.addEventListener('DOMContentLoaded', async () => {
-        fetchUserInfo();
+
+    document.addEventListener('DOMContentLoaded', async () => {
+        await fetchUserInfo();
+        showLoginIfNot();
         fetchQuestions();
     });
+
+    function showLoginIfNot() {
+        if (!isLoggedIn) {
+            const dropdown = document.getElementById("dropdown");
+            const logoutForm = dropdown.querySelector("form");
+            if (logoutForm) {
+                logoutForm.remove();
+            }
+            const loginBtn = document.createElement("button");
+            loginBtn.id = "login";
+            loginBtn.textContent = "로그인";
+            loginBtn.style.cursor = "pointer";
+            loginBtn.addEventListener("click", () => {
+                location.href = "/login";
+            });
+            dropdown.appendChild(loginBtn);
+        }
+    }
 </script>
 </body>
 </html>

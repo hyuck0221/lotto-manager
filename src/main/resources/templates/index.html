@@ -4,69 +4,104 @@
     <meta charset="UTF-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>LOTTO MANAGER - hshim</title>
-    <!-- html5-qrcode 라이브러리 (카메라 관련) -->
     <script src="https://unpkg.com/html5-qrcode"></script>
     <style>
-        /* 리셋 및 기본 스타일 */
+        :root {
+            --primary-color: #0C2C4D;   /* 로고에 어울리는 네이비 계열 */
+            --secondary-color: #D1B174; /* 로고에 어울리는 골드 계열 */
+            --background-color: #f9f9f9;
+            --text-color: #333;
+            --header-height: 60px;
+            --transition-speed: 0.2s;
+            --border-radius: 4px;
+        }
+
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
-
         body {
             font-family: "Helvetica Neue", Arial, sans-serif;
-            background-color: #f9f9f9;
-            padding-top: 60px;
-            color: #333;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            padding-top: var(--header-height);
         }
-
-        button,
-        input,
-        select,
-        textarea {
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            padding: 8px;
-            transition: border-color 0.2s ease;
-        }
-
-        input:focus, select:focus, textarea:focus {
-            outline: none;
-            border-color: #4caf50;
-        }
-
-        #timesInput {
-            width: 120px;
-        }
-
         a {
             text-decoration: none;
             color: inherit;
         }
+        input, select, textarea, button {
+            border: 1px solid #ccc;
+            border-radius: var(--border-radius);
+            padding: 8px;
+            transition: border-color var(--transition-speed) ease;
+            font: inherit;
+        }
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: var(--secondary-color);
+        }
 
-        /* 헤더 영역 */
-        .header {
-            width: 100%;
-            position: fixed;
-            top: 0;
-            left: 0;
+        /* 공통 버튼 스타일 */
+        .btn {
+            cursor: pointer;
+            border: 1px solid #ddd;
+            border-radius: var(--border-radius);
             background-color: #fff;
-            border-bottom: 1px solid #ddd;
+            transition: background-color var(--transition-speed) ease,
+            transform var(--transition-speed) ease;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            font-size: 14px;
+            font-weight: 600;
+        }
+        .btn:hover {
+            background-color: #f5f5f5;
+            transform: translateY(-2px);
+        }
+        .btn:disabled {
+            opacity: 0.6;
+            pointer-events: none;
+        }
+
+        /* 헤더 */
+        .header {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%;
+            height: var(--header-height);
+            background-color: var(--primary-color);
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 10px 20px;
+            padding: 0 20px;
             z-index: 1000;
         }
-
-        .user-info {
+        .header-left, .header-right {
             display: flex;
             align-items: center;
-            position: relative;
-            cursor: pointer;
         }
-
+        .header-left {
+            gap: 10px;
+        }
+        .site-logo {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            object-fit: cover;
+        }
+        .header-title {
+            color: #fff;
+            font-size: 16px;
+            font-weight: 700;
+        }
+        .user-info {
+            position: relative;
+            color: #fff;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+        }
         .profile-img {
             width: 36px;
             height: 36px;
@@ -77,36 +112,31 @@
             justify-content: center;
             align-items: center;
         }
-
         .profile-img img {
             width: 100%;
             height: 100%;
             object-fit: cover;
         }
-
         .user-details {
             margin-left: 8px;
         }
-
         .display-name {
             font-size: 14px;
             font-weight: 600;
         }
-
-        /* 사용자 프로필 드롭다운 */
         .dropdown {
             position: absolute;
             top: calc(100% + 5px);
             right: 0;
             background: #fff;
             border: 1px solid #ddd;
-            border-radius: 4px;
+            border-radius: var(--border-radius);
             padding: 8px 0;
             display: none;
             flex-direction: column;
             min-width: 90px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
-
         .dropdown button {
             background: none;
             border: none;
@@ -115,36 +145,32 @@
             text-align: left;
             cursor: pointer;
             font-size: 14px;
+            color: #333;
         }
-
         .dropdown button:hover {
             background-color: #f5f5f5;
         }
-
         .dropdown.open {
             display: flex;
         }
 
-        /* 컨테이너 영역 */
+        /* 메인 영역 */
         .container {
             max-width: 800px;
             width: 100%;
             margin: 0 auto;
             padding: 16px;
         }
-
-        /* 모던한 메인 버튼 그리드 (2행 2열) */
         .main-button-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 16px;
             margin-bottom: 20px;
         }
-
         .main-button {
-            display: none; /* 이미지 로드 전에는 버튼 숨김 */
+            display: none;
             border: none;
-            border-radius: 8px;
+            border-radius: var(--border-radius);
             padding: 20px;
             font-size: 16px;
             font-weight: bold;
@@ -155,42 +181,35 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            transition: background-color 0.2s ease, transform 0.2s ease;
+            transition: background-color var(--transition-speed) ease,
+            transform var(--transition-speed) ease;
         }
-
         .main-button:hover {
             background-color: #f5f5f5;
             transform: translateY(-2px);
         }
-
         .main-button:disabled {
             opacity: 0.6;
             pointer-events: none;
         }
-
         .main-button img {
             width: 40px;
             height: 40px;
             margin-bottom: 8px;
-            display: none; /* 로드 전에는 숨김 */
+            display: none;
         }
-
         .main-button.loaded {
-            display: flex; /* 이미지가 로드되면 버튼 표시 */
+            display: flex;
         }
-
-        /* 이미지 로드 완료 시 부모에 loaded 클래스 추가 */
         .main-button.loaded img {
             display: block;
         }
 
-        /* 모달 영역 */
+        /* 모달 */
         .modal-overlay {
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
+            top: 0; left: 0;
+            width: 100vw; height: 100vh;
             background-color: rgba(0, 0, 0, 0.5);
             display: none;
             justify-content: center;
@@ -198,22 +217,19 @@
             z-index: 999;
             padding: 16px;
         }
-
         .modal-content {
             background-color: #fff;
             position: relative;
-            border-radius: 8px;
+            border-radius: var(--border-radius);
             width: 100%;
             max-width: 600px;
             max-height: 80vh;
             overflow-y: auto;
             padding: 16px;
         }
-
         .modal-close {
             position: absolute;
-            top: 8px;
-            right: 8px;
+            top: 8px; right: 8px;
             background: none;
             border: none;
             font-size: 16px;
@@ -221,19 +237,7 @@
             font-weight: bold;
         }
 
-        /* 반응형 */
-        @media (max-width: 768px) {
-            .header {
-                padding: 8px 16px;
-            }
-
-            .main-button {
-                padding: 15px;
-                font-size: 14px;
-            }
-        }
-
-        /* 기타 기존 스타일 (테이블, 폼 등) 은 그대로 유지 */
+        /* 테이블 */
         table {
             width: 100%;
             border-collapse: collapse;
@@ -241,174 +245,180 @@
             margin-bottom: 16px;
             background-color: #fff;
         }
-
-        th,
-        td {
+        th, td {
             border: 1px solid #ddd;
             padding: 8px;
             text-align: center;
             font-size: 14px;
         }
-
         th {
             background-color: #f7f7f7;
         }
-
         .memo-cell {
             cursor: pointer;
         }
 
+        /* 버튼 변형 */
+        .btn-round-detail {
+            background-color: var(--secondary-color);
+            color: #fff;
+            border: none;
+            border-radius: var(--border-radius);
+            padding: 6px 10px;
+            cursor: pointer;
+            transition: background-color var(--transition-speed) ease,
+            transform var(--transition-speed) ease;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .btn-round-detail:hover {
+            background-color: #b4965a;
+            transform: translateY(-1px);
+        }
+        .btn-delete {
+            background-color: #f44336;
+            color: #fff;
+            border: none;
+            border-radius: var(--border-radius);
+            padding: 6px 10px;
+            cursor: pointer;
+            transition: background-color var(--transition-speed) ease,
+            transform var(--transition-speed) ease;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .btn-delete:hover {
+            background-color: #e53935;
+            transform: translateY(-1px);
+        }
+
+        /* Lotto 입력 */
+        .lotto-number-input {
+            width: 50px;
+            padding: 6px;
+            text-align: center;
+            border: 1px solid #ccc;
+            border-radius: var(--border-radius);
+            font-size: 14px;
+        }
+        .btn-plus, .btn-minus {
+            color: #fff;
+            cursor: pointer;
+            padding: 4px 12px;
+            font-size: 15px;
+            transition: background-color var(--transition-speed) ease,
+            transform var(--transition-speed) ease;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            margin-left: 4px;
+        }
+        .btn-plus {
+            background-color: var(--secondary-color);
+        }
+        .btn-plus:hover {
+            background-color: #b4965a;
+            transform: translateY(-1px);
+        }
+        .btn-minus {
+            background-color: #f44336;
+        }
+        .btn-minus:hover {
+            background-color: #e53935;
+            transform: translateY(-1px);
+        }
+        .disabled-btn {
+            background-color: #ccc;
+            color: #888;
+            cursor: default;
+        }
+        .dialog-button-row {
+            display: flex;
+            gap: 8px;
+            margin-top: 16px;
+        }
+        .dialog-button {
+            padding: 10px 16px;
+            border: none;
+            border-radius: var(--border-radius);
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color var(--transition-speed) ease,
+            transform var(--transition-speed) ease;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .btn-cancel {
+            background-color: #bbb;
+            color: #fff;
+        }
+        .btn-cancel:hover {
+            background-color: #a6a6a6;
+            transform: translateY(-1px);
+        }
+        .btn-submit {
+            background-color: var(--secondary-color);
+            color: #fff;
+        }
+        .btn-submit:hover {
+            background-color: #b4965a;
+            transform: translateY(-1px);
+        }
+        [id^="numberPopupContainer_"] button.active {
+            background-color: #00ab00;
+            color: #fff;
+        }
+
+        /* 반응형 */
+        @media (max-width: 768px) {
+            .header-title {
+                font-size: 14px;
+            }
+            .main-button {
+                padding: 15px;
+                font-size: 14px;
+            }
+            .dialog-button {
+                font-size: 12px;
+                padding: 8px 12px;
+            }
+        }
+
+        /* 푸터 */
         .footer-info {
             margin-top: 32px;
             padding: 20px;
             background-color: #f9f9f9;
             border-top: 1px solid #ddd;
         }
-
-        .footer-info p {
-            margin: 4px 0;
-        }
-
         .footer-title {
             font-weight: bold;
             margin-bottom: 8px;
         }
-
         .footer-link {
-            color: #0066cc;
-            text-decoration: none;
-        }
-
-        .btn-round-detail {
-            background-color: #2196f3;
-            color: #fff;
-            border: none;
-            border-radius: 4px;
-            padding: 6px 10px;
-            cursor: pointer;
-            transition: background-color 0.2s ease, transform 0.2s ease;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
-
-        .btn-round-detail:hover {
-            background-color: #1e88e5;
-            transform: translateY(-1px);
-        }
-
-        .btn-delete {
-            background-color: #f44336;
-            color: #fff;
-            border: none;
-            border-radius: 4px;
-            padding: 6px 10px;
-            cursor: pointer;
-            transition: background-color 0.2s ease, transform 0.2s ease;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
-
-        .btn-delete:hover {
-            background-color: #e53935;
-            transform: translateY(-1px);
-        }
-
-        .lotto-number-input {
-            width: 50px;
-            padding: 6px;
-            text-align: center;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            font-size: 14px;
-        }
-
-        .btn-plus, .btn-minus {
-            border: none;
-            border-radius: 4px;
-            color: #fff;
-            cursor: pointer;
-            padding: 4px 12px; /* 기존보다 크게 */
-            font-size: 15px;
-            transition: background-color 0.2s ease, transform 0.2s ease;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
-
-        .btn-plus {
-            background-color: #2196f3;
-        }
-
-        .btn-plus:hover {
-            background-color: #1e88e5;
-            transform: translateY(-1px);
-        }
-
-        .btn-minus {
-            background-color: #f44336;
-        }
-
-        .btn-minus:hover {
-            background-color: #e53935;
-            transform: translateY(-1px);
-        }
-
-        .disabled-btn {
-            background-color: #ccc;
-            color: #888;
-            cursor: default;
-        }
-
-        .dialog-button {
-            padding: 10px 16px;
-            border: none;
-            border-radius: 8px;
-            font-size: 14px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: background-color 0.2s ease, transform 0.2s ease;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
-
-        .btn-cancel {
-            background-color: #bbb;
-            color: #fff;
-        }
-
-        .btn-cancel:hover {
-            background-color: #a6a6a6;
-            transform: translateY(-1px);
-        }
-
-        .btn-submit {
-            background-color: #4caf50;
-            color: #fff;
-        }
-
-        .btn-submit:hover {
-            background-color: #43a047;
-            transform: translateY(-1px);
-        }
-
-        [id^="numberPopupContainer_"] button.active {
-            background-color: #00ab00;
-            color: #fff;
+            color: var(--primary-color);
         }
     </style>
 </head>
 <body>
 <div class="header">
-    <div id="headerLeft" style="font-weight: bold;"></div>
-    <div class="user-info" id="user-info">
-        <div class="profile-img" id="profile-img">
-            <img id="profile-image" src="" alt=""/>
-        </div>
-        <div class="user-details">
-            <div class="display-name" id="display-name"></div>
-        </div>
-        <div class="dropdown" id="dropdown">
-            <button id="my-info">내 정보</button>
-            <button id="question">문의</button>
-            <button id="notice">공지사항</button>
-            <form th:action="@{/logout}" method="post" style="margin: 0;">
-                <button type="submit">로그아웃</button>
-            </form>
+    <div class="header-left">
+        <!-- 로고 이미지를 /icon/logo.png 등으로 교체 -->
+        <img src="/icon/logo.png" alt="LOTTO LOGO" class="site-logo" />
+        <span class="header-title" id="headerLeft"></span>
+    </div>
+    <div class="header-right">
+        <div class="user-info" id="user-info">
+            <div class="profile-img" id="profile-img">
+                <img id="profile-image" src="" alt=""/>
+            </div>
+            <div class="user-details">
+                <div class="display-name" id="display-name"></div>
+            </div>
+            <div class="dropdown" id="dropdown">
+                <button id="my-info">내 정보</button>
+                <button id="question">문의</button>
+                <button id="notice">공지사항</button>
+                <form th:action="@{/logout}" method="post" style="margin: 0;">
+                    <button type="submit">로그아웃</button>
+                </form>
+            </div>
         </div>
     </div>
 </div>
@@ -418,7 +428,6 @@
 </div>
 
 <div class="container">
-    <!-- 모던한 4개의 메인 버튼 (2행 2열) -->
     <div class="main-button-grid">
         <button class="main-button" id="btn-game">
             <img id="img-game" src="/icon/main-button/game.png" alt="게임"/>
@@ -438,11 +447,9 @@
         </button>
     </div>
 
-    <!-- 등록된 로또 번호 목록 -->
     <div class="registered-lotto-container" id="registeredLottoContainer"></div>
 </div>
 
-<!-- 모달 영역 -->
 <div class="modal-overlay" id="modalOverlay">
     <div class="modal-content" id="modalContent">
         <button class="modal-close" id="modalClose">X</button>
@@ -457,20 +464,24 @@
 </div>
 
 <script>
-    /* ----------------------------
-       공통 모달 관련 함수
-    ---------------------------- */
+    /* 전역 변수 */
+    let latest = 0;
+    let algorithms = null;
+    let isLoggedIn = false;
+    let userId = null;
+    let lottoRows = [];
+    let camerasList = [];
+    let currentCameraIndex = 0;
+    let html5QrCodeInstance = null;
+
+    /* 모달 */
     const modalOverlay = document.getElementById("modalOverlay");
     const modalClose = document.getElementById("modalClose");
     const modalBody = document.getElementById("modalBody");
 
-    let latest = 0;
-    let algorithms = null;
-
     function openModal() {
         modalOverlay.style.display = "flex";
     }
-
     function closeModal() {
         if (html5QrCodeInstance) {
             html5QrCodeInstance.stop().then(() => {
@@ -480,17 +491,13 @@
                 if (err && err.message && err.message.indexOf("not running") !== -1) {
                     html5QrCodeInstance.clear();
                     html5QrCodeInstance = null;
-                } else {
-                    console.error("카메라 종료 중 오류 발생:", err);
                 }
             });
         }
         modalOverlay.style.display = "none";
         modalBody.innerHTML = "";
-        const popups = document.querySelectorAll("[id^='numberPopupContainer_']");
-        popups.forEach(popup => popup.remove());
+        document.querySelectorAll("[id^='numberPopupContainer_']").forEach(popup => popup.remove());
     }
-
     modalOverlay.addEventListener("click", (e) => {
         if (e.target === modalOverlay) {
             closeModal();
@@ -498,9 +505,7 @@
     });
     modalClose.addEventListener("click", closeModal);
 
-    /* ----------------------------
-       사용자 정보 및 드롭다운
-    ---------------------------- */
+    /* 사용자 드롭다운 */
     const userInfo = document.getElementById("user-info");
     const dropdown = document.getElementById("dropdown");
     const myInfo = document.getElementById("my-info");
@@ -524,53 +529,24 @@
         location.href = "/page/notice/list";
     });
 
+    /* 페이지 로드 */
     window.addEventListener("DOMContentLoaded", async () => {
         await fetchUserInfo();
         fetchCurrentTimes();
         loadRegisteredLottoNumbers();
         document.querySelectorAll(".main-button img").forEach((img) => {
-            const showButton = () => {
-                img.parentElement.classList.add("loaded");
-            };
-            img.addEventListener("load", showButton);
-            img.addEventListener("error", showButton);
-        });
-
-        // 로그인 안된 경우 UI 제한 적용
-        if (!isLoggedIn) {
-            // 1. 게임 버튼에 회색 배경과 "로그인 시 이용 가능" 문구 추가
-            const btnGame = document.getElementById("btn-game");
-            btnGame.style.backgroundColor = "#ccc";
-            btnGame.style.cursor = "default";
-            let noticeSpan = document.createElement("span");
-            noticeSpan.style.fontSize = "10px";
-            noticeSpan.style.display = "block";
-            noticeSpan.textContent = "로그인 시 이용 가능";
-            btnGame.appendChild(noticeSpan);
-
-            // 2. 드롭다운 내 "내 정보"와 "문의" 버튼 회색 처리
-            document.getElementById("my-info").classList.add("disabled-btn");
-            document.getElementById("question").classList.add("disabled-btn");
-
-            // 3. 드롭다운의 로그아웃 버튼을 로그인 버튼으로 대체
-            const dropdown = document.getElementById("dropdown");
-            const logoutForm = dropdown.querySelector("form");
-            if (logoutForm) {
-                logoutForm.remove();
+            const showButton = () => img.parentElement.classList.add("loaded");
+            if (img.complete) {
+                showButton();
+            } else {
+                img.addEventListener("load", showButton);
+                img.addEventListener("error", showButton);
             }
-            const loginBtn = document.createElement("button");
-            loginBtn.id = "login";
-            loginBtn.textContent = "로그인";
-            loginBtn.style.cursor = "pointer";
-            loginBtn.addEventListener("click", () => {
-                location.href = "/login";
-            });
-            dropdown.appendChild(loginBtn);
+        });
+        if (!isLoggedIn) {
+            handleNotLoggedInUI();
         }
     });
-
-    let isLoggedIn = false;
-    let userId = null;
 
     async function fetchUserInfo() {
         try {
@@ -579,16 +555,16 @@
                 const user = await response.json();
                 userId = user.id;
                 isLoggedIn = true;
+                document.getElementById("display-name").textContent = user.displayName;
                 const profileImg = document.getElementById("profile-image");
-                const displayName = document.getElementById("display-name");
-                displayName.textContent = user.displayName;
                 if (user.profileUrl) {
                     profileImg.src = user.profileUrl;
                     profileImg.style.backgroundColor = "transparent";
                 } else {
-                    // 로그인된 상태지만 프로필 이미지가 없으면 기본 회색 원 처리
                     profileImg.src = "";
                     profileImg.style.backgroundColor = "#ccc";
+                    profileImg.removeAttribute("src");
+                    profileImg.style.display = "none";
                 }
             } else {
                 throw new Error();
@@ -598,55 +574,53 @@
             setNotLoggedInProfile();
         }
     }
-
     function setNotLoggedInProfile() {
         const profileImg = document.getElementById("profile-image");
-        profileImg.src = "";
-        profileImg.style.backgroundColor = "#ccc";
+        profileImg.removeAttribute("src");
+        profileImg.style.display = "none";
     }
-
+    function handleNotLoggedInUI() {
+        const btnGame = document.getElementById("btn-game");
+        btnGame.style.backgroundColor = "#ccc";
+        btnGame.style.cursor = "default";
+        let noticeSpan = document.createElement("span");
+        noticeSpan.style.fontSize = "10px";
+        noticeSpan.style.display = "block";
+        noticeSpan.textContent = "로그인 시 이용 가능";
+        btnGame.appendChild(noticeSpan);
+        document.getElementById("my-info").classList.add("disabled-btn");
+        document.getElementById("question").classList.add("disabled-btn");
+        const logoutForm = dropdown.querySelector("form");
+        if (logoutForm) {
+            logoutForm.remove();
+        }
+        const loginBtn = document.createElement("button");
+        loginBtn.id = "login";
+        loginBtn.textContent = "로그인";
+        loginBtn.style.cursor = "pointer";
+        loginBtn.addEventListener("click", () => {
+            location.href = "/login";
+        });
+        dropdown.appendChild(loginBtn);
+    }
 
     async function fetchCurrentTimes() {
         try {
             const response = await fetch("/api/lotto/times/latest");
-            if (!response.ok) {
-                throw new Error("회차 정보를 가져오지 못했습니다.");
-            }
+            if (!response.ok) throw new Error("회차 정보를 가져오지 못했습니다.");
             const data = await response.json();
-            const headerLeft = document.getElementById("headerLeft");
-            headerLeft.textContent = `${data.times + 1} 회차 공개예정`;
+            document.getElementById("headerLeft").textContent = `${data.times + 1} 회차 공개예정`;
             latest = data.times + 1;
-        } catch (err) {
-            console.error("회차 조회 에러:", err.message);
-        }
+        } catch (err) {}
     }
 
-    function initializeImageLoading() {
-        document.querySelectorAll(".main-button img").forEach((img) => {
-            // 이미지가 이미 로드 완료된 상태라면 바로 처리
-            if (img.complete) {
-                img.parentElement.classList.add("loaded");
-            } else {
-                const showButton = () => {
-                    img.parentElement.classList.add("loaded");
-                };
-                img.addEventListener("load", showButton);
-                img.addEventListener("error", showButton);
-            }
-        });
-    }
-
-    document.addEventListener("DOMContentLoaded", initializeImageLoading);
-    window.addEventListener("pageshow", initializeImageLoading);
-
-    /* ----------------------------
-       기존 로또 관련 기능 (게임, 번호 등록, 번호 생성)
-    ---------------------------- */
+    /* 게임 버튼 */
     const btnGame = document.getElementById("btn-game");
     btnGame.addEventListener("click", () => {
         window.location.href = "/page/game/main";
     });
 
+    /* 번호 등록 버튼 */
     const btnRegisterNumbers = document.getElementById("btn-register-numbers");
     btnRegisterNumbers.addEventListener("click", () => {
         handleButtonClick(btnRegisterNumbers, () => {
@@ -655,56 +629,41 @@
         });
     });
 
-    let lottoRows = [];
-
-    async function showNumberRegisterScreen(initialNumbersList = [], defaultTimes = null) {
+    /* 번호 등록 화면 */
+    function showNumberRegisterScreen(initialNumbersList = [], defaultTimes = null) {
         modalBody.innerHTML = `
-    <h3>번호 등록</h3>
-    <div>
-      <label>회차: </label>
-      <input type="number" id="timesInput" class="lotto-times-input" value="" style="width:120px;" />
-    </div>
-    <div id="lottoRowsContainer" style="margin: 16px 0;"></div>
-    <div style="margin: 16px 0;">
-      <label>메모: </label>
-      <input type="text" id="memoInput" style="width:100%;" placeholder="메모를 입력하세요" />
-    </div>
-  `;
-
-        // 로또 번호 입력 행 초기화
+            <h3>번호 등록</h3>
+            <div>
+                <label>회차: </label>
+                <input type="number" id="timesInput" style="width:120px;" />
+            </div>
+            <div id="lottoRowsContainer" style="margin:16px 0;"></div>
+            <div style="margin:16px 0;">
+                <label>메모: </label>
+                <input type="text" id="memoInput" style="width:100%;" placeholder="메모를 입력하세요" />
+            </div>
+        `;
         lottoRows = [];
         if (initialNumbersList.length > 0) {
             initialNumbersList.forEach(numbers => addLottoRow(numbers));
         } else {
             addLottoRow();
         }
-
         const buttonRow = document.createElement("div");
         buttonRow.className = "dialog-button-row";
-        buttonRow.innerHTML = `
-    <button class="dialog-button btn-submit" id="btnSubmitManual">등록</button>
-  `;
+        buttonRow.innerHTML = `<button class="dialog-button btn-submit" id="btnSubmitManual">등록</button>`;
         modalBody.appendChild(buttonRow);
-
-        // 등록 버튼 클릭 이벤트 처리 (로그인 상태라면 실행)
         document.getElementById("btnSubmitManual").addEventListener("click", () => {
-            if (!isLoggedIn) return; // 혹시 모를 중복 체크
-            const btn = document.getElementById("btnSubmitManual");
-            handleButtonClick(btn, () => submitManualNumbers());
+            if (!isLoggedIn) return;
+            handleButtonClick(document.getElementById("btnSubmitManual"), submitManualNumbers);
         });
-
         modalBody.addEventListener("input", checkAllInputsFilled);
-
         if (defaultTimes !== null) {
             document.getElementById("timesInput").value = defaultTimes;
-            checkAllInputsFilled();
         } else {
-            const timesInputEl = document.getElementById("timesInput");
-            timesInputEl.value = latest;
-            checkAllInputsFilled();
+            document.getElementById("timesInput").value = latest;
         }
-
-        // 로그인하지 않은 경우 등록 버튼 비활성화 및 스타일/툴팁 적용
+        checkAllInputsFilled();
         if (!isLoggedIn) {
             const btnSubmitManual = document.getElementById("btnSubmitManual");
             btnSubmitManual.disabled = true;
@@ -713,36 +672,6 @@
             btnSubmitManual.title = "로그인 후 이용 가능";
         }
     }
-
-
-    // checkAllInputsFilled 함수 내에서도 로그인 여부를 우선 확인
-    function checkAllInputsFilled() {
-        const timesInput = document.getElementById("timesInput");
-        if (!timesInput) return;
-        const btnSubmitManual = document.getElementById("btnSubmitManual");
-        if (!btnSubmitManual) return;
-
-        if (!isLoggedIn) {
-            btnSubmitManual.disabled = true;
-            btnSubmitManual.title = "로그인 시 이용 가능";
-            return;
-        }
-        const timesValue = timesInput.value.trim();
-        const numbersInputs = modalBody.querySelectorAll(".lotto-number-input");
-        if (!timesValue) {
-            btnSubmitManual.disabled = true;
-            return;
-        }
-        for (let input of numbersInputs) {
-            if (!input.value.trim()) {
-                btnSubmitManual.disabled = true;
-                return;
-            }
-        }
-        btnSubmitManual.disabled = false;
-    }
-
-
     function addLottoRow(preFilledNumbers = []) {
         const container = document.getElementById("lottoRowsContainer");
         const rowIndex = lottoRows.length;
@@ -752,27 +681,23 @@
         div.id = rowId;
         let inputHtml = "";
         for (let i = 0; i < 6; i++) {
-            const numberValue = preFilledNumbers[i] !== undefined ? preFilledNumbers[i] : "";
-            inputHtml += `<input type="number" class="lotto-number-input" value="${numberValue}" />`;
+            const val = preFilledNumbers[i] !== undefined ? preFilledNumbers[i] : "";
+            inputHtml += `<input type="number" class="lotto-number-input" value="${val}" />`;
         }
-        // 모든 행에 선택 버튼 추가 (가로 60px, 세로 30px, 텍스트 크기 10px)
         div.innerHTML = `
-        <button class="btn-number-popup" id="btnNumberPopup_${rowIndex}" style="width:40px; height:30px; margin-right:8px; font-size:10px;">선택</button>
-        ${inputHtml}
-        <button class="btn-plus" id="btnPlus_${rowIndex}">+</button>
-        ${rowIndex > 0 ? `<button class="btn-minus" id="btnMinus_${rowIndex}">-</button>` : ""}
-    `;
+            <button class="btn-number-popup" id="btnNumberPopup_${rowIndex}" style="width:40px; height:30px; margin-right:8px; font-size:10px;">선택</button>
+            ${inputHtml}
+            <button class="btn-plus" id="btnPlus_${rowIndex}">+</button>
+            ${rowIndex > 0 ? `<button class="btn-minus" id="btnMinus_${rowIndex}">-</button>` : ""}
+        `;
         container.appendChild(div);
         lottoRows.push(rowId);
-        // 선택 버튼: 각 행에 대해 팝업 토글 이벤트 연결 (해당 행 id 전달)
-        document.getElementById(`btnNumberPopup_${rowIndex}`).addEventListener("click", function (event) {
-            toggleNumberPopup(event, rowId);
+        document.getElementById(`btnNumberPopup_${rowIndex}`).addEventListener("click", (e) => {
+            toggleNumberPopup(e, rowId);
         });
-        // + 버튼: 새 행 추가
         document.getElementById(`btnPlus_${rowIndex}`).addEventListener("click", () => {
             addLottoRow();
         });
-        // - 버튼: 해당 행 삭제 (첫 번째 행은 삭제하지 않음)
         if (rowIndex > 0) {
             document.getElementById(`btnMinus_${rowIndex}`).addEventListener("click", () => {
                 removeLottoRow(rowId);
@@ -780,7 +705,6 @@
         }
         checkAllInputsFilled();
     }
-
     function toggleNumberPopup(event, rowId) {
         const popupId = "numberPopupContainer_" + rowId;
         let popup = document.getElementById(popupId);
@@ -788,7 +712,6 @@
             popup = document.createElement("div");
             popup.id = popupId;
             popup.style.position = "absolute";
-            // 선택 버튼 위치 기준: 버튼 바로 아래에 표시
             const btn = event.target;
             const rect = btn.getBoundingClientRect();
             popup.style.top = (rect.bottom + window.scrollY + 5) + "px";
@@ -800,8 +723,7 @@
             popup.style.display = "grid";
             popup.style.gridTemplateColumns = "repeat(5, 1fr)";
             popup.style.gap = "5px";
-            popup.style.zIndex = "1001"; // 모달 다이얼로그보다 위에 표시
-            // 1부터 45까지 번호 버튼 생성
+            popup.style.zIndex = "1001";
             for (let i = 1; i <= 45; i++) {
                 const numBtn = document.createElement("button");
                 numBtn.textContent = i;
@@ -809,10 +731,8 @@
                 numBtn.style.fontSize = "12px";
                 numBtn.style.border = "1px solid #ccc";
                 numBtn.style.borderRadius = "4px";
-                numBtn.style.margin = "0";
                 numBtn.dataset.number = i;
                 numBtn.addEventListener("click", function () {
-                    // 선택되지 않은 상태일 때 이미 6개 선택되었다면 추가 선택 불가
                     const activeCount = popup.querySelectorAll("button.active").length;
                     if (!numBtn.classList.contains("active") && activeCount >= 6) {
                         return;
@@ -822,14 +742,11 @@
                 });
                 popup.appendChild(numBtn);
             }
-            // 팝업을 모달 오버레이의 자식으로 추가하여 모달 위에 표시
             document.getElementById("modalOverlay").appendChild(popup);
         } else {
-            // 토글: 보이면 숨기고, 숨겨져 있으면 보이게
             popup.style.display = (popup.style.display === "none" || popup.style.display === "") ? "grid" : "none";
         }
     }
-
     function updateRowInput(rowId, popup) {
         const activeButtons = popup.querySelectorAll("button.active");
         let selectedNumbers = Array.from(activeButtons).map(btn => parseInt(btn.dataset.number, 10));
@@ -843,14 +760,11 @@
         }
         checkAllInputsFilled();
     }
-
-    // 모달 오버레이 클릭 시, 팝업 박스 외부를 클릭하면 팝업 닫기 (선택 버튼 클릭 시 닫히지 않도록)
     (function attachPopupOutsideClickListener() {
         const modalOverlay = document.getElementById("modalOverlay");
         if (!modalOverlay.hasAttribute("data-popup-listener")) {
             modalOverlay.setAttribute("data-popup-listener", "true");
             modalOverlay.addEventListener("click", function (e) {
-                // id가 "numberPopupContainer_" 로 시작하는 모든 팝업에 대해 처리
                 const popups = document.querySelectorAll("[id^='numberPopupContainer_']");
                 popups.forEach(popup => {
                     if (!popup.contains(e.target) && !e.target.classList.contains("btn-number-popup")) {
@@ -860,41 +774,27 @@
             });
         }
     })();
-
-    function updateFirstInput() {
-        const activeButtons = document.querySelectorAll("#numberPopupContainer button.active");
-        let selectedNumbers = Array.from(activeButtons).map(btn => parseInt(btn.dataset.number, 10));
-        selectedNumbers.sort((a, b) => a - b);
-        const lottoRow = document.getElementById("lottoRow_0");
-        if (lottoRow) {
-            const inputs = lottoRow.querySelectorAll(".lotto-number-input");
-            for (let i = 0; i < inputs.length; i++) {
-                inputs[i].value = selectedNumbers[i] !== undefined ? selectedNumbers[i] : "";
-            }
-        }
-        checkAllInputsFilled();
-    }
-
     function removeLottoRow(rowId) {
         const div = document.getElementById(rowId);
-        if (div) {
-            div.remove();
-        }
-        lottoRows = lottoRows.filter((id) => id !== rowId);
+        if (div) div.remove();
+        lottoRows = lottoRows.filter(id => id !== rowId);
         checkAllInputsFilled();
     }
-
     function checkAllInputsFilled() {
         const timesInput = document.getElementById("timesInput");
         if (!timesInput) return;
         const btnSubmitManual = document.getElementById("btnSubmitManual");
         if (!btnSubmitManual) return;
-        const timesValue = timesInput.value.trim();
-        const numbersInputs = modalBody.querySelectorAll(".lotto-number-input");
-        if (!timesValue) {
+        if (!isLoggedIn) {
+            btnSubmitManual.disabled = true;
+            btnSubmitManual.title = "로그인 시 이용 가능";
+            return;
+        }
+        if (!timesInput.value.trim()) {
             btnSubmitManual.disabled = true;
             return;
         }
+        const numbersInputs = modalBody.querySelectorAll(".lotto-number-input");
         for (let input of numbersInputs) {
             if (!input.value.trim()) {
                 btnSubmitManual.disabled = true;
@@ -903,24 +803,22 @@
         }
         btnSubmitManual.disabled = false;
     }
-
     function submitManualNumbers() {
         const timesValue = document.getElementById("timesInput").value.trim();
-        // 메모 입력란 값 가져오기
         const memo = document.getElementById("memoInput").value.trim();
         const requestData = [];
-        lottoRows.forEach((rowId) => {
+        lottoRows.forEach(rowId => {
             const rowDiv = document.getElementById(rowId);
             if (rowDiv) {
                 const inputs = rowDiv.querySelectorAll(".lotto-number-input");
                 const numbers = [];
-                inputs.forEach((inp) => {
+                inputs.forEach(inp => {
                     numbers.push(parseInt(inp.value.trim(), 10));
                 });
                 requestData.push({
                     times: parseInt(timesValue, 10),
                     numbers: numbers,
-                    note: memo  // 메모 값 포함
+                    note: memo
                 });
             }
         });
@@ -931,9 +829,7 @@
         })
             .then((res) => {
                 if (res.status === 400) {
-                    res.json().then((data) => {
-                        alert(data.message);
-                    });
+                    return res.json().then(data => { alert(data.message); });
                 } else {
                     alert("등록되었습니다");
                     closeModal();
@@ -945,73 +841,66 @@
             });
     }
 
+    /* 등록된 로또 번호 목록 */
     const registeredLottoContainer = document.getElementById("registeredLottoContainer");
-
     function loadRegisteredLottoNumbers() {
         fetch("/api/lotto/numbers", {method: "GET"})
-            .then((res) => {
+            .then(res => {
                 if (!res.ok) throw Error;
                 return res.json();
             })
-            .then((data) => {
+            .then(data => {
                 if (!Array.isArray(data) || data.length === 0) {
                     registeredLottoContainer.innerHTML = `<p>등록된 로또 번호가 없습니다.</p>`;
                     return;
                 }
                 renderRegisteredLottoList(data);
             })
-            .catch((err) => {
+            .catch(() => {
                 registeredLottoContainer.innerHTML = `<p>로그인 시 등록한 로또번호가 표시됩니다.</p>`;
             });
     }
-
     function renderRegisteredLottoList(list) {
         const groupedByTimes = {};
-        list.forEach((item) => {
+        list.forEach(item => {
             const timesKey = item.lotto.times;
             if (!groupedByTimes[timesKey]) {
                 groupedByTimes[timesKey] = [];
             }
             groupedByTimes[timesKey].push(item);
         });
-        const sortedTimes = Object.keys(groupedByTimes).sort(
-            (a, b) => parseInt(b, 10) - parseInt(a, 10)
-        );
+        const sortedTimes = Object.keys(groupedByTimes).sort((a, b) => parseInt(b, 10) - parseInt(a, 10));
         let html = "";
-        sortedTimes.forEach((times) => {
+        sortedTimes.forEach(times => {
             const items = groupedByTimes[times];
             const referenceItem = items[0];
             const lottoInfo = referenceItem.lotto || {};
-            const winningNumbersStr = Array.isArray(lottoInfo.numbers)
-                ? lottoInfo.numbers.join(", ")
-                : "";
-            const bonusStr =
-                lottoInfo.bonusNumber != null ? ` + ${lottoInfo.bonusNumber}` : "";
+            const winningNumbersStr = Array.isArray(lottoInfo.numbers) ? lottoInfo.numbers.join(", ") : "";
+            const bonusStr = lottoInfo.bonusNumber != null ? ` + ${lottoInfo.bonusNumber}` : "";
             html += `
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 24px;">
-                <h4 style="margin: 0;">
-                    ${times} 회차
-                    <button class="btn-round-detail"
-                        data-lotto='${JSON.stringify(lottoInfo)}'
-                        data-rank='${referenceItem.rank}'
-                    >상세</button>
-                    <span style="margin-left: 12px; font-weight: normal; font-size: 14px;">
-                       ${winningNumbersStr}${bonusStr}
-                    </span>
-                </h4>
-            </div>
-            <table style="margin-top: 8px; width: 100%;">
-                <thead>
-                    <tr>
-                        <th style="width: 200px;">입력번호</th>
-                        <th style="width: 150px;">메모</th>
-                        <th style="width: 100px;">등수</th>
-                        <th style="width: 80px;">삭제</th>
-                    </tr>
-                </thead>
-                <tbody>
-        `;
-            items.forEach((item) => {
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-top:24px;">
+                    <h4 style="margin:0;">
+                        ${times} 회차
+                        <button class="btn-round-detail"
+                            data-lotto='${JSON.stringify(lottoInfo)}'
+                            data-rank='${referenceItem.rank}'>상세</button>
+                        <span style="margin-left:12px; font-weight:normal; font-size:14px;">
+                            ${winningNumbersStr}${bonusStr}
+                        </span>
+                    </h4>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="width:200px;">입력번호</th>
+                            <th style="width:150px;">메모</th>
+                            <th style="width:100px;">등수</th>
+                            <th style="width:80px;">삭제</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+            items.forEach(item => {
                 let displayRank = item.rank;
                 if (item.rank === null || item.rank === undefined) {
                     displayRank = "공개예정";
@@ -1019,34 +908,26 @@
                     displayRank = "낙첨";
                 }
                 const deleteButtonHtml = `<button class="btn-delete" data-id="${item.id}">삭제</button>`;
-                const inputNumbersHtml = formatNumbers(
-                    item.numbers || [],
-                    lottoInfo.numbers || []
-                );
-                // 메모 컬럼 추가 (메모 셀 클릭 시 수정 가능하도록 data-id 설정)
+                const inputNumbersHtml = formatNumbers(item.numbers || [], lottoInfo.numbers || []);
                 const note = item.note ? item.note : "";
                 html += `
-                <tr>
-                    <td style="font-family: monospace;">${inputNumbersHtml}</td>
-                    <td class="memo-cell" data-id="${item.id}" style="cursor: pointer;">${note}</td>
-                    <td>${displayRank}</td>
-                    <td>${deleteButtonHtml}</td>
-                </tr>
-            `;
+                    <tr>
+                        <td style="font-family:monospace;">${inputNumbersHtml}</td>
+                        <td class="memo-cell" data-id="${item.id}">${note}</td>
+                        <td>${displayRank}</td>
+                        <td>${deleteButtonHtml}</td>
+                    </tr>
+                `;
             });
-            html += `
-                </tbody>
-            </table>
-        `;
+            html += `</tbody></table>`;
         });
         if (!list || list.length === 0) {
             html = "<p>등록된 로또 번호가 없습니다.</p>";
         }
         registeredLottoContainer.innerHTML = html;
 
-        // 삭제 버튼 이벤트 처리
         const deleteButtons = registeredLottoContainer.querySelectorAll(".btn-delete");
-        deleteButtons.forEach((btn) => {
+        deleteButtons.forEach(btn => {
             btn.addEventListener("click", async () => {
                 const id = btn.getAttribute("data-id");
                 if (!confirm("정말 삭제하시겠습니까?")) return;
@@ -1063,26 +944,20 @@
                 }
             });
         });
-
-        // 상세 버튼 이벤트 처리
         const detailButtons = registeredLottoContainer.querySelectorAll(".btn-round-detail");
-        detailButtons.forEach((btn) => {
+        detailButtons.forEach(btn => {
             btn.addEventListener("click", () => {
                 const lottoStr = btn.getAttribute("data-lotto");
                 const rankStr = btn.getAttribute("data-rank");
                 if (!lottoStr) return;
                 const lottoObj = JSON.parse(lottoStr);
-                const rankVal =
-                    rankStr !== "null" && rankStr !== "undefined" ? parseInt(rankStr, 10) : null;
+                const rankVal = (rankStr !== "null" && rankStr !== "undefined") ? parseInt(rankStr, 10) : null;
                 showRoundDetailDialog(lottoObj, rankVal);
             });
         });
-
-        // 메모 셀 클릭 시 인풋 전환 및 수정 이벤트 처리
         const memoCells = registeredLottoContainer.querySelectorAll(".memo-cell");
         memoCells.forEach(cell => {
-            cell.addEventListener("click", function (e) {
-                // 이미 수정 중이면 리턴
+            cell.addEventListener("click", function () {
                 if (cell.querySelector("input")) return;
                 const originalNote = cell.textContent;
                 const id = cell.getAttribute("data-id");
@@ -1094,13 +969,9 @@
                 cell.innerHTML = "";
                 cell.appendChild(input);
                 input.focus();
-
-                // blur 이벤트: 수정 완료 후 API 호출
-                input.addEventListener("blur", function (e) {
+                input.addEventListener("blur", function () {
                     submitNoteChange(id, input.value, cell, originalNote);
                 });
-
-                // keydown 이벤트: Enter로 제출, Esc로 취소
                 input.addEventListener("keydown", function (e) {
                     if (e.key === "Enter") {
                         e.preventDefault();
@@ -1112,7 +983,6 @@
             });
         });
     }
-
     async function submitNoteChange(id, newNote, cell, originalNote) {
         if (newNote === originalNote) {
             cell.textContent = originalNote;
@@ -1135,104 +1005,81 @@
             cell.textContent = originalNote;
         }
     }
-
     function showRoundDetailDialog(lotto, rank) {
         openModal();
         modalBody.innerHTML = `
-        <h3>상세 정보</h3>
-        <table style="width: 100%; border-collapse: collapse;">
-            <tbody>
-                <tr>
-                    <th style="text-align: left; width: 150px; padding: 6px; border: 1px solid #ddd;">회차</th>
-                    <td style="padding: 6px; border: 1px solid #ddd;">${lotto.times}</td>
-                </tr>
-                <tr>
-                    <th style="text-align: left; padding: 6px; border: 1px solid #ddd;">등수</th>
-                    <td style="padding: 6px; border: 1px solid #ddd;">
-                        ${
-            rank === null || rank === undefined
-                ? "공개예정"
-                : rank === 0
-                    ? "낙첨"
-                    : rank
-        }
-                    </td>
-                </tr>
-                <tr>
-                    <th style="text-align: left; padding: 6px; border: 1px solid #ddd;">공개일</th>
-                    <td style="padding: 6px; border: 1px solid #ddd;">${lotto.openDate || "-"}</td>
-                </tr>
-                <tr>
-                    <th style="text-align: left; padding: 6px; border: 1px solid #ddd;">공개여부</th>
-                    <td style="padding: 6px; border: 1px solid #ddd;">${lotto.isOpen ? "예" : "아니오"}</td>
-                </tr>
-                <tr>
-                    <th style="text-align: left; padding: 6px; border: 1px solid #ddd;">공개된 번호</th>
-                    <td style="padding: 6px; border: 1px solid #ddd;">
-                        ${
-            Array.isArray(lotto.numbers)
-                ? lotto.numbers.join(", ")
-                : ""
-        }
-                    </td>
-                </tr>
-                <tr>
-                    <th style="text-align: left; padding: 6px; border: 1px solid #ddd;">보너스번호</th>
-                    <td style="padding: 6px; border: 1px solid #ddd;">${lotto.bonusNumber || ""}</td>
-                </tr>
-                <tr>
-                    <th style="text-align: left; padding: 6px; border: 1px solid #ddd;">총 당첨금액</th>
-                    <td style="padding: 6px; border: 1px solid #ddd;">${formatNumber(lotto.totalPrize)}</td>
-                </tr>
-                <tr>
-                    <th style="text-align: left; padding: 6px; border: 1px solid #ddd;">1등 당첨금액</th>
-                    <td style="padding: 6px; border: 1px solid #ddd;">${formatNumber(lotto.firstWinnerPrize)}</td>
-                </tr>
-                <tr>
-                    <th style="text-align: left; padding: 6px; border: 1px solid #ddd;">1등 당첨자 수</th>
-                    <td style="padding: 6px; border: 1px solid #ddd;">${lotto.winCnt || 0}</td>
-                </tr>
-                <tr>
-                    <th style="text-align: left; padding: 6px; border: 1px solid #ddd;">1등 시 수령금액</th>
-                    <td style="padding: 6px; border: 1px solid #ddd;">
-                        ${
-            lotto.winCnt > 0
-                ? formatNumber(lotto.firstWinnerPrize / lotto.winCnt)
-                : 0
-        }
-                    </td>
-                </tr>
-            </tbody>
-        </table>
-      `;
+            <h3>상세 정보</h3>
+            <table style="width:100%;">
+                <tbody>
+                    <tr>
+                        <th style="text-align:left; width:150px; padding:6px; border:1px solid #ddd;">회차</th>
+                        <td style="padding:6px; border:1px solid #ddd;">${lotto.times}</td>
+                    </tr>
+                    <tr>
+                        <th style="text-align:left; padding:6px; border:1px solid #ddd;">등수</th>
+                        <td style="padding:6px; border:1px solid #ddd;">${
+            rank === null || rank === undefined ? "공개예정" : rank === 0 ? "낙첨" : rank
+        }</td>
+                    </tr>
+                    <tr>
+                        <th style="text-align:left; padding:6px; border:1px solid #ddd;">공개일</th>
+                        <td style="padding:6px; border:1px solid #ddd;">${lotto.openDate || "-"}</td>
+                    </tr>
+                    <tr>
+                        <th style="text-align:left; padding:6px; border:1px solid #ddd;">공개여부</th>
+                        <td style="padding:6px; border:1px solid #ddd;">${lotto.isOpen ? "예" : "아니오"}</td>
+                    </tr>
+                    <tr>
+                        <th style="text-align:left; padding:6px; border:1px solid #ddd;">공개된 번호</th>
+                        <td style="padding:6px; border:1px solid #ddd;">${
+            Array.isArray(lotto.numbers) ? lotto.numbers.join(", ") : ""
+        }</td>
+                    </tr>
+                    <tr>
+                        <th style="text-align:left; padding:6px; border:1px solid #ddd;">보너스번호</th>
+                        <td style="padding:6px; border:1px solid #ddd;">${lotto.bonusNumber || ""}</td>
+                    </tr>
+                    <tr>
+                        <th style="text-align:left; padding:6px; border:1px solid #ddd;">총 당첨금액</th>
+                        <td style="padding:6px; border:1px solid #ddd;">${formatNumber(lotto.totalPrize)}</td>
+                    </tr>
+                    <tr>
+                        <th style="text-align:left; padding:6px; border:1px solid #ddd;">1등 당첨금액</th>
+                        <td style="padding:6px; border:1px solid #ddd;">${formatNumber(lotto.firstWinnerPrize)}</td>
+                    </tr>
+                    <tr>
+                        <th style="text-align:left; padding:6px; border:1px solid #ddd;">1등 당첨자 수</th>
+                        <td style="padding:6px; border:1px solid #ddd;">${lotto.winCnt || 0}</td>
+                    </tr>
+                    <tr>
+                        <th style="text-align:left; padding:6px; border:1px solid #ddd;">1등 시 수령금액</th>
+                        <td style="padding:6px; border:1px solid #ddd;">${
+            lotto.winCnt > 0 ? formatNumber(lotto.firstWinnerPrize / lotto.winCnt) : 0
+        }</td>
+                    </tr>
+                </tbody>
+            </table>
+        `;
     }
-
     function formatNumber(num) {
-        if (!num || isNaN(num)) {
-            return "0";
-        }
+        if (!num || isNaN(num)) return "0";
         return num.toLocaleString("ko-KR");
     }
-
     function formatNumbers(inputNumbers, winningNumbers) {
         if (!winningNumbers || !Array.isArray(winningNumbers)) {
             winningNumbers = [];
         }
-        const winningSet = new Set(winningNumbers.map((num) => parseInt(num, 10)));
-        return inputNumbers
-            .map((num) => {
-                const val = parseInt(num, 10);
-                const display = val.toString().padStart(2, " ");
-                return winningSet.has(val)
-                    ? `<span style="color: #00ab00; font-weight: bold">${display}</span>`
-                    : `<span>${display}</span>`;
-            })
-            .join(" ");
+        const winningSet = new Set(winningNumbers.map(num => parseInt(num, 10)));
+        return inputNumbers.map(num => {
+            const val = parseInt(num, 10);
+            const display = val.toString().padStart(2, " ");
+            return winningSet.has(val)
+                ? `<span style="color:#00ab00; font-weight:bold">${display}</span>`
+                : `<span>${display}</span>`;
+        }).join(" ");
     }
 
-    /* ----------------------------
-       버튼 중복 클릭 방지 유틸
-    ---------------------------- */
+    /* 버튼 중복 클릭 방지 */
     function handleButtonClick(button, callback) {
         if (button.disabled) return;
         button.disabled = true;
@@ -1249,49 +1096,41 @@
         }
     }
 
-    /* ----------------------------
-       번호 생성 관련
-    ---------------------------- */
+    /* 번호 생성 */
     const btnGenerateNumbers = document.getElementById("btn-generate-numbers");
     btnGenerateNumbers.addEventListener("click", async () => {
         handleButtonClick(btnGenerateNumbers, async () => {
             openModal();
-            const algorithms = await fetchAlgorithms();
-            showGenerateDialog(algorithms);
+            const algos = await fetchAlgorithms();
+            showGenerateDialog(algos);
         });
     });
-
     async function fetchAlgorithms() {
-        if (algorithms !== null) return algorithms
+        if (algorithms !== null) return algorithms;
         const response = await fetch("/api/config/number/build/algorithms");
         algorithms = await response.json();
         return algorithms;
     }
-
     function showGenerateDialog(algorithms) {
         modalBody.innerHTML = `
             <h3>번호 생성</h3>
             <div class="gen-form">
                 <div class="gen-field">
-                    <label for="countInput" class="gen-label">생성 개수 (최대 20)</label>
-                    <input type="number" id="countInput" min="1" max="20" value="1" class="gen-input"/>
+                    <label>생성 개수 (최대 20)</label>
+                    <input type="number" id="countInput" min="1" max="20" value="1" />
                 </div>
                 <div class="gen-field">
-                    <label for="algorithmDropdown" class="gen-label">알고리즘 선택</label>
-                    <select id="algorithmDropdown" class="algorithm-select gen-input">
-                        ${algorithms
-            .map(
-                (algo) => `
+                    <label>알고리즘 선택</label>
+                    <select id="algorithmDropdown">
+                        ${algorithms.map(algo => `
                             <option value="${algo.key}" data-desc="${algo.description}">${algo.value}</option>
-                        `
-            )
-            .join("")}
+                        `).join("")}
                     </select>
-                    <div class="small-text" id="algorithmDescription"></div>
+                    <div style="font-size:12px; color:#555;" id="algorithmDescription"></div>
                 </div>
             </div>
-            <div id="algorithmDetails" class="gen-details"></div>
-            <div class="dialog-button-row" style="margin-top: 16px;">
+            <div id="algorithmDetails" style="margin-top:8px;"></div>
+            <div class="dialog-button-row">
                 <button class="dialog-button btn-cancel" onclick="closeModal()">취소</button>
                 <button class="dialog-button btn-submit" id="btn-generate" disabled>생성</button>
             </div>
@@ -1308,54 +1147,34 @@
             checkGenerateButton();
         });
         document.getElementById("countInput").addEventListener("input", checkGenerateButton);
-
-        function checkGenerateButton() {
-            const count = document.getElementById("countInput").value;
-            btnGenerate.disabled =
-                !count || count < 1 || count > 20 || !algorithmDropdown.value;
-        }
-
         btnGenerate.addEventListener("click", async () => {
-            // 1. 기존 입력 필드에서 값을 먼저 추출합니다.
             const algorithm = algorithmDropdown.value;
             const count = document.getElementById("countInput").value;
             const detail = collectDetails(algorithm);
-
-            // 2. UUID 생성 (최신 브라우저에서는 crypto.randomUUID() 사용 가능)
-            const progressingId = crypto.randomUUID ? crypto.randomUUID() : 'progressingId_' + Math.random().toString(36).substr(2, 12);
-
-            // 3. SSE 연결: /api/progressing/{uuid} 엔드포인트에 연결
+            const progressingId = crypto.randomUUID
+                ? crypto.randomUUID()
+                : "progressingId_" + Math.random().toString(36).substr(2, 12);
             const eventSource = new EventSource(`/api/progressing/${progressingId}`);
-
-            // 4. 모달에 프로그레스바 UI로 교체 (입력 필드 대신 진행 상태 표시)
             modalBody.innerHTML = `
-        <h3>번호 생성 진행 중</h3>
-        <div id="progressInfo" style="font-size: 12px; color: gray; margin-bottom: 8px;">
-            0% (0/0) |
-        </div>
-        <div style="width: 100%; background-color: #e0e0e0; border-radius: 4px;">
-            <div id="progressBar" style="width: 0%; height: 20px; background-color: #4caf50; border-radius: 4px;"></div>
-        </div>
-    `;
-
-            // 5. SSE 이벤트 리스너 등록
+                <h3>번호 생성 진행 중</h3>
+                <div id="progressInfo" style="font-size:12px; color:gray; margin-bottom:8px;">0% (0/0) |</div>
+                <div style="width:100%; background-color:#e0e0e0; border-radius:4px;">
+                    <div id="progressBar" style="width:0%; height:20px; background-color:#4caf50; border-radius:4px;"></div>
+                </div>
+            `;
             eventSource.addEventListener("processing_info", (event) => {
                 const data = JSON.parse(event.data);
                 const {percent, executeCnt, totalCnt, description} = data;
                 document.getElementById("progressInfo").textContent = `${percent}% (${executeCnt}/${totalCnt}) | ${description}`;
                 document.getElementById("progressBar").style.width = percent + "%";
             });
-
-            eventSource.addEventListener("processing_success_info", (event) => {
-                eventSource.close();  // 연결 종료
-                closeModal();         // 모달 닫기 또는 다른 화면 전환 로직 실행
+            eventSource.addEventListener("processing_success_info", () => {
+                eventSource.close();
+                closeModal();
             });
-
-            eventSource.onerror = (err) => {
+            eventSource.onerror = () => {
                 eventSource.close();
             };
-
-            // 6. 번호 생성 API 호출 (progressingId 포함)
             try {
                 const response = await fetch("/api/lotto/numbers/build", {
                     method: "POST",
@@ -1376,73 +1195,71 @@
         updateAlgorithmDetails(algorithmDropdown.value);
         checkGenerateButton();
     }
-
     function updateAlgorithmDetails(algorithmKey) {
         const detailsContainer = document.getElementById("algorithmDetails");
         detailsContainer.innerHTML = "";
         if (algorithmKey === "METAHEURISTIC") {
             detailsContainer.innerHTML = `
-                <div class="input-group">
+                <div>
                     <label>탐색비율 (0~100%)</label>
-                    <input type="number" min="0" max="100" value="100" id="rangeRateInput" />
+                    <input type="number" min="0" max="100" value="100" id="rangeRateInput"/>
                 </div>
-                <div class="input-group">
+                <div>
                     <label>탐색 마지막 회차</label>
-                    <input type="number" min="0" id="timesBeforeInput" placeholder="마지막 회차"/>
+                    <input type="number" min="0" id="timesBeforeInput"/>
                 </div>
             `;
         } else if (algorithmKey === "GENETIC") {
             detailsContainer.innerHTML = `
-                <div class="input-group">
+                <div>
                     <label>탐색비율 (0~100%)</label>
                     <input type="number" min="0" max="100" value="100" id="rangeRateInput"/>
                 </div>
-                <div class="input-group">
+                <div>
                     <label>세대 수 (10~50)</label>
                     <input type="number" min="10" max="50" value="30" id="generationsInput"/>
                 </div>
-                <div class="input-group">
+                <div>
                     <label>돌연변이 비율 (0.0~1.0)</label>
                     <input type="number" step="0.01" min="0" max="1.0" value="0.05" id="mutationRateInput"/>
                 </div>
-                <div class="input-group">
+                <div>
                     <label>염색체 개수 (5~20)</label>
                     <input type="number" min="5" max="20" value="10" id="populationSizeInput"/>
                 </div>
-                <div class="input-group">
+                <div>
                     <label>교차율 (0.0~1.0)</label>
                     <input type="number" step="0.01" min="0" max="1.0" value="0.5" id="crossoverRateInput"/>
                 </div>
-                <div class="input-group">
+                <div>
                     <label>탐색 마지막 회차</label>
-                    <input type="number" min="0" id="timesBeforeInput" placeholder="마지막 회차"/>
+                    <input type="number" min="0" id="timesBeforeInput"/>
                 </div>
             `;
         } else if (algorithmKey === "APRIORI") {
             detailsContainer.innerHTML = `
-                <div class="input-group">
+                <div>
                     <label>탐색비율 (0~100%)</label>
                     <input type="number" min="0" max="100" value="100" id="rangeRateInput"/>
                 </div>
-                <div class="input-group">
+                <div>
                     <label>최소 지지도 (1~10)</label>
                     <input type="number" min="1" max="10" value="3" id="minSupportCntInput"/>
                 </div>
-                <div class="input-group">
+                <div>
                     <label>최소 신뢰도 (0.0~1.0)</label>
                     <input type="number" step="0.01" min="0" max="1.0" value="0.6" id="minConfidenceInput"/>
                 </div>
-                <div class="input-group">
+                <div>
                     <label>탐색 마지막 회차</label>
-                    <input type="number" min="0" id="timesBeforeInput" placeholder="마지막 회차"/>
+                    <input type="number" min="0" id="timesBeforeInput"/>
                 </div>
             `;
         }
     }
-
     function collectDetails(algorithmKey) {
         const detail = {};
-        if (algorithmKey === "METAHEURISTIC" || algorithmKey === "GENETIC" || algorithmKey === "APRIORI") {
+        if (["METAHEURISTIC","GENETIC","APRIORI"].includes(algorithmKey)) {
             detail.rangeRate = parseFloat(document.getElementById("rangeRateInput").value) || 0;
             const timesBefore = document.getElementById("timesBeforeInput").value;
             if (timesBefore) detail.timesBefore = parseInt(timesBefore, 10);
@@ -1459,21 +1276,16 @@
         }
         return detail;
     }
-
     function showGeneratedResult(result) {
         modalBody.innerHTML = "<h3>생성된 번호</h3>";
-        const generatedNumbersList = result.map((item) => item.numbers);
+        const generatedNumbersList = result.map(item => item.numbers);
         const table = document.createElement("table");
         table.innerHTML = `
             <thead>
-                <tr>
-                    <th>번호</th>
-                </tr>
+                <tr><th>번호</th></tr>
             </thead>
             <tbody>
-                ${generatedNumbersList
-            .map((nums) => `<tr><td>${nums.join(", ")}</td></tr>`)
-            .join("")}
+                ${generatedNumbersList.map(nums => `<tr><td>${nums.join(", ")}</td></tr>`).join("")}
             </tbody>
         `;
         modalBody.appendChild(table);
@@ -1494,90 +1306,56 @@
         });
     }
 
-    function setLoadingState(button, isLoading, originalText) {
-        if (isLoading) {
-            button.disabled = true;
-            button.innerHTML = `<div class="spinner"></div><span>생성중...</span>`;
-        } else {
-            button.disabled = false;
-            button.textContent = originalText;
-        }
-    }
-
-    /* ----------------------------
-       QR 인식 관련 기능
-    ---------------------------- */
-
-    let camerasList = [];
-    let currentCameraIndex = 0;
-    let html5QrCodeInstance = null;
-
-    // QR 인식 버튼 (상단 그리드에 추가된 btn-read-qr)
+    /* QR 인식 */
     const btnReadQr = document.getElementById("btn-read-qr");
     btnReadQr.addEventListener("click", () => {
         showQrDialog();
     });
-
-    // 첫 화면: 중앙의 "QR 인식 시작" 버튼을 보여줌
     function showQrDialog() {
         openModal();
         modalBody.innerHTML = `
-        <h3 style="text-align: center;">QR 코드 인식</h3>
-        <div style="text-align: center; margin-top: 20px;">
-          <button id="qrUploadButton" style="font-size: 16px; padding: 10px 20px; margin: 0 10px; border: none; border-radius: 8px; background-color: #fff; border: 1px solid #ddd; box-shadow: 0 2px 4px rgba(0,0,0,0.1); cursor: pointer;">업로드</button>
-          <button id="qrCameraButton" style="font-size: 16px; padding: 10px 20px; margin: 0 10px; border: none; border-radius: 8px; background-color: #fff; border: 1px solid #ddd; box-shadow: 0 2px 4px rgba(0,0,0,0.1); cursor: pointer;">촬영</button>
-        </div>
-        <input type="file" id="qrFileInput" accept="image/*" style="display:none;">
-        <div id="qrReader" style="display:none; margin: 20px auto;"></div>
-        <div id="qrResult" style="text-align: center; margin-top: 20px;"></div>
-      `;
+            <h3 style="text-align:center;">QR 코드 인식</h3>
+            <div style="text-align:center; margin-top:20px;">
+                <button id="qrUploadButton" class="btn" style="font-size:16px; margin:0 10px;">업로드</button>
+                <button id="qrCameraButton" class="btn" style="font-size:16px; margin:0 10px;">촬영</button>
+            </div>
+            <input type="file" id="qrFileInput" accept="image/*" style="display:none;">
+            <div id="qrReader" style="display:none; margin:20px auto;"></div>
+            <div id="qrResult" style="text-align:center; margin-top:20px;"></div>
+        `;
         document.getElementById("qrUploadButton").addEventListener("click", () => {
             document.getElementById("qrFileInput").click();
         });
         document.getElementById("qrFileInput").addEventListener("change", handleQrFileUpload);
         document.getElementById("qrCameraButton").addEventListener("click", startQrCamera);
     }
-
-    // 파일 업로드 방식은 기존과 동일
     function handleQrFileUpload(e) {
         const file = e.target.files[0];
         if (!file) return;
         const qrCodeReader = new Html5Qrcode("qrReader");
-        qrCodeReader
-            .scanFile(file, true)
-            .then((decodedText) => {
+        qrCodeReader.scanFile(file, true)
+            .then(decodedText => {
                 processQrResult(decodedText);
                 qrCodeReader.clear();
             })
-            .catch((err) => {
+            .catch(err => {
                 alert("QR 코드 인식 실패: " + err);
             });
     }
-
-    // 촬영 방식: 기본적으로 모바일은 후면 카메라, 데스크탑은 전면 카메라 선택
     function startQrCamera() {
         document.getElementById("qrReader").style.display = "block";
         Html5Qrcode.getCameras()
-            .then((cameras) => {
+            .then(cameras => {
                 if (cameras && cameras.length) {
                     camerasList = cameras;
                     const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
                     let preferredCamera = null;
                     if (isMobile) {
-                        // 모바일: 후면 카메라
-                        preferredCamera = cameras.find(camera => {
-                            const label = camera.label.toLowerCase();
-                            return label.includes("back") || label.includes("rear");
-                        });
+                        preferredCamera = cameras.find(cam => cam.label.toLowerCase().includes("back") || cam.label.toLowerCase().includes("rear"));
                     } else {
-                        // 데스크탑: 전면 카메라
-                        preferredCamera = cameras.find(camera => {
-                            const label = camera.label.toLowerCase();
-                            return label.includes("front") || label.includes("user");
-                        });
+                        preferredCamera = cameras.find(cam => cam.label.toLowerCase().includes("front") || cam.label.toLowerCase().includes("user"));
                     }
                     if (!preferredCamera) {
-                        // 원하는 카메라를 찾지 못하면 첫 번째 카메라 사용
                         preferredCamera = cameras[0];
                     }
                     currentCameraIndex = cameras.indexOf(preferredCamera);
@@ -1586,70 +1364,36 @@
                     alert("사용 가능한 카메라가 없습니다.");
                 }
             })
-            .catch((err) => {
+            .catch(err => {
                 alert("카메라 접근 오류: " + err);
             });
     }
-
-    // 선택된 카메라 ID로 스캔 시작, 그리고 "카메라 전환" 버튼 추가
     function startScanningWithCamera(cameraId) {
         html5QrCodeInstance = new Html5Qrcode("qrReader");
-        // facingMode는 환경설정과 관계없이 전달된 카메라 ID에 따라 작동하므로 따로 지정하지 않아도 됩니다.
-        const config = {fps: 10, qrbox: 250};
-        html5QrCodeInstance
-            .start(
-                cameraId,
-                config,
-                (decodedText, decodedResult) => {
-                    processQrResult(decodedText);
-                    html5QrCodeInstance
-                        .stop()
-                        .then(() => {
-                            document.getElementById("qrReader").innerHTML = "";
-                            document.getElementById("qrReader").style.display = "none";
-                            html5QrCodeInstance = null;
-                        })
-                        .catch((err) => {
-                            if (err && err.message && err.message.indexOf("not running") !== -1) {
-                                document.getElementById("qrReader").innerHTML = "";
-                                document.getElementById("qrReader").style.display = "none";
-                                html5QrCodeInstance = null;
-                            } else {
-                                console.error("카메라 종료 중 오류 발생:", err);
-                            }
-                        });
-                },
-                (errorMessage) => {
-                    // 인식 중 오류 발생 시 필요한 처리
-                }
-            )
-            .catch((err) => {
-                alert("카메라 시작 실패: " + err);
+        const config = { fps: 10, qrbox: 250 };
+        html5QrCodeInstance.start(cameraId, config, (decodedText) => {
+            processQrResult(decodedText);
+            html5QrCodeInstance.stop().then(() => {
+                document.getElementById("qrReader").innerHTML = "";
+                document.getElementById("qrReader").style.display = "none";
+                html5QrCodeInstance = null;
             });
-
-        // 카메라 전환 버튼 추가 (여러 대의 카메라가 있을 때)
+        }).catch(err => {
+            alert("카메라 시작 실패: " + err);
+        });
         if (camerasList.length > 1) {
             let switchBtn = document.getElementById("switchCameraBtn");
             if (!switchBtn) {
                 switchBtn = document.createElement("button");
                 switchBtn.id = "switchCameraBtn";
                 switchBtn.textContent = "카메라 전환";
-                switchBtn.style.fontSize = "16px";
-                switchBtn.style.padding = "10px 20px";
+                switchBtn.className = "btn";
                 switchBtn.style.marginTop = "10px";
-                switchBtn.style.border = "none";
-                switchBtn.style.borderRadius = "8px";
-                switchBtn.style.backgroundColor = "#fff";
-                switchBtn.style.border = "1px solid #ddd";
-                switchBtn.style.boxShadow = "0 2px 4px rgba(0,0,0,0.1)";
-                switchBtn.style.cursor = "pointer";
                 switchBtn.addEventListener("click", switchCamera);
                 document.getElementById("qrReader").appendChild(switchBtn);
             }
         }
     }
-
-    // 카메라 전환 함수: 현재 스캔 중인 카메라를 멈추고 다음 카메라로 전환
     function switchCamera() {
         if (!camerasList || camerasList.length < 2) return;
         if (html5QrCodeInstance) {
@@ -1659,22 +1403,18 @@
                 currentCameraIndex = (currentCameraIndex + 1) % camerasList.length;
                 const newCamera = camerasList[currentCameraIndex];
                 startScanningWithCamera(newCamera.id);
-            }).catch((err) => {
-                console.error("카메라 전환 중 오류 발생:", err);
             });
         }
     }
-
-    // 인식된 URL을 API로 전달하여 번호 등록 다이얼로그를 띄움
     function processQrResult(url) {
         fetch("/api/lotto/url/decode", {
             method: "POST",
             headers: {"Content-Type": "application/json"},
-            body: JSON.stringify({url: url}),
+            body: JSON.stringify({url}),
         })
-            .then((response) => {
+            .then(response => {
                 if (response.status === 400) {
-                    return response.json().then((data) => {
+                    return response.json().then(data => {
                         alert(data.message);
                         showQrDialog();
                         throw new Error(data.message);
@@ -1685,15 +1425,14 @@
                     throw new Error("서버 에러 발생");
                 }
             })
-            .then((data) => {
-                // 응답 예시: [{ "times": 1153, "numbers": [...] }, ...]
+            .then(data => {
                 closeModal();
                 openModal();
                 const defaultTimes = data.length > 0 ? data[0].times : null;
-                const numbersList = data.map((item) => item.numbers);
+                const numbersList = data.map(item => item.numbers);
                 showNumberRegisterScreen(numbersList, defaultTimes);
             })
-            .catch((err) => {
+            .catch(err => {
                 console.log(err);
             });
     }

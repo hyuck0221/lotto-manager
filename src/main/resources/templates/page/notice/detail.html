@@ -5,26 +5,35 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>공지사항 상세 - Lotto Manager</title>
     <style>
-        * {
+        :root {
+            --font-family: "Helvetica Neue", Arial, sans-serif;
+            --bg-color: #f9f9f9;
+            --text-color: #333;
+            --white: #fff;
+            --primary-color: #007bff;
+            --hover-bg: #f5f5f5;
+            --border-color: #ddd;
+            --transition: 0.3s;
+        }
+
+        *, *::before, *::after {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
-
         body {
-            font-family: "Helvetica Neue", Arial, sans-serif;
-            background-color: #f9f9f9;
-            color: #333;
+            font-family: var(--font-family);
+            background-color: var(--bg-color);
+            color: var(--text-color);
             padding: 20px;
         }
-
         header {
             width: 100%;
             position: fixed;
             top: 0;
             left: 0;
-            background-color: #fff;
-            border-bottom: 1px solid #ddd;
+            background-color: var(--white);
+            border-bottom: 1px solid var(--border-color);
             padding: 10px 20px;
             z-index: 1000;
             display: flex;
@@ -32,126 +41,156 @@
             align-items: center;
             min-height: 58px;
         }
-
         header h1 {
             font-size: 18px;
             position: fixed;
             left: 50%;
-            transform: translate(-50%, 0);
+            transform: translateX(-50%);
+            color: var(--text-color);
         }
-
         header .left-button {
             text-decoration: none;
-            color: #007bff;
+            color: var(--primary-color);
             font-size: 16px;
             margin-right: 20px;
         }
-
+        .user-info {
+            display: flex;
+            align-items: center;
+            position: relative;
+            cursor: pointer;
+        }
+        .profile-img {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background-color: #ccc;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .profile-img img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .user-details {
+            margin-left: 8px;
+        }
+        .display-name {
+            font-size: 14px;
+            font-weight: 600;
+        }
+        .dropdown {
+            position: absolute;
+            top: calc(100% + 5px);
+            right: 0;
+            background: var(--white);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            padding: 8px 0;
+            display: none;
+            flex-direction: column;
+            min-width: 90px;
+            z-index: 10;
+            transition: background-color var(--transition);
+        }
+        .dropdown button {
+            background: none;
+            border: none;
+            padding: 8px 16px;
+            width: 100%;
+            text-align: left;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color var(--transition);
+        }
+        .dropdown button:hover {
+            background-color: var(--hover-bg);
+        }
+        .dropdown.open {
+            display: flex;
+        }
         main {
             margin-top: 80px;
         }
-
         .notice-header {
             margin-bottom: 20px;
         }
-
-        /* 공지 제목 왼쪽 정렬 */
         .notice-title {
             font-size: 24px;
             font-weight: bold;
             margin-bottom: 10px;
             text-align: left;
         }
-
         .notice-meta {
             display: flex;
             justify-content: space-between;
             align-items: center;
             margin-bottom: 20px;
-        }
-
-        .notice-date {
             font-size: 14px;
             color: #555;
         }
-
-        .enable-comment {
-            font-size: 14px;
-            color: #555;
-        }
-
         .content-box {
             padding: 16px;
             font-size: 16px;
-            line-height: 1.5;
-            border: 1px solid #ddd;
+            line-height: 1.6;
+            border: 1px solid var(--border-color);
             border-radius: 4px;
-            background-color: #fff;
+            background-color: var(--white);
             margin-bottom: 20px;
         }
-
         /* 댓글 섹션 */
         .comment-section {
             margin-top: 20px;
-            display: none;
         }
-
         .comment-count {
             font-size: 16px;
             margin-bottom: 10px;
         }
-
-        .comment-form {
-            margin-bottom: 20px;
-        }
-
         .comment-form textarea {
             width: 100%;
             padding: 8px;
             font-size: 14px;
-            border: 1px solid #ddd;
+            border: 1px solid var(--border-color);
             border-radius: 4px;
-            resize: none; /* 입력창 사이즈 조절 안됨 */
-            min-height: 50px; /* 상하 길이 줄임 */
-            overflow: hidden; /* 스크롤바 숨김 */
+            resize: none;
+            min-height: 50px;
+            overflow: hidden;
         }
-
         .comment-form .form-controls {
             margin-top: 8px;
             display: flex;
             align-items: center;
             gap: 10px;
         }
-
         .comment-form button {
             padding: 8px 16px;
             font-size: 14px;
-            background-color: #007bff;
-            color: #fff;
+            background-color: var(--primary-color);
+            color: var(--white);
             border: none;
             border-radius: 4px;
             cursor: pointer;
+            transition: background-color var(--transition);
         }
-
         .comment-form button:hover {
             background-color: #0056b3;
         }
-
         .comment-item {
             padding: 12px;
-            border: 1px solid #ddd;
+            border: 1px solid var(--border-color);
             border-radius: 4px;
-            background-color: #fff;
+            background-color: var(--white);
             margin-bottom: 10px;
             position: relative;
         }
-
         .comment-header {
             display: flex;
             align-items: center;
             margin-bottom: 6px;
         }
-
         .comment-header img {
             width: 32px;
             height: 32px;
@@ -159,77 +198,89 @@
             background-color: #ccc;
             margin-right: 8px;
         }
-
         .comment-header .comment-author {
             font-size: 14px;
             font-weight: bold;
         }
-
         .comment-header .comment-date {
             font-size: 12px;
             color: #777;
             margin-left: auto;
         }
-
         .comment-content {
             font-size: 14px;
             margin-bottom: 6px;
         }
-
         .comment-actions {
             font-size: 12px;
-            color: #007bff;
+            color: var(--primary-color);
             cursor: pointer;
         }
-
         .comment-actions span {
             margin-right: 10px;
         }
-
         /* 수정 폼 스타일 */
         .edit-form {
             margin-top: 8px;
         }
-
         .edit-form textarea {
             width: 100%;
             padding: 8px;
             font-size: 14px;
-            border: 1px solid #ddd;
+            border: 1px solid var(--border-color);
             border-radius: 4px;
             resize: none;
             min-height: 50px;
             overflow: hidden;
         }
-
         .edit-controls {
             display: flex;
             justify-content: space-between;
             align-items: center;
             margin-top: 8px;
         }
-
         .edit-controls label {
             display: flex;
             align-items: center;
         }
-
         .edit-controls button {
             padding: 6px 12px;
             font-size: 14px;
-            background-color: #007bff;
-            color: #fff;
+            background-color: var(--primary-color);
+            color: var(--white);
             border: none;
             border-radius: 4px;
             cursor: pointer;
+            transition: background-color var(--transition);
         }
-
         .edit-controls button:hover {
             background-color: #0056b3;
         }
-
         .edit-controls button + button {
             margin-left: 8px;
+        }
+
+        /* 반응형 */
+        @media (max-width: 480px) {
+            header h1 {
+                font-size: 16px;
+            }
+            .notice-title {
+                font-size: 20px;
+            }
+            .content-box {
+                font-size: 14px;
+                padding: 12px;
+            }
+            .comment-form textarea,
+            .edit-form textarea {
+                font-size: 12px;
+                padding: 6px;
+            }
+            .comment-header img {
+                width: 28px;
+                height: 28px;
+            }
         }
     </style>
 </head>
@@ -243,15 +294,15 @@
         <div class="notice-header">
             <div class="notice-title" id="notice-title">제목 로딩 중...</div>
             <div class="notice-meta">
-                <div class="notice-date" id="notice-date">작성일:</div>
+                <div class="notice-date" id="notice-date">작성일: </div>
                 <div class="enable-comment" id="enable-comment"></div>
             </div>
         </div>
         <div class="content-box" id="notice-content">
             내용 로딩 중...
         </div>
-        <!-- 댓글 섹션 (댓글 허용일 때만 표시) -->
-        <div id="comment-section" class="comment-section" style="display:none;">
+        <!-- 댓글 섹션: 댓글 허용일 때만 표시 -->
+        <div id="comment-section" class="comment-section" style="display: none;">
             <div class="comment-count" id="comment-count">댓글 수: 0</div>
             <div class="comment-form">
                 <textarea id="comment-input" placeholder="댓글을 입력하세요"></textarea>
@@ -272,7 +323,7 @@
     const urlParams = new URLSearchParams(window.location.search);
     const noticeId = urlParams.get('id');
 
-    // 공지사항 상세 정보 가져오기
+    // 공지사항 상세 정보 가져오기 (로딩 애니메이션 추가 가능)
     async function fetchNoticeDetail() {
         try {
             const response = await fetch(`/api/notice/${noticeId}`);
@@ -293,12 +344,10 @@
     function displayNoticeDetail(data) {
         document.getElementById('notice-title').textContent = data.title;
         document.getElementById('notice-date').textContent = '작성일: ' + data.createDate;
-        // content 내의 "\\n" (문자열 그대로의 \n)을 <br>로 변환하여 HTML로 출력합니다.
+        // "\n" 문자를 <br>로 변환하여 출력
         document.getElementById('notice-content').innerHTML = data.content
             ? data.content.replace(/\\n/g, "<br>")
             : '내용이 없습니다.';
-
-        // 댓글 허용 여부 표시
         const enableCommentElem = document.getElementById('enable-comment');
         if (data.enableComment) {
             enableCommentElem.textContent = '댓글 허용: O';
@@ -312,9 +361,7 @@
     async function fetchComments() {
         try {
             const response = await fetch(`/api/notice/${noticeId}/comments`);
-            if (response.status === 401) {
-                return;
-            }
+            if (response.status === 401) return;
             if (response.ok) {
                 document.getElementById('comment-section').style.display = 'block';
                 const comments = await response.json();
@@ -328,9 +375,7 @@
     }
 
     function displayComments(comments) {
-        // 댓글 수 업데이트
         document.getElementById('comment-count').textContent = "댓글 수: " + comments.length;
-
         const commentList = document.getElementById('comment-list');
         commentList.innerHTML = "";
         if (comments.length === 0) {
@@ -389,7 +434,6 @@
         });
     }
 
-    // 댓글 작성
     async function postComment() {
         const commentInput = document.getElementById('comment-input');
         const anonymousCheckbox = document.getElementById('anonymous-checkbox');
@@ -398,10 +442,7 @@
             alert("댓글을 입력해주세요.");
             return;
         }
-        const payload = {
-            comment: commentText,
-            anonymous: anonymousCheckbox.checked
-        };
+        const payload = { comment: commentText, anonymous: anonymousCheckbox.checked };
         try {
             const response = await fetch(`/api/notice/${noticeId}/comment`, {
                 method: 'POST',
@@ -421,11 +462,10 @@
         }
     }
 
-    // 댓글 삭제
     async function deleteComment(commentId) {
         if (!confirm("정말 이 댓글을 삭제하시겠습니까?")) return;
         try {
-            const response = await fetch(`/api/notice/comment/${commentId}`, {method: 'DELETE'});
+            const response = await fetch(`/api/notice/comment/${commentId}`, { method: 'DELETE' });
             if (response.ok) {
                 fetchComments();
             } else {
@@ -437,48 +477,37 @@
         }
     }
 
-    // 수정 모드로 전환하는 함수: 해당 댓글 박스 내에서 수정 입력창과 익명 체크박스, 적용/취소 버튼을 생성
     function enableCommentEdit(commentItem, comment) {
-        // 이미 수정 폼이 있으면 리턴
         if (commentItem.querySelector('.edit-form')) return;
-
-        // 기존 댓글 내용과 액션 숨김
         const contentDiv = commentItem.querySelector('.comment-content');
         const actionsDiv = commentItem.querySelector('.comment-actions');
         contentDiv.style.display = 'none';
         if (actionsDiv) actionsDiv.style.display = 'none';
 
-        // 수정 폼 생성
         const editForm = document.createElement('div');
         editForm.className = 'edit-form';
 
         const editTextarea = document.createElement('textarea');
-        editTextarea.className = 'edit-textarea';
         editTextarea.value = comment.comment;
-        // 스타일 적용 (수정 입력창은 자동 높이 조절)
         editTextarea.style.resize = 'none';
         editTextarea.addEventListener('input', function () {
             this.style.height = 'auto';
             this.style.height = this.scrollHeight + 'px';
         });
 
-        // 수정 컨트롤 (익명 체크박스와 적용/취소 버튼)
         const editControls = document.createElement('div');
         editControls.className = 'edit-controls';
 
         const anonymousLabel = document.createElement('label');
         const editAnonymousCheckbox = document.createElement('input');
         editAnonymousCheckbox.type = 'checkbox';
-        editAnonymousCheckbox.className = 'edit-anonymous';
         editAnonymousCheckbox.checked = comment.anonymous;
         anonymousLabel.appendChild(editAnonymousCheckbox);
         anonymousLabel.appendChild(document.createTextNode(' 익명'));
 
-        // 버튼들 컨테이너
         const buttonContainer = document.createElement('div');
 
         const submitButton = document.createElement('button');
-        submitButton.className = 'edit-submit-button';
         submitButton.textContent = '수정';
         submitButton.addEventListener('click', async function () {
             const updatedText = editTextarea.value.trim();
@@ -486,10 +515,7 @@
                 alert("댓글을 입력해주세요.");
                 return;
             }
-            const payload = {
-                comment: updatedText,
-                anonymous: editAnonymousCheckbox.checked
-            };
+            const payload = { comment: updatedText, anonymous: editAnonymousCheckbox.checked };
             try {
                 const response = await fetch(`/api/notice/comment/${comment.id}`, {
                     method: 'PUT',
@@ -508,10 +534,8 @@
         });
 
         const cancelButton = document.createElement('button');
-        cancelButton.className = 'edit-cancel-button';
         cancelButton.textContent = '취소';
         cancelButton.addEventListener('click', function () {
-            // 수정 폼 제거하고 원래 내용과 액션 보이기
             editForm.remove();
             contentDiv.style.display = '';
             if (actionsDiv) actionsDiv.style.display = '';
@@ -519,13 +543,10 @@
 
         buttonContainer.appendChild(submitButton);
         buttonContainer.appendChild(cancelButton);
-
         editControls.appendChild(anonymousLabel);
         editControls.appendChild(buttonContainer);
-
         editForm.appendChild(editTextarea);
         editForm.appendChild(editControls);
-
         commentItem.appendChild(editForm);
     }
 

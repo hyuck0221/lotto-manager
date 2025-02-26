@@ -5,25 +5,34 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>공지사항 - Lotto Manager</title>
     <style>
-        * {
+        :root {
+            --font-family: "Helvetica Neue", Arial, sans-serif;
+            --bg-color: #f9f9f9;
+            --text-color: #333;
+            --white: #fff;
+            --primary-color: #007bff;
+            --hover-bg: #f5f5f5;
+            --border-color: #ddd;
+            --transition: 0.3s;
+        }
+
+        *, *::before, *::after {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
-
         body {
-            font-family: "Helvetica Neue", Arial, sans-serif;
-            background-color: #f9f9f9;
-            color: #333;
+            font-family: var(--font-family);
+            background-color: var(--bg-color);
+            color: var(--text-color);
         }
-
         header {
             width: 100%;
             position: fixed;
             top: 0;
             left: 0;
-            background-color: #fff;
-            border-bottom: 1px solid #ddd;
+            background-color: var(--white);
+            border-bottom: 1px solid var(--border-color);
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -31,27 +40,24 @@
             z-index: 1000;
             min-height: 58px;
         }
-
         header h1 {
             font-size: 18px;
             position: fixed;
             left: 50%;
-            transform: translate(-50%, 0);
+            transform: translateX(-50%);
+            color: var(--text-color);
         }
-
         header .home-button {
             text-decoration: none;
-            color: #007bff;
+            color: var(--primary-color);
             font-size: 16px;
         }
-
         .user-info {
             display: flex;
             align-items: center;
             position: relative;
             cursor: pointer;
         }
-
         .profile-img {
             width: 36px;
             height: 36px;
@@ -62,35 +68,32 @@
             justify-content: center;
             align-items: center;
         }
-
         .profile-img img {
             width: 100%;
             height: 100%;
             object-fit: cover;
         }
-
         .user-details {
             margin-left: 8px;
         }
-
         .display-name {
             font-size: 14px;
             font-weight: 600;
         }
-
         .dropdown {
             position: absolute;
             top: calc(100% + 5px);
             right: 0;
-            background: #fff;
-            border: 1px solid #ddd;
+            background: var(--white);
+            border: 1px solid var(--border-color);
             border-radius: 4px;
             padding: 8px 0;
             display: none;
             flex-direction: column;
             min-width: 90px;
+            z-index: 10;
+            transition: background-color var(--transition);
         }
-
         .dropdown button {
             background: none;
             border: none;
@@ -99,96 +102,122 @@
             text-align: left;
             cursor: pointer;
             font-size: 14px;
+            transition: background-color var(--transition);
         }
-
         .dropdown button:hover {
-            background-color: #f5f5f5;
+            background-color: var(--hover-bg);
         }
-
         .dropdown.open {
             display: flex;
         }
-
         main {
             margin-top: 70px;
             padding: 16px;
         }
-
-        /* 검색창 스타일 */
+        /* 검색 및 정렬 컨테이너 */
         .search-container {
-            margin-bottom: 16px;
             display: flex;
+            flex-wrap: wrap;
             gap: 8px;
+            margin-bottom: 16px;
         }
-
         .search-container input[type="text"] {
             flex: 1;
             padding: 8px;
             font-size: 14px;
-            border: 1px solid #ddd;
+            border: 1px solid var(--border-color);
             border-radius: 4px;
         }
-
-        .search-container button {
-            padding: 8px 16px;
+        .search-container button,
+        .search-container select {
+            padding: 8px 12px;
             font-size: 14px;
-            background-color: #007bff;
-            color: white;
-            border: none;
+            border: 1px solid var(--border-color);
             border-radius: 4px;
+            background-color: var(--primary-color);
+            color: var(--white);
             cursor: pointer;
+            transition: background-color var(--transition);
         }
-
-        .search-container button:hover {
+        .search-container button:hover,
+        .search-container select:hover {
             background-color: #0056b3;
         }
-
+        /* 로딩 인디케이터 */
+        .loading-indicator {
+            text-align: center;
+            font-size: 16px;
+            color: var(--primary-color);
+            padding: 16px 0;
+            display: none;
+        }
+        /* 테이블 */
         .table-container {
             position: relative;
         }
-
         table {
             width: 100%;
             border-collapse: collapse;
             margin-top: 16px;
-            background-color: #fff;
+            background-color: var(--white);
         }
-
         th, td {
-            border: 1px solid #ddd;
+            border: 1px solid var(--border-color);
             padding: 8px;
             text-align: center;
             font-size: 14px;
         }
-
         th {
             background-color: #f7f7f7;
         }
-
-        /* 페이징 스타일 */
+        /* 페이징 */
         .pagination {
             margin-top: 16px;
             text-align: center;
         }
-
         .pagination button {
             margin: 0 4px;
             padding: 4px 8px;
             font-size: 14px;
-            background-color: #fff;
-            border: 1px solid #ddd;
+            background-color: var(--white);
+            border: 1px solid var(--border-color);
             border-radius: 4px;
             cursor: pointer;
+            transition: background-color var(--transition);
+        }
+        .pagination button:hover {
+            background-color: var(--hover-bg);
+        }
+        .pagination button.active {
+            font-weight: bold;
+            background-color: var(--primary-color);
+            color: var(--white);
+            border-color: var(--primary-color);
         }
 
-        .pagination button:hover {
-            background-color: #f5f5f5;
+        /* 반응형 */
+        @media (max-width: 480px) {
+            header h1 {
+                font-size: 16px;
+            }
+            .search-container input[type="text"],
+            .search-container button,
+            .search-container select {
+                font-size: 12px;
+                padding: 6px;
+            }
+            th, td {
+                font-size: 12px;
+                padding: 6px;
+            }
         }
     </style>
 </head>
 <body>
 <header>
-    <a href="/" class="home-button">홈</a>
+    <div class="left-section">
+        <a href="/" class="home-button">홈</a>
+    </div>
     <h1>공지사항</h1>
     <div class="user-info" id="user-info">
         <div class="profile-img" id="profile-img">
@@ -208,12 +237,21 @@
     </div>
 </header>
 <main>
-    <!-- 검색창 -->
+    <!-- 검색 및 정렬 영역 -->
     <div class="search-container">
         <input type="text" id="search-input" placeholder="검색어를 입력하세요">
+        <select id="sort-select">
+            <option value="createDate,desc">최신순</option>
+            <option value="createDate,asc">오래된순</option>
+            <option value="title,asc">제목순</option>
+        </select>
         <button id="search-button">검색</button>
     </div>
-    <!-- 공지사항 목록 테이블 -->
+
+    <!-- 로딩 인디케이터 -->
+    <div class="loading-indicator" id="loading-indicator">로딩 중...</div>
+
+    <!-- 공지사항 테이블 -->
     <div class="table-container">
         <table>
             <thead>
@@ -228,6 +266,7 @@
             <tbody id="notice-list"></tbody>
         </table>
     </div>
+
     <!-- 페이지 네비게이션 -->
     <div class="pagination" id="pagination"></div>
 </main>
@@ -248,28 +287,24 @@
         }
     });
 
-    myInfo.addEventListener('click', () => {
-        location.href = '/page/account/user/my-info';
-    });
+    myInfo.addEventListener('click', () => { location.href = '/page/account/user/my-info'; });
+    question.addEventListener('click', () => { location.href = '/page/question/list'; });
+    notice.addEventListener('click', () => { location.href = '/page/notice/list'; });
 
-    question.addEventListener('click', () => {
-        location.href = '/page/question/list';
-    });
-    notice.addEventListener("click", () => {
-        location.href = "/page/notice/list";
-    });
-
-    let currentPage = 1; // 화면상 표시되는 페이지 (1부터 시작)
+    let currentPage = 1;
     let isLoggedIn = false;
 
-    // 공지사항 목록 API 호출 함수
+    // 공지사항 목록 API 호출 함수 (정렬 옵션 포함)
     async function fetchNotices(page) {
         currentPage = page;
         const searchQuery = document.getElementById('search-input').value.trim();
-        let url = `/api/notice?page=${page - 1}`;
+        const sortOption = document.getElementById('sort-select').value;
+        let url = `/api/notice?page=${page - 1}&sort=${sortOption}`;
         if (searchQuery !== "") {
             url += `&search=${encodeURIComponent(searchQuery)}`;
         }
+        // 로딩 표시
+        document.getElementById('loading-indicator').style.display = 'block';
         try {
             const response = await fetch(url);
             if (response.ok) {
@@ -280,7 +315,9 @@
                 console.error("공지사항을 불러오는데 실패했습니다:", response.statusText);
             }
         } catch (error) {
-            console.error("공지사항을 불러오는 중 오류 발생:", error);
+            console.error("공지사항 불러오는 중 오류:", error);
+        } finally {
+            document.getElementById('loading-indicator').style.display = 'none';
         }
     }
 
@@ -300,12 +337,12 @@
         notices.forEach(notice => {
             const tr = document.createElement('tr');
             tr.innerHTML = `
-          <td>${notice.title}</td>
-          <td>${notice.enableComment ? 'O' : 'X'}</td>
-          <td>${notice.commentCnt}</td>
-          <td>${notice.createDate}</td>
-          <td><button onclick="viewDetail('${notice.id}')">상세</button></td>
-        `;
+        <td>${notice.title}</td>
+        <td>${notice.enableComment ? 'O' : 'X'}</td>
+        <td>${notice.commentCnt}</td>
+        <td>${notice.createDate}</td>
+        <td><button onclick="viewDetail('${notice.id}')">상세</button></td>
+      `;
             tbody.appendChild(tr);
         });
     }
@@ -319,7 +356,7 @@
             const pageButton = document.createElement('button');
             pageButton.textContent = i;
             if (i === currentPage) {
-                pageButton.style.fontWeight = 'bold';
+                pageButton.classList.add('active');
             }
             pageButton.addEventListener('click', () => {
                 fetchNotices(i);
@@ -328,17 +365,15 @@
         }
     }
 
-    // 상세 페이지로 이동하는 함수
+    // 상세 페이지 이동 함수
     function viewDetail(id) {
         window.location.href = `/page/notice/detail?id=${id}`;
     }
 
-    // 검색 버튼 이벤트
+    // 검색 버튼 및 엔터키 이벤트
     document.getElementById('search-button').addEventListener('click', () => {
         fetchNotices(1);
     });
-
-    // 검색창에서 엔터키를 눌렀을 때 검색 버튼과 동일하게 동작하도록 이벤트 추가
     document.getElementById('search-input').addEventListener('keydown', (event) => {
         if (event.key === 'Enter') {
             event.preventDefault();
@@ -346,15 +381,14 @@
         }
     });
 
-    // 사용자 정보 불러오기 함수 (헤더 관련)
+    // 사용자 정보 불러오기 (헤더 관련)
     async function fetchUserInfo() {
         try {
             const response = await fetch('/api/account/user/my-info');
             if (response.ok) {
                 const user = await response.json();
+                document.getElementById('display-name').textContent = user.displayName;
                 const profileImg = document.getElementById('profile-image');
-                const displayName = document.getElementById('display-name');
-                displayName.textContent = user.displayName;
                 if (user.profileUrl) {
                     profileImg.src = user.profileUrl;
                     profileImg.style.backgroundColor = 'transparent';
@@ -369,7 +403,6 @@
         } catch(err) {
             isLoggedIn = false;
         }
-
     }
 
     document.addEventListener('DOMContentLoaded', async () => {

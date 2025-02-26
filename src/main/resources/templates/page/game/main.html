@@ -5,39 +5,62 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>게임 - Lotto Manager</title>
     <style>
-        * {
+        :root {
+            --font-family: "Helvetica Neue", Arial, sans-serif;
+            --bg-color: #f9f9f9;
+            --text-color: #333;
+            --white: #fff;
+            --border-color: #ddd;
+            --primary-color: #007bff;
+            --hover-bg: #f5f5f5;
+            --header-height: 58px;
+            --transition-duration: 0.3s;
+        }
+
+        *, *::before, *::after {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
+
         body {
-            font-family: "Helvetica Neue", Arial, sans-serif;
-            background-color: #f9f9f9;
-            color: #333;
+            font-family: var(--font-family);
+            background-color: var(--bg-color);
+            color: var(--text-color);
         }
+
         header {
             width: 100%;
             position: fixed;
             top: 0;
             left: 0;
-            background-color: #fff;
-            border-bottom: 1px solid #ddd;
+            background-color: var(--white);
+            border-bottom: 1px solid var(--border-color);
             display: flex;
             justify-content: space-between;
             align-items: center;
             padding: 10px 20px;
             z-index: 1000;
-            min-height: 58px;
+            min-height: var(--header-height);
         }
+
         header .left-section {
             display: flex;
             align-items: center;
         }
+
         header h1 {
             font-size: 18px;
             position: fixed;
             left: 50%;
-            transform: translate(-50%, 0);
+            transform: translateX(-50%);
+            color: var(--text-color);
+        }
+
+        header .home-button {
+            text-decoration: none;
+            color: var(--primary-color);
+            font-size: 16px;
         }
 
         .user-info {
@@ -46,6 +69,7 @@
             position: relative;
             cursor: pointer;
         }
+
         .profile-img {
             width: 36px;
             height: 36px;
@@ -56,30 +80,36 @@
             justify-content: center;
             align-items: center;
         }
+
         .profile-img img {
             width: 100%;
             height: 100%;
             object-fit: cover;
         }
+
         .user-details {
             margin-left: 8px;
         }
+
         .display-name {
             font-size: 14px;
             font-weight: 600;
         }
+
         .dropdown {
             position: absolute;
             top: calc(100% + 5px);
             right: 0;
-            background: #fff;
-            border: 1px solid #ddd;
+            background: var(--white);
+            border: 1px solid var(--border-color);
             border-radius: 4px;
             padding: 8px 0;
             display: none;
             flex-direction: column;
             min-width: 90px;
+            z-index: 10;
         }
+
         .dropdown button {
             background: none;
             border: none;
@@ -88,18 +118,15 @@
             text-align: left;
             cursor: pointer;
             font-size: 14px;
-        }
-        .dropdown button:hover {
-            background-color: #f5f5f5;
-        }
-        .dropdown.open {
-            display: flex;
+            transition: background-color var(--transition-duration);
         }
 
-        header .home-button {
-            text-decoration: none;
-            color: #007bff;
-            font-size: 16px;
+        .dropdown button:hover {
+            background-color: var(--hover-bg);
+        }
+
+        .dropdown.open {
+            display: flex;
         }
 
         main {
@@ -107,99 +134,128 @@
             padding: 16px;
         }
 
+        /* 포인트 및 출석체크 영역 */
         .status-section {
             display: flex;
             align-items: center;
             gap: 8px;
             margin-bottom: 16px;
         }
+
         .points-container {
             display: flex;
             align-items: center;
-            background: #fff;
-            border: 1px solid #ddd;
+            background: var(--white);
+            border: 1px solid var(--border-color);
             border-radius: 4px;
             padding: 8px 16px;
         }
+
         .points-container span {
             font-size: 16px;
             margin-right: 8px;
         }
+
         .daily-check-button {
             background-color: #4CAF50;
-            color: white;
+            color: var(--white);
             border: none;
             border-radius: 4px;
             padding: 8px 16px;
             cursor: pointer;
             font-size: 12px;
-            position: relative;
             display: flex;
             flex-direction: column;
             align-items: center;
+            transition: background-color var(--transition-duration);
         }
-        .daily-check-button small {
-            font-size: 12px;
-        }
+
         .daily-check-button:hover {
             background-color: #45a049;
         }
 
+        /* 게임 내역 영역 */
         .section-title {
             font-size: 18px;
             font-weight: bold;
             margin-bottom: 16px;
         }
+
         .search-container {
             margin-bottom: 16px;
         }
+
         .search-container input {
             width: 100%;
             padding: 8px;
             font-size: 14px;
-            border: 1px solid #ddd;
+            border: 1px solid var(--border-color);
             border-radius: 4px;
         }
+
         .game-list {
             display: flex;
             flex-direction: column;
             gap: 12px;
         }
+
         .game-item {
-            background-color: #fff;
-            border: 1px solid #ddd;
+            background-color: var(--white);
+            border: 1px solid var(--border-color);
             border-radius: 4px;
             display: flex;
             cursor: pointer;
             overflow: hidden;
-            transition: box-shadow 0.2s ease;
+            transition: box-shadow var(--transition-duration);
         }
+
         .game-item:hover {
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
         }
+
         .game-item-img {
             width: 100px;
             height: 100px;
             object-fit: cover;
             object-position: center;
+            flex-shrink: 0;
         }
+
         .game-item-content {
             display: flex;
             flex-direction: column;
             justify-content: center;
             padding: 12px;
+            flex-grow: 1;
         }
+
         .game-item-title {
             font-weight: bold;
             margin-bottom: 4px;
+            font-size: 16px;
         }
+
         .game-item-desc {
             font-size: 14px;
             color: #777;
         }
+
         .points-animation {
             display: inline-block;
-            transition: all 0.3s;
+            transition: all var(--transition-duration);
+        }
+
+        @media (max-width: 480px) {
+            .game-item-img {
+                width: 80px;
+                height: 80px;
+            }
+            .game-item-title {
+                font-size: 14px;
+            }
+            .game-item-desc {
+                font-size: 12px;
+            }
         }
     </style>
 </head>
@@ -220,18 +276,19 @@
             <button id="my-info">내 정보</button>
             <button id="question">문의</button>
             <button id="notice">공지사항</button>
-            <form th:action="@{/logout}" method="post" style="margin: 0;">
+            <form action="/logout" method="post" style="margin: 0;">
                 <button type="submit">로그아웃</button>
             </form>
         </div>
     </div>
 </header>
 <main>
-    <!-- 포인트 & 출석체크 버튼을 보여주는 섹션 -->
+    <!-- 포인트 & 출석체크 영역 -->
     <div class="status-section">
         <div class="points-container" id="points-container">
             <span id="current-points">포인트: 0</span>
         </div>
+        <!-- 출석체크 버튼은 조건에 따라 추가 -->
     </div>
 
     <div class="section-title">게임 내역</div>
@@ -241,15 +298,15 @@
     <div class="game-list" id="game-list"></div>
 </main>
 <script>
-    // 캐시 객체들 생성
+    // 캐시 객체들
     const gameCache = {};   // 검색어: 게임 목록
-    const imageCache = {};  // 이미지 URL: 로드 완료된 이미지 객체
+    const imageCache = {};  // 이미지 URL: 캐시된 이미지 객체
 
     const userInfo = document.getElementById('user-info');
     const dropdown = document.getElementById('dropdown');
     const myInfo = document.getElementById('my-info');
     const question = document.getElementById('question');
-    const notice = document.getElementById("notice");
+    const notice = document.getElementById('notice');
     let currentPoints = 0;
 
     // 사용자 정보 가져오기
@@ -258,10 +315,8 @@
             const response = await fetch('/api/account/user/my-info');
             if (response.ok) {
                 const user = await response.json();
+                document.getElementById('display-name').textContent = user.displayName;
                 const profileImg = document.getElementById('profile-image');
-                const displayName = document.getElementById('display-name');
-
-                displayName.textContent = user.displayName;
                 if (user.profileUrl) {
                     profileImg.src = user.profileUrl;
                     profileImg.style.backgroundColor = 'transparent';
@@ -271,7 +326,7 @@
                 }
             }
         } catch (error) {
-            console.log(error);
+            console.error(error);
         }
     }
 
@@ -284,23 +339,17 @@
             dropdown.classList.remove('open');
         }
     });
-    myInfo.addEventListener('click', () => {
-        location.href = '/page/account/user/my-info';
-    });
-    question.addEventListener('click', () => {
-        location.href = '/page/question/list';
-    });
-    notice.addEventListener("click", () => {
-        location.href = "/page/notice/list";
-    });
+    myInfo.addEventListener('click', () => location.href = '/page/account/user/my-info');
+    question.addEventListener('click', () => location.href = '/page/question/list');
+    notice.addEventListener('click', () => location.href = '/page/notice/list');
 
-    // 출석체크 관련 함수들
+    // 출석체크 관련 (필요 시 추가)
     async function fetchDailyCheck() {
         try {
             const response = await fetch('/api/game/daily-check');
             if (response.ok) {
                 const data = await response.json();
-                if (data.todayCheck === false) {
+                if (!data.todayCheck) {
                     addDailyCheckButton(data.todayPoint);
                 }
             }
@@ -318,9 +367,7 @@
     }
     async function handleDailyCheckPost(todayPoint, buttonEl) {
         try {
-            const response = await fetch('/api/game/daily-check', {
-                method: 'POST',
-            });
+            const response = await fetch('/api/game/daily-check', { method: 'POST' });
             if (response.ok) {
                 buttonEl.remove();
                 animatePointIncrease(todayPoint);
@@ -333,9 +380,8 @@
         const pointsLabel = document.getElementById('current-points');
         const startPoints = currentPoints;
         const endPoints = currentPoints + amount;
-        const duration = 300; // 0.3초
+        const duration = 300;
         const startTime = performance.now();
-
         function updatePoints(timestamp) {
             const elapsed = timestamp - startTime;
             const progress = Math.min(elapsed / duration, 1);
@@ -358,25 +404,22 @@
             if (response.ok) {
                 const data = await response.json();
                 currentPoints = data.point;
-                const pointsLabel = document.getElementById('current-points');
-                pointsLabel.textContent = `포인트: ${data.point}`;
+                document.getElementById('current-points').textContent = `포인트: ${data.point}`;
             }
         } catch (error) {
             console.error(error);
         }
     }
 
-    // 이미지 캐싱 함수: 동일 URL의 이미지는 네트워크 요청 없이 캐싱된 이미지를 클론하여 사용
+    // 이미지 캐싱: 동일 URL이면 캐시된 이미지 사용
     function getCachedImage(url) {
         return new Promise((resolve, reject) => {
             if (imageCache[url]) {
-                // 캐시된 이미지가 있다면 clone 후 반환
                 resolve(imageCache[url].cloneNode(true));
             } else {
                 const img = new Image();
                 img.classList.add('game-item-img');
                 img.onload = function() {
-                    // 최초 로드 후 캐싱
                     imageCache[url] = img;
                     resolve(img.cloneNode(true));
                 };
@@ -388,7 +431,7 @@
         });
     }
 
-    // 검색 및 게임 목록 관련 함수 (캐싱 적용)
+    // 검색 및 게임 목록
     const searchInput = document.getElementById('search-input');
     searchInput.addEventListener('input', () => {
         fetchGames(searchInput.value);
@@ -414,23 +457,14 @@
         games.forEach((game) => {
             const item = document.createElement('div');
             item.classList.add('game-item');
-            item.onclick = () => {
-                window.location.href = game.pagePath;
-            };
-
-            // 이미지 렌더링: 동일 URL의 이미지는 캐시에서 클론
+            item.onclick = () => window.location.href = game.pagePath;
             if (game.imagePath) {
                 getCachedImage(game.imagePath)
                     .then(img => {
-                        // 이미지 요소를 게임 아이템의 가장 앞에 추가
                         item.insertBefore(img, item.firstChild);
                     })
-                    .catch(error => {
-                        console.error(error);
-                    });
+                    .catch(error => console.error(error));
             }
-
-            // 게임 제목 및 설명 렌더링
             const content = document.createElement('div');
             content.classList.add('game-item-content');
             const title = document.createElement('div');
@@ -439,7 +473,6 @@
             const desc = document.createElement('div');
             desc.classList.add('game-item-desc');
             desc.textContent = game.description;
-
             content.appendChild(title);
             content.appendChild(desc);
             item.appendChild(content);
