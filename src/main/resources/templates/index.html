@@ -565,6 +565,7 @@
                     profileImg.style.backgroundColor = "#ccc";
                     profileImg.removeAttribute("src");
                     profileImg.style.display = "none";
+                    document.getElementById("display-name").textContent = '(로그인)';
                 }
             } else {
                 throw new Error();
@@ -578,6 +579,7 @@
         const profileImg = document.getElementById("profile-image");
         profileImg.removeAttribute("src");
         profileImg.style.display = "none";
+        document.getElementById("display-name").textContent = '(로그인)';
     }
     function handleNotLoggedInUI() {
         const btnGame = document.getElementById("btn-game");
