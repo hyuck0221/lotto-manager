@@ -1197,6 +1197,13 @@
         updateAlgorithmDetails(algorithmDropdown.value);
         checkGenerateButton();
     }
+
+    function checkGenerateButton() {
+        const count = document.getElementById("countInput").value;
+        document.getElementById("btn-generate").disabled =
+            !count || count < 1 || count > 20 || !algorithmDropdown.value;
+    }
+
     function updateAlgorithmDetails(algorithmKey) {
         const detailsContainer = document.getElementById("algorithmDetails");
         detailsContainer.innerHTML = "";
