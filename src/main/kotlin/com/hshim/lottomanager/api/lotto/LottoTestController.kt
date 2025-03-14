@@ -1,19 +1,17 @@
 package com.hshim.lottomanager.api.lotto
 
+import com.hshim.lottomanager.annotation.PublicEndpoint
 import com.hshim.lottomanager.model.lotto.LottoNumberBuildRequest
 import com.hshim.lottomanager.service.lotto.algorithm.AlgorithmTestService
 import io.autocrypt.sakarinblue.universe.util.CommonUtil.uuid
-import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.RequestBody
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RequestParam
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.bind.annotation.*
 
 @RestController
 @RequestMapping("/api/lotto/test")
 class LottoTestController(
     private val algorithmTestService: AlgorithmTestService
 ) {
+    @PublicEndpoint
     @PostMapping("/algorithm")
     fun algorithmTest(
         @RequestParam(required = true) times: Int,
