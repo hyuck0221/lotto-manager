@@ -10,28 +10,34 @@
             margin: 0;
             padding: 20px;
         }
+
         .container {
             max-width: 800px;
             margin: 0 auto;
             background-color: #fff;
             padding: 20px;
             border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
         }
-        h1 {
+
+        h1, h2, h3 {
             text-align: center;
         }
+
         .hidden {
             display: none;
         }
+
         .form-group {
             margin-bottom: 15px;
         }
+
         label {
             display: block;
             margin-bottom: 5px;
             font-weight: bold;
         }
+
         input, select {
             width: 100%;
             padding: 10px;
@@ -39,6 +45,7 @@
             border: 1px solid #ccc;
             border-radius: 4px;
         }
+
         button {
             width: 100%;
             padding: 10px;
@@ -48,20 +55,25 @@
             color: #fff;
             font-size: 16px;
             cursor: pointer;
+            margin-top: 15px;
         }
+
         button:disabled {
             background-color: #95a5a6;
             cursor: not-allowed;
         }
+
         .progress-container {
             margin-top: 20px;
         }
+
         .progress-bar {
             width: 100%;
             background-color: #ddd;
             border-radius: 4px;
             overflow: hidden;
         }
+
         .progress {
             height: 20px;
             width: 0%;
@@ -70,6 +82,56 @@
             line-height: 20px;
             color: #fff;
             transition: width 0.3s ease;
+        }
+
+        /* Result Screen Styles */
+        #result-screen {
+            text-align: center;
+        }
+
+        .result-summary p {
+            font-size: 18px;
+            margin: 8px 0;
+        }
+
+        .result-chart {
+            margin: 20px 0;
+        }
+
+        #rank-chart .rank-row {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .rank-label {
+            width: 60px;
+            text-align: left;
+            font-weight: bold;
+        }
+
+        .rank-count {
+            width: 140px;
+            text-align: right;
+            margin-right: 10px;
+        }
+
+        .rank-bar-container {
+            flex: 1;
+            background-color: #ddd;
+            border-radius: 4px;
+            overflow: hidden;
+            height: 20px;
+        }
+
+        .rank-bar {
+            height: 100%;
+            background-color: #3498db;
+            text-align: right;
+            line-height: 20px;
+            color: #fff;
+            padding-right: 5px;
+            box-sizing: border-box;
         }
     </style>
 </head>
@@ -100,13 +162,29 @@
     <div id="progress-screen" class="hidden">
         <div id="progress-info">
             <p>선택 알고리즘: <span id="current-algorithm"></span></p>
-            <p>진행: <span id="current-progress">0</span> / <span id="total-count">0</span> (<span id="progress-percent">0</span>%)</p>
+            <p>진행: <span id="current-progress">0</span> / <span id="total-count">0</span> (<span id="progress-percent">0.00</span>%)
+            </p>
         </div>
         <div class="progress-container">
             <div class="progress-bar">
+                <!-- 프로그레스바 텍스트는 정수로 표시 -->
                 <div id="progress-bar" class="progress">0%</div>
             </div>
         </div>
+    </div>
+
+    <!-- 시뮬레이션 결과 화면 -->
+    <div id="result-screen" class="hidden">
+        <h2>최종 결과</h2>
+        <div class="result-summary">
+            <p>총 생성 수: <span id="result-total">0</span></p>
+            <p>총 맞춘 숫자 합계: <span id="result-correctCnt">0</span></p>
+        </div>
+        <div class="result-chart">
+            <h3>등수 분포</h3>
+            <div id="rank-chart"></div>
+        </div>
+        <button id="back-btn">메인으로 돌아가기</button>
     </div>
 </div>
 
@@ -114,6 +192,7 @@
     // DOM 요소 선택
     const createScreen = document.getElementById('create-screen');
     const progressScreen = document.getElementById('progress-screen');
+    const resultScreen = document.getElementById('result-screen');
     const startBtn = document.getElementById('start-btn');
     const lottoTimesInput = document.getElementById('lotto-times');
     const algorithmSelect = document.getElementById('algorithm-select');
@@ -125,7 +204,31 @@
     const progressPercentSpan = document.getElementById('progress-percent');
     const progressBar = document.getElementById('progress-bar');
 
-    let simulationData = null; // WebSocket나 API를 통해 받은 시뮬레이션 데이터
+    // Result Screen 요소
+    const resultTotal = document.getElementById('result-total');
+    const resultCorrectCnt = document.getElementById('result-correctCnt');
+    const rankChart = document.getElementById('rank-chart');
+    const backBtn = document.getElementById('back-btn');
+
+    let simulationData = null; // 진행중인 시뮬레이션 데이터
+
+    // 페이지 로드 시 저장된 시뮬레이션 데이터가 있다면 진행중 화면 표시
+    const savedSimulationData = localStorage.getItem('simulationData');
+    if (savedSimulationData) {
+        simulationData = JSON.parse(savedSimulationData);
+        showProgressScreen();
+    }
+
+    fetchCurrentTimes();
+
+    async function fetchCurrentTimes() {
+        try {
+            const response = await fetch("/api/lotto/times/latest");
+            if (!response.ok) throw new Error("회차 정보를 가져오지 못했습니다.");
+            const data = await response.json();
+            lottoTimesInput.value = data.times;
+        } catch (err) {}
+    }
 
     // 입력값 체크하여 시작 버튼 활성화
     function checkInputs() {
@@ -155,21 +258,24 @@
                 console.error('알고리즘 로드 오류:', error);
             });
     }
+
     loadAlgorithms();
 
-    // 시작 버튼 클릭 이벤트: 시뮬레이션 생성 요청 및 화면 전환
+    // 시작 버튼 클릭: 시뮬레이션 생성 요청 및 진행 화면 전환
     startBtn.addEventListener('click', () => {
-        const times = lottoTimesInput.value;
+        const times = parseInt(lottoTimesInput.value, 10);
         const algorithm = algorithmSelect.value;
-        const cnt = executionCntInput.value;
+        const cnt = parseInt(executionCntInput.value, 10);
 
         fetch(`/api/lotto/simulation?times=${times}&algorithm=${algorithm}&cnt=${cnt}`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' }
+            headers: {'Content-Type': 'application/json'}
         })
             .then(response => response.json())
             .then(data => {
+                // API 응답에서 시뮬레이션 진행 정보를 받아온다고 가정
                 simulationData = data;
+                localStorage.setItem('simulationData', JSON.stringify(simulationData));
                 showProgressScreen();
             })
             .catch(error => {
@@ -177,35 +283,79 @@
             });
     });
 
-    // 시뮬레이션 진행중 화면 표시
+    // 진행중 화면 표시
     function showProgressScreen() {
         createScreen.classList.add('hidden');
+        resultScreen.classList.add('hidden');
         progressScreen.classList.remove('hidden');
-        if(simulationData) {
+        if (simulationData) {
             currentAlgorithmSpan.textContent = simulationData.algorithm;
-            // 초기 진행 상태 (시작 시 cnt 값 사용)
-            updateProgress(simulationData.cnt, simulationData.cnt);
+            // 진행률 초기화: 진행은 0부터 시작, total은 simulationData.cnt (전체 생성 횟수)
+            updateProgress(simulationData.cnt, 0);
         }
     }
 
-    // 진행률 업데이트 함수
+    // 진행률 업데이트 함수 (진행률 텍스트는 소수점 2자리, 프로그레스바 내부 텍스트는 정수)
     function updateProgress(total, cnt) {
         totalCountSpan.textContent = total;
         currentProgressSpan.textContent = cnt;
-        let percent = total > 0 ? Math.floor((cnt / total) * 100) : 0;
-        progressPercentSpan.textContent = percent;
-        progressBar.style.width = percent + '%';
-        progressBar.textContent = percent + '%';
-
-        // 100% 완료 시 1초 후 생성 화면으로 복귀
-        if(percent >= 100) {
-            setTimeout(resetSimulation, 1000);
-        }
+        let percentDecimal = total > 0 ? ((cnt / total) * 100).toFixed(2) : "0.00";
+        let percentInteger = total > 0 ? Math.floor((cnt / total) * 100) : 0;
+        progressPercentSpan.textContent = percentDecimal;
+        progressBar.style.width = percentDecimal + '%';
+        progressBar.textContent = percentInteger + '%';
     }
 
-    // 시뮬레이션 초기화 및 생성 화면으로 복귀
-    function resetSimulation() {
+    // 결과 화면 표시 함수
+    function showResultScreen(resultData) {
+        // Hide other screens
+        createScreen.classList.add('hidden');
+        progressScreen.classList.add('hidden');
+        resultScreen.classList.remove('hidden');
+
+        // 결과 정보 업데이트
+        resultTotal.textContent = resultData.total;
+        resultCorrectCnt.textContent = resultData.correctCnt;
+        let average = resultData.total > 0 ? (resultData.correctCnt / resultData.total).toFixed(2) : "0.00";
+
+        // 등수 분포 그래프 생성
+        createRankChart(resultData.rank, resultData.total);
+    }
+
+    // 등수 분포 차트 생성 함수 (소수점 2자리까지 표시)
+    function createRankChart(rankData, total) {
+        rankChart.innerHTML = "";
+        // rankMapping: 1~5는 등수, 0은 낙첨
+        const rankMapping = {
+            "1": "1등",
+            "2": "2등",
+            "3": "3등",
+            "4": "4등",
+            "5": "5등",
+            "0": "낙첨"
+        };
+        // 출력 순서: 1등부터 5등, 그리고 낙첨
+        const order = ["1", "2", "3", "4", "5", "0"];
+        order.forEach(key => {
+            const count = rankData[key] || 0;
+            const percent = total > 0 ? ((count / total) * 100).toFixed(2) : "0.00";
+            const row = document.createElement('div');
+            row.className = 'rank-row';
+            row.innerHTML = `
+          <span class="rank-label">${rankMapping[key]}</span>
+          <span class="rank-count">${count}회 (${percent}%)</span>
+          <div class="rank-bar-container">
+            <div class="rank-bar" style="width: ${percent}%;"></div>
+          </div>
+        `;
+            rankChart.appendChild(row);
+        });
+    }
+
+    // 메인으로 돌아가기 버튼 이벤트: 모든 상태 초기화
+    backBtn.addEventListener('click', () => {
         simulationData = null;
+        localStorage.removeItem('simulationData');
         lottoTimesInput.value = '';
         algorithmSelect.value = '';
         executionCntInput.value = '';
@@ -215,42 +365,47 @@
         currentAlgorithmSpan.textContent = '';
         currentProgressSpan.textContent = '0';
         totalCountSpan.textContent = '0';
-        progressPercentSpan.textContent = '0';
+        progressPercentSpan.textContent = '0.00';
+        resultTotal.textContent = '0';
+        resultCorrectCnt.textContent = '0';
+        rankChart.innerHTML = '';
 
+        resultScreen.classList.add('hidden');
         progressScreen.classList.add('hidden');
         createScreen.classList.remove('hidden');
-    }
+    });
 
     // WebSocket 연결 설정
     const socket = new WebSocket('ws://' + window.location.host + '/socket/connect');
-
-    socket.onopen = function() {
-        console.log('WebSocket 연결 성공');
-    };
-
-    socket.onmessage = function(event) {
+    socket.onmessage = function (event) {
         const message = JSON.parse(event.data);
-        // simulation_initial 이벤트 처리
-        if(message.eventName === 'simulation_initial') {
-            if(message.processingSimulation) {
+        // simulation_initial 이벤트 처리: 진행 상태 업데이트
+        if (message.eventName === 'simulation_initial') {
+            if (message.processingSimulation) {
                 simulationData = message.processingSimulation;
+                localStorage.setItem('simulationData', JSON.stringify(simulationData));
                 showProgressScreen();
             } else {
-                resetSimulation();
+                // 시뮬레이션 생성 화면으로 돌아감
+                simulationData = null;
+                localStorage.removeItem('simulationData');
+                createScreen.classList.remove('hidden');
+                progressScreen.classList.add('hidden');
+                resultScreen.classList.add('hidden');
             }
         }
         // simulation_percent 이벤트 처리: 진행률 업데이트
-        else if(message.eventName === 'simulation_percent') {
+        else if (message.eventName === 'simulation_percent') {
             updateProgress(message.total, message.cnt);
+        }
+        // simulation_result 이벤트 처리: 최종 결과 화면 표시
+        else if (message.eventName === 'simulation_result') {
+            showResultScreen(message);
         }
     };
 
-    socket.onerror = function(error) {
+    socket.onerror = function (error) {
         console.error('WebSocket 오류:', error);
-    };
-
-    socket.onclose = function() {
-        console.log('WebSocket 연결 종료');
     };
 </script>
 </body>

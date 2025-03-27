@@ -30,6 +30,7 @@ class SimulationCommandService(
             ?.takeIf { it.isOpen }
             ?: throw GlobalException.NOT_FOUND_TIMES.exception
         val simulation = simulationRepository.save(Simulation(lotto = lotto, algorithm = algorithm, cnt = cnt))
+        sessionManager.sendAll(SimulationEventModel.Initial(SimulationResponse(simulation)))
         return SimulationResponse(simulation)
     }
 
@@ -41,8 +42,8 @@ class SimulationCommandService(
             progressingId = simulation.taskId,
         )
 
-        lottoNumberQueryService.numbersBuild(request).forEach {
-            algorithmTestLogRepository.saveAndFlush(
+        val results = lottoNumberQueryService.numbersBuild(request).map {
+            val testLog = algorithmTestLogRepository.saveAndFlush(
                 AlgorithmTestLog(
                     lotto = simulation.lotto,
                     taskId = simulation.taskId,
@@ -53,6 +54,14 @@ class SimulationCommandService(
             )
             percentModel.cnt++
             sessionManager.sendAll(percentModel)
+            testLog
         }
+
+        val resultModel = SimulationEventModel.Result(
+            total = simulation.cnt,
+            rank = results.groupBy { it.rank }.mapValues { it.value.count() },
+            correctCnt = results.sumOf { it.correctCnt },
+        )
+        sessionManager.sendAll(resultModel)
     }
 }
