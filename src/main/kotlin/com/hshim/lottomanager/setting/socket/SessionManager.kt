@@ -1,5 +1,8 @@
 package com.hshim.lottomanager.setting.socket
 
+import com.hshim.lottomanager.database.lotto.repository.SimulationRepository
+import com.hshim.lottomanager.model.simulation.SimulationResponse
+import com.hshim.lottomanager.model.socket.BaseEventModel
 import com.hshim.lottomanager.model.socket.SimulationEventModel
 import io.autocrypt.sakarinblue.universe.util.CommonUtil.convertObject2JsonString
 import org.springframework.stereotype.Component
@@ -7,17 +10,30 @@ import org.springframework.web.socket.TextMessage
 import org.springframework.web.socket.WebSocketSession
 
 @Component
-class SessionManager {
+class SessionManager(private val simulationRepository: SimulationRepository) {
+    val sessions = mutableSetOf<WebSocketSession>()
+
     fun addSession(session: WebSocketSession) {
-        // TODO 처리중인 프로세스 있는지 확인 후 있으면 처리중인 프로세스 연결
-        send(session, SimulationEventModel.SessionInfo(session.id, chats))
+        sessions.add(session)
+        val simulation = simulationRepository.findTopByInProcessTrueAndFinishFalse()
+
+        if (simulation == null) {
+            session.send(SimulationEventModel.Initial(null))
+            return
+        }
+
+        session.send(SimulationEventModel.Initial(SimulationResponse(simulation)))
     }
 
-    fun removeSession(groupId: String, session: WebSocketSession) {
-        // TODO 처리중인 프로세스 있는지 검사
+    fun removeSession(session: WebSocketSession) {
+        sessions.remove(session)
     }
 
-    fun send(session: WebSocketSession, event: BaseEventModel) {
-        if (session.isOpen) session.sendMessage(TextMessage(convertObject2JsonString(event)))
+    fun WebSocketSession.send(event: BaseEventModel) {
+        if (this.isOpen) this.sendMessage(TextMessage(convertObject2JsonString(event)))
+    }
+
+    fun sendAll(event: BaseEventModel) {
+        sessions.forEach { it.send(event) }
     }
 }

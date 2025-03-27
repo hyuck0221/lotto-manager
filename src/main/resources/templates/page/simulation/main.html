@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>로또 시뮬레이션</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        h1 {
+            text-align: center;
+        }
+        .hidden {
+            display: none;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input, select {
+            width: 100%;
+            padding: 10px;
+            box-sizing: border-box;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        button {
+            width: 100%;
+            padding: 10px;
+            background-color: #3498db;
+            border: none;
+            border-radius: 4px;
+            color: #fff;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        button:disabled {
+            background-color: #95a5a6;
+            cursor: not-allowed;
+        }
+        .progress-container {
+            margin-top: 20px;
+        }
+        .progress-bar {
+            width: 100%;
+            background-color: #ddd;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        .progress {
+            height: 20px;
+            width: 0%;
+            background-color: #3498db;
+            text-align: center;
+            line-height: 20px;
+            color: #fff;
+            transition: width 0.3s ease;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>로또 시뮬레이션</h1>
+
+    <!-- 시뮬레이션 생성 화면 -->
+    <div id="create-screen">
+        <div class="form-group">
+            <label for="lotto-times">로또 회차</label>
+            <input type="number" id="lotto-times" placeholder="회차 입력">
+        </div>
+        <div class="form-group">
+            <label for="algorithm-select">알고리즘 선택</label>
+            <select id="algorithm-select">
+                <option value="">선택하세요</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="execution-cnt">실행 횟수</label>
+            <input type="number" id="execution-cnt" placeholder="실행 횟수 입력">
+        </div>
+        <button id="start-btn" disabled>시작</button>
+    </div>
+
+    <!-- 시뮬레이션 진행중 화면 -->
+    <div id="progress-screen" class="hidden">
+        <div id="progress-info">
+            <p>선택 알고리즘: <span id="current-algorithm"></span></p>
+            <p>진행: <span id="current-progress">0</span> / <span id="total-count">0</span> (<span id="progress-percent">0</span>%)</p>
+        </div>
+        <div class="progress-container">
+            <div class="progress-bar">
+                <div id="progress-bar" class="progress">0%</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // DOM 요소 선택
+    const createScreen = document.getElementById('create-screen');
+    const progressScreen = document.getElementById('progress-screen');
+    const startBtn = document.getElementById('start-btn');
+    const lottoTimesInput = document.getElementById('lotto-times');
+    const algorithmSelect = document.getElementById('algorithm-select');
+    const executionCntInput = document.getElementById('execution-cnt');
+
+    const currentAlgorithmSpan = document.getElementById('current-algorithm');
+    const currentProgressSpan = document.getElementById('current-progress');
+    const totalCountSpan = document.getElementById('total-count');
+    const progressPercentSpan = document.getElementById('progress-percent');
+    const progressBar = document.getElementById('progress-bar');
+
+    let simulationData = null; // WebSocket나 API를 통해 받은 시뮬레이션 데이터
+
+    // 입력값 체크하여 시작 버튼 활성화
+    function checkInputs() {
+        const times = lottoTimesInput.value;
+        const algorithm = algorithmSelect.value;
+        const cnt = executionCntInput.value;
+        startBtn.disabled = !(times && algorithm && cnt);
+    }
+
+    lottoTimesInput.addEventListener('input', checkInputs);
+    algorithmSelect.addEventListener('change', checkInputs);
+    executionCntInput.addEventListener('input', checkInputs);
+
+    // 알고리즘 드롭다운 옵션 로딩
+    function loadAlgorithms() {
+        fetch('/api/config/number/build/algorithms')
+            .then(response => response.json())
+            .then(data => {
+                data.forEach(item => {
+                    const option = document.createElement('option');
+                    option.value = item.key;
+                    option.textContent = item.value;
+                    algorithmSelect.appendChild(option);
+                });
+            })
+            .catch(error => {
+                console.error('알고리즘 로드 오류:', error);
+            });
+    }
+    loadAlgorithms();
+
+    // 시작 버튼 클릭 이벤트: 시뮬레이션 생성 요청 및 화면 전환
+    startBtn.addEventListener('click', () => {
+        const times = lottoTimesInput.value;
+        const algorithm = algorithmSelect.value;
+        const cnt = executionCntInput.value;
+
+        fetch(`/api/lotto/simulation?times=${times}&algorithm=${algorithm}&cnt=${cnt}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' }
+        })
+            .then(response => response.json())
+            .then(data => {
+                simulationData = data;
+                showProgressScreen();
+            })
+            .catch(error => {
+                console.error('시뮬레이션 생성 오류:', error);
+            });
+    });
+
+    // 시뮬레이션 진행중 화면 표시
+    function showProgressScreen() {
+        createScreen.classList.add('hidden');
+        progressScreen.classList.remove('hidden');
+        if(simulationData) {
+            currentAlgorithmSpan.textContent = simulationData.algorithm;
+            // 초기 진행 상태 (시작 시 cnt 값 사용)
+            updateProgress(simulationData.cnt, simulationData.cnt);
+        }
+    }
+
+    // 진행률 업데이트 함수
+    function updateProgress(total, cnt) {
+        totalCountSpan.textContent = total;
+        currentProgressSpan.textContent = cnt;
+        let percent = total > 0 ? Math.floor((cnt / total) * 100) : 0;
+        progressPercentSpan.textContent = percent;
+        progressBar.style.width = percent + '%';
+        progressBar.textContent = percent + '%';
+
+        // 100% 완료 시 1초 후 생성 화면으로 복귀
+        if(percent >= 100) {
+            setTimeout(resetSimulation, 1000);
+        }
+    }
+
+    // 시뮬레이션 초기화 및 생성 화면으로 복귀
+    function resetSimulation() {
+        simulationData = null;
+        lottoTimesInput.value = '';
+        algorithmSelect.value = '';
+        executionCntInput.value = '';
+        startBtn.disabled = true;
+        progressBar.style.width = '0%';
+        progressBar.textContent = '0%';
+        currentAlgorithmSpan.textContent = '';
+        currentProgressSpan.textContent = '0';
+        totalCountSpan.textContent = '0';
+        progressPercentSpan.textContent = '0';
+
+        progressScreen.classList.add('hidden');
+        createScreen.classList.remove('hidden');
+    }
+
+    // WebSocket 연결 설정
+    const socket = new WebSocket('ws://' + window.location.host + '/socket/connect');
+
+    socket.onopen = function() {
+        console.log('WebSocket 연결 성공');
+    };
+
+    socket.onmessage = function(event) {
+        const message = JSON.parse(event.data);
+        // simulation_initial 이벤트 처리
+        if(message.eventName === 'simulation_initial') {
+            if(message.processingSimulation) {
+                simulationData = message.processingSimulation;
+                showProgressScreen();
+            } else {
+                resetSimulation();
+            }
+        }
+        // simulation_percent 이벤트 처리: 진행률 업데이트
+        else if(message.eventName === 'simulation_percent') {
+            updateProgress(message.total, message.cnt);
+        }
+    };
+
+    socket.onerror = function(error) {
+        console.error('WebSocket 오류:', error);
+    };
+
+    socket.onclose = function() {
+        console.log('WebSocket 연결 종료');
+    };
+</script>
+</body>
+</html>

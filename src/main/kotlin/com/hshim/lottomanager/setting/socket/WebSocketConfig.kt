@@ -12,7 +12,6 @@ class WebSocketConfig(
 ) : WebSocketConfigurer {
     override fun registerWebSocketHandlers(registry: WebSocketHandlerRegistry) {
         registry.addHandler(webSocketHandler, "/socket/connect")
-            .addInterceptors(CustomHandshakeInterceptor())
             .setAllowedOrigins("*")
     }
 }

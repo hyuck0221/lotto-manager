@@ -34,6 +34,7 @@ class SecurityConfig(
                         "/",
                         "/error",
                         "/icon/**",
+                        "/socket/connect",
                     ).permitAll()
                     .requestMatchers(*publicUrls.toTypedArray()).permitAll()
                     .anyRequest().authenticated()

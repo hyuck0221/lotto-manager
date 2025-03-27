@@ -11,10 +11,10 @@ import jakarta.persistence.*
 class Simulation(
     @Id
     @Column(nullable = false)
-    private val id: String = uuid(),
+    val id: String = uuid(),
 
     @Column(nullable = false)
-    val taskId: String,
+    val taskId: String = uuid(),
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "lotto_id", nullable = false)
@@ -32,4 +32,9 @@ class Simulation(
 
     @Column(nullable = false)
     var finish: Boolean = false,
-) : BaseTimeEntity()
+) : BaseTimeEntity() {
+    fun finish() {
+        inProcess = true
+        finish = true
+    }
+}

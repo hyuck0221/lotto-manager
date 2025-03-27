@@ -1,39 +1,14 @@
 package com.hshim.lottomanager.model.socket
 
-import com.hshim.realtimeanonymouschat.database.entity.chat.Chat
-import io.autocrypt.sakarinblue.universe.util.DateUtil.dateToString
+import com.hshim.lottomanager.model.simulation.SimulationResponse
 
 class SimulationEventModel {
-    class InitialInfo(
-        val processingSimulation: SimulationInfo,
-        val
-    )
+    class Initial(
+        val processingSimulation: SimulationResponse?,
+    ) : BaseEventModel("simulation_initial")
 
-    class SimulationInfo(
-        val id: String,
-        val taskId: String,
-        val percent: BaseEventModel,
-    ): BaseEventModel("simulation_info")
-
-    class SimulationPercentInfo(
-        val total: Int,
-        val cnt: Int,
-    ): BaseEventModel("simulation_percent_info")
-
-    class SessionInfo(
-        val id: String,
-        val beforeChats: List<BeforeChat>,
-    ): BaseEventModel("session_info") {
-        class BeforeChat(
-            val content: String,
-            val sessionId: String,
-            val createDate: String,
-        ) {
-            constructor(chat: Chat): this (
-                chat.content,
-                chat.sessionId,
-                chat.createDate.dateToString(),
-            )
-        }
-    }
+    class Percent(
+        val total: Int = 0,
+        var cnt: Int = 0,
+    ) : BaseEventModel("simulation_percent")
 }
