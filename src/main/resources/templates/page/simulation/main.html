@@ -376,7 +376,7 @@
     });
 
     // WebSocket 연결 설정
-    const socket = new WebSocket('ws://' + window.location.host + '/socket/connect');
+    const socket = new WebSocket(`${window.location.origin.replace('http', 'ws')}/socket/connect`);
     socket.onmessage = function (event) {
         const message = JSON.parse(event.data);
         // simulation_initial 이벤트 처리: 진행 상태 업데이트
